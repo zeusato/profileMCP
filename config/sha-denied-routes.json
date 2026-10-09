@@ -1,0 +1,43 @@
+{
+  "default": "deny",
+  "allowedHosts": [
+    "https://api.shs.com.vn"
+  ],
+  "businessWrites": [
+    {
+      "method": "POST",
+      "path": "/prod/v2/sha-service/e/order/buy/create",
+      "line": 675,
+      "reason": "Changes trading state; never expose or call from MCP"
+    },
+    {
+      "method": "POST",
+      "path": "/prod/v2/sha-service/e/order/sell/create",
+      "line": 700,
+      "reason": "Changes trading state; never expose or call from MCP"
+    },
+    {
+      "method": "POST",
+      "path": "/prod/v2/sha-service/e/order/modify",
+      "line": 751,
+      "reason": "Changes trading state; never expose or call from MCP"
+    },
+    {
+      "method": "POST",
+      "path": "/prod/v2/sha-service/e/order/cancel",
+      "line": 782,
+      "reason": "Changes trading state; never expose or call from MCP"
+    }
+  ],
+  "otherExcluded": [
+    "all non-allowlisted method/path pairs",
+    "settings writes",
+    "customer recent POST",
+    "remisier OTP/contracts/bank flows",
+    "exports with unverified effects",
+    "wildcard forward/proxy",
+    "SHSmart/Fialda fallback",
+    "sockets",
+    "local KPI/config writes"
+  ]
+}

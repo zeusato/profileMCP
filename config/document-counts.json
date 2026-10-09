@@ -1,0 +1,9 @@
+{
+  "readRoutes": 40,
+  "authRoutes": 3,
+  "excludedTradingWrites": 4,
+  "businessTools": 17,
+  "metadataTools": 2,
+  "swaggerPaths": 69,
+  "swaggerMethodPaths": 70
+}

@@ -1,0 +1,38 @@
+{
+  "modelTools": false,
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/prod/v1/author-service/p/auth/login-v2",
+      "line": 86,
+      "toolExposed": false,
+      "enabled": false,
+      "purpose": "browser-login-control-plane-only",
+      "status": "historical-contract-needs-G1"
+    },
+    {
+      "method": "POST",
+      "path": "/prod/v1/author-service/p/auth/generate-matrix",
+      "line": 109,
+      "toolExposed": false,
+      "enabled": false,
+      "purpose": "browser-login-control-plane-only",
+      "status": "historical-contract-needs-G1"
+    },
+    {
+      "method": "POST",
+      "path": "/prod/v1/author-service/p/auth/verify-sotp",
+      "line": 139,
+      "toolExposed": false,
+      "enabled": false,
+      "purpose": "browser-login-control-plane-only",
+      "status": "historical-contract-needs-G1"
+    }
+  ],
+  "refresh": {
+    "path": "/prod/v1/author-service/p/auth/refresh-token",
+    "method": "POST",
+    "enabled": false,
+    "contract": "UNVERIFIED: path mentioned only; do not guess body, rotation or OTP renewal"
+  }
+}

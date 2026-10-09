@@ -1,0 +1,38 @@
+{
+  "configuredOn": "2026-10-09",
+  "provider": "Supabase",
+  "projectName": "profile mcp",
+  "organization": "Digital16",
+  "projectRef": "rcdmgdnxndyjnosxikbu",
+  "region": "ap-southeast-2",
+  "observedPlan": "Free",
+  "observedCompute": "Nano",
+  "schema": "profile_mcp",
+  "migrationVersion": "20261009_001",
+  "appliedVia": "Supabase SQL editor, authorized Chrome session",
+  "migrationFile": "docs/database/SCHEMA.sql",
+  "migrationSha256": "7bdee8947e32e2fef7749e7a8a433361ffb82ad6b6cd1b377ec87dbbbd79e128",
+  "verificationFile": "docs/database/VERIFY.sql",
+  "result": {
+    "tableCount": 11,
+    "rlsEnabledCount": 11,
+    "rlsForcedCount": 11,
+    "policyCount": 0,
+    "schemaUsage": {
+      "anon": false,
+      "authenticated": false,
+      "service_role": false
+    },
+    "readableTables": {
+      "anon": 0,
+      "authenticated": 0,
+      "service_role": 0
+    },
+    "dataApiEnabled": false
+  },
+  "runtimeRoleProvisioned": false,
+  "runtimeImplemented": false,
+  "vercelDeployed": false,
+  "secretsCopied": false,
+  "supabaseCliMigrationHistoryRecorded": false
+}

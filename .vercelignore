@@ -1,0 +1,11 @@
+.env*
+.runtime
+node_modules
+.git
+tests
+docs
+scripts
+supabase
+dist
+AGENTS.md
+README.md

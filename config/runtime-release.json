@@ -1,0 +1,7 @@
+{
+  "revision": "20261009-runtime-1",
+  "enabledOperations": [],
+  "authContract": "historical-needs-live-G1",
+  "reason": "Runtime candidates require per-operation live contract, scope, shape and unit evidence before release",
+  "clientAcceptance": { "gpt": "unverified", "claude": "unverified" }
+}

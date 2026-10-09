@@ -1,0 +1,926 @@
+{
+  "status": "STATIC_LITERAL_SCAN_NOT_RUNTIME_PROOF",
+  "uniquePaths": 37,
+  "methodInference": false,
+  "entries": [
+    {
+      "path": "/prod/v1/author-service/p/auth/login-v2",
+      "baselineOperations": [],
+      "classification": "auth-control-plane",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/main/modules/account_ipc.js",
+          "line": 9,
+          "sha256": "24fe5092825fbd0f2dc74763b5cc1ab5504b85a1cc9f60f66076d04bada302bd"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/advisor-service/e/market/tradingview/history",
+      "baselineOperations": [
+        "market.candles"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 713,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-customer/e/customer-group/get-all-group-customer",
+      "baselineOperations": [
+        "groups.list"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/basket_order.js",
+          "line": 339,
+          "sha256": "d14d5fae5674f9c83df339637a398d398999d97c613c112b928f9e1c7e49c210"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/account/account-no-and-rem",
+      "baselineOperations": [
+        "accounts.tree"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/ai_chat.js",
+          "line": 518,
+          "sha256": "d0ee6f9f608491ab24c51c2b11c04763225e33542e957c777ecb9e380d7e053e"
+        },
+        {
+          "file": "src/preload/order_slip.js",
+          "line": 97,
+          "sha256": "1de0def27b26b69cd25e5fb71b56a29b6b2232e7e6dfca0dd5ad4c969c4e058a"
+        },
+        {
+          "file": "src/preload/revenue_report.js",
+          "line": 71,
+          "sha256": "1a92ff98db20ef542c3d74b7cf40f9e9fabbc8e6860a7479dc6b0208eb70aa12"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 290,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/account/customers-overview",
+      "baselineOperations": [
+        "customers.overview"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/dashboard_notice.js",
+          "line": 125,
+          "sha256": "7fd3068f27aad759b342d5ca3af93630e95de9221b71194e4ea1dda488199e92"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/account/deposit-withdrawal-info",
+      "baselineOperations": [
+        "cash.movements"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/ai_chat.js",
+          "line": 783,
+          "sha256": "d0ee6f9f608491ab24c51c2b11c04763225e33542e957c777ecb9e380d7e053e"
+        },
+        {
+          "file": "src/preload/dashboard_notice.js",
+          "line": 117,
+          "sha256": "7fd3068f27aad759b342d5ca3af93630e95de9221b71194e4ea1dda488199e92"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 900,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 949,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/account/detail",
+      "baselineOperations": [
+        "profile.detail"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/ai_chat.js",
+          "line": 868,
+          "sha256": "d0ee6f9f608491ab24c51c2b11c04763225e33542e957c777ecb9e380d7e053e"
+        },
+        {
+          "file": "src/preload/order_slip.js",
+          "line": 196,
+          "sha256": "1de0def27b26b69cd25e5fb71b56a29b6b2232e7e6dfca0dd5ad4c969c4e058a"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 734,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/account/information",
+      "baselineOperations": [
+        "profile.information"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/ai_chat.js",
+          "line": 869,
+          "sha256": "d0ee6f9f608491ab24c51c2b11c04763225e33542e957c777ecb9e380d7e053e"
+        },
+        {
+          "file": "src/preload/revenue_report.js",
+          "line": 201,
+          "sha256": "1a92ff98db20ef542c3d74b7cf40f9e9fabbc8e6860a7479dc6b0208eb70aa12"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 527,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 917,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 1134,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 735,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/account/list-by-rem-no",
+      "baselineOperations": [
+        "accounts.search"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/ai_chat.js",
+          "line": 926,
+          "sha256": "d0ee6f9f608491ab24c51c2b11c04763225e33542e957c777ecb9e380d7e053e"
+        },
+        {
+          "file": "src/preload/basket_order.js",
+          "line": 325,
+          "sha256": "d14d5fae5674f9c83df339637a398d398999d97c613c112b928f9e1c7e49c210"
+        },
+        {
+          "file": "src/preload/order_slip.js",
+          "line": 147,
+          "sha256": "1de0def27b26b69cd25e5fb71b56a29b6b2232e7e6dfca0dd5ad4c969c4e058a"
+        },
+        {
+          "file": "src/preload/revenue_report.js",
+          "line": 138,
+          "sha256": "1a92ff98db20ef542c3d74b7cf40f9e9fabbc8e6860a7479dc6b0208eb70aa12"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 491,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 825,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 426,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/account/list-sub-no",
+      "baselineOperations": [
+        "accounts.subaccounts"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/ai_chat.js",
+          "line": 556,
+          "sha256": "d0ee6f9f608491ab24c51c2b11c04763225e33542e957c777ecb9e380d7e053e"
+        },
+        {
+          "file": "src/preload/basket_order.js",
+          "line": 371,
+          "sha256": "d14d5fae5674f9c83df339637a398d398999d97c613c112b928f9e1c7e49c210"
+        },
+        {
+          "file": "src/preload/trade_export_reader.js",
+          "line": 51,
+          "sha256": "dddbc304e0fc4f9e8aaeda49c097f17ad18e9c3fe4eb65b5894a6e3b209bd7ee"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 615,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/asset/additional-collateral-releases-list",
+      "baselineOperations": [
+        "credit.collateral"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/dashboard_notice.js",
+          "line": 95,
+          "sha256": "7fd3068f27aad759b342d5ca3af93630e95de9221b71194e4ea1dda488199e92"
+        },
+        {
+          "file": "src/preload/report.js",
+          "line": 192,
+          "sha256": "2f9c2a16a0d89920cf85169d0525957179e5f4dfb8520e2a2496854ce348d5de"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/asset/debt-info/history",
+      "baselineOperations": [
+        "loans.repayments"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 707,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/asset/guarantee-information-list",
+      "baselineOperations": [
+        "credit.guarantees"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/dashboard_notice.js",
+          "line": 104,
+          "sha256": "7fd3068f27aad759b342d5ca3af93630e95de9221b71194e4ea1dda488199e92"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 752,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/asset/information",
+      "baselineOperations": [
+        "brokerAssets.accounts"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 881,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 1016,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 1030,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 1072,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 1080,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 1117,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/asset/investment-portfolio",
+      "baselineOperations": [
+        "brokerAssets.portfolio"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 1098,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/asset/loan-info",
+      "baselineOperations": [
+        "assets.loanDetail",
+        "loans.current"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/report.js",
+          "line": 255,
+          "sha256": "2f9c2a16a0d89920cf85169d0525957179e5f4dfb8520e2a2496854ce348d5de"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 656,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 484,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/asset/loan-info/history",
+      "baselineOperations": [
+        "loans.history"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 539,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/asset/loan-information",
+      "baselineOperations": [
+        "assets.loanSummary"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/ai_chat.js",
+          "line": 583,
+          "sha256": "d0ee6f9f608491ab24c51c2b11c04763225e33542e957c777ecb9e380d7e053e"
+        },
+        {
+          "file": "src/preload/ai_chat.js",
+          "line": 654,
+          "sha256": "d0ee6f9f608491ab24c51c2b11c04763225e33542e957c777ecb9e380d7e053e"
+        },
+        {
+          "file": "src/preload/report.js",
+          "line": 142,
+          "sha256": "2f9c2a16a0d89920cf85169d0525957179e5f4dfb8520e2a2496854ce348d5de"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 479,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 751,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/asset/margin-info",
+      "baselineOperations": [
+        "assets.margin"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/ai_chat.js",
+          "line": 580,
+          "sha256": "d0ee6f9f608491ab24c51c2b11c04763225e33542e957c777ecb9e380d7e053e"
+        },
+        {
+          "file": "src/preload/report.js",
+          "line": 141,
+          "sha256": "2f9c2a16a0d89920cf85169d0525957179e5f4dfb8520e2a2496854ce348d5de"
+        },
+        {
+          "file": "src/preload/report.js",
+          "line": 158,
+          "sha256": "2f9c2a16a0d89920cf85169d0525957179e5f4dfb8520e2a2496854ce348d5de"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 457,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 750,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/asset/money-information",
+      "baselineOperations": [
+        "assets.cash"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/ai_chat.js",
+          "line": 581,
+          "sha256": "d0ee6f9f608491ab24c51c2b11c04763225e33542e957c777ecb9e380d7e053e"
+        },
+        {
+          "file": "src/preload/report.js",
+          "line": 140,
+          "sha256": "2f9c2a16a0d89920cf85169d0525957179e5f4dfb8520e2a2496854ce348d5de"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 458,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 749,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/asset/portfolio-investment-stock",
+      "baselineOperations": [
+        "portfolio.account"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/ai_chat.js",
+          "line": 624,
+          "sha256": "d0ee6f9f608491ab24c51c2b11c04763225e33542e957c777ecb9e380d7e053e"
+        },
+        {
+          "file": "src/preload/report.js",
+          "line": 181,
+          "sha256": "2f9c2a16a0d89920cf85169d0525957179e5f4dfb8520e2a2496854ce348d5de"
+        },
+        {
+          "file": "src/preload/report.js",
+          "line": 306,
+          "sha256": "2f9c2a16a0d89920cf85169d0525957179e5f4dfb8520e2a2496854ce348d5de"
+        },
+        {
+          "file": "src/preload/trade_export_reader.js",
+          "line": 66,
+          "sha256": "dddbc304e0fc4f9e8aaeda49c097f17ad18e9c3fe4eb65b5894a6e3b209bd7ee"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 772,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/asset/stock-value",
+      "baselineOperations": [
+        "assets.stockValue"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/ai_chat.js",
+          "line": 582,
+          "sha256": "d0ee6f9f608491ab24c51c2b11c04763225e33542e957c777ecb9e380d7e053e"
+        },
+        {
+          "file": "src/preload/report.js",
+          "line": 139,
+          "sha256": "2f9c2a16a0d89920cf85169d0525957179e5f4dfb8520e2a2496854ce348d5de"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 748,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/asset/summary",
+      "baselineOperations": [
+        "brokerAssets.summary"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/ai_chat.js",
+          "line": 715,
+          "sha256": "d0ee6f9f608491ab24c51c2b11c04763225e33542e957c777ecb9e380d7e053e"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/forward/cms",
+      "baselineOperations": [],
+      "classification": "excluded-wildcard-forward",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/kms_library.js",
+          "line": 25,
+          "sha256": "bb50db4bc233da99d9af9b84ba23c27fbe6942ea68440dcce5cc4e818b0f0755"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/market/get-stock-codes",
+      "baselineOperations": [
+        "market.catalog"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/basket_order.js",
+          "line": 353,
+          "sha256": "d14d5fae5674f9c83df339637a398d398999d97c613c112b928f9e1c7e49c210"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 313,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/stock_search.js",
+          "line": 64,
+          "sha256": "dbb5a04c71b06b21f49810b2b9b3d90ade2eb875b6e6acd94a26b407bc435675"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 444,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/market/stock/code",
+      "baselineOperations": [
+        "market.quote"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/basket_order.js",
+          "line": 377,
+          "sha256": "d14d5fae5674f9c83df339637a398d398999d97c613c112b928f9e1c7e49c210"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 623,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/order/balance",
+      "baselineOperations": [
+        "buyingPower.preview"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/ai_chat.js",
+          "line": 672,
+          "sha256": "d0ee6f9f608491ab24c51c2b11c04763225e33542e957c777ecb9e380d7e053e"
+        },
+        {
+          "file": "src/preload/basket_order.js",
+          "line": 395,
+          "sha256": "d14d5fae5674f9c83df339637a398d398999d97c613c112b928f9e1c7e49c210"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 721,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/order/buy/create",
+      "baselineOperations": [],
+      "classification": "excluded-trading-write",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/basket_order.js",
+          "line": 417,
+          "sha256": "d14d5fae5674f9c83df339637a398d398999d97c613c112b928f9e1c7e49c210"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 797,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/order/cancel",
+      "baselineOperations": [],
+      "classification": "excluded-trading-write",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/basket_order.js",
+          "line": 526,
+          "sha256": "d14d5fae5674f9c83df339637a398d398999d97c613c112b928f9e1c7e49c210"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 938,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/order/histories",
+      "baselineOperations": [
+        "orders.history"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/ai_chat.js",
+          "line": 689,
+          "sha256": "d0ee6f9f608491ab24c51c2b11c04763225e33542e957c777ecb9e380d7e053e"
+        },
+        {
+          "file": "src/preload/ai_chat.js",
+          "line": 834,
+          "sha256": "d0ee6f9f608491ab24c51c2b11c04763225e33542e957c777ecb9e380d7e053e"
+        },
+        {
+          "file": "src/preload/basket_order.js",
+          "line": 260,
+          "sha256": "d14d5fae5674f9c83df339637a398d398999d97c613c112b928f9e1c7e49c210"
+        },
+        {
+          "file": "src/preload/revenue_report.js",
+          "line": 161,
+          "sha256": "1a92ff98db20ef542c3d74b7cf40f9e9fabbc8e6860a7479dc6b0208eb70aa12"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 505,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 889,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/trade_export_reader.js",
+          "line": 77,
+          "sha256": "dddbc304e0fc4f9e8aaeda49c097f17ad18e9c3fe4eb65b5894a6e3b209bd7ee"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 318,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/order/list-confirm",
+      "baselineOperations": [
+        "orders.unconfirmed"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/order_slip.js",
+          "line": 115,
+          "sha256": "1de0def27b26b69cd25e5fb71b56a29b6b2232e7e6dfca0dd5ad4c969c4e058a"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/order/modify",
+      "baselineOperations": [],
+      "classification": "excluded-trading-write",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 899,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/order/order-account-summary",
+      "baselineOperations": [
+        "orderSummary.account"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/report.js",
+          "line": 169,
+          "sha256": "2f9c2a16a0d89920cf85169d0525957179e5f4dfb8520e2a2496854ce348d5de"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/order/sell/create",
+      "baselineOperations": [],
+      "classification": "excluded-trading-write",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/basket_order.js",
+          "line": 417,
+          "sha256": "d14d5fae5674f9c83df339637a398d398999d97c613c112b928f9e1c7e49c210"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 797,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/performance/open-new-account",
+      "baselineOperations": [
+        "newAccounts.report"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 887,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 991,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-service/e/user/get-user-login",
+      "baselineOperations": [
+        "identity.current"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/basket_order.js",
+          "line": 304,
+          "sha256": "d14d5fae5674f9c83df339637a398d398999d97c613c112b928f9e1c7e49c210"
+        },
+        {
+          "file": "src/preload/dashboard_notice.js",
+          "line": 75,
+          "sha256": "7fd3068f27aad759b342d5ca3af93630e95de9221b71194e4ea1dda488199e92"
+        },
+        {
+          "file": "src/preload/order_slip.js",
+          "line": 88,
+          "sha256": "1de0def27b26b69cd25e5fb71b56a29b6b2232e7e6dfca0dd5ad4c969c4e058a"
+        },
+        {
+          "file": "src/preload/report.js",
+          "line": 120,
+          "sha256": "2f9c2a16a0d89920cf85169d0525957179e5f4dfb8520e2a2496854ce348d5de"
+        },
+        {
+          "file": "src/preload/report.js",
+          "line": 233,
+          "sha256": "2f9c2a16a0d89920cf85169d0525957179e5f4dfb8520e2a2496854ce348d5de"
+        },
+        {
+          "file": "src/preload/revenue_sync_agent.js",
+          "line": 330,
+          "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+        },
+        {
+          "file": "src/preload/session_identity.js",
+          "line": 193,
+          "sha256": "de047eef039b0f918ed9ef60adfac5cba2af3fdc5b8f2b4e9d479041ed4d76cd"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 287,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 407,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    },
+    {
+      "path": "/prod/v2/sha-system/e/trading/stock-quote-list",
+      "baselineOperations": [
+        "market.ticks"
+      ],
+      "classification": "read-candidate",
+      "enabled": false,
+      "provenance": [
+        {
+          "file": "src/preload/basket_order.js",
+          "line": 384,
+          "sha256": "d14d5fae5674f9c83df339637a398d398999d97c613c112b928f9e1c7e49c210"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 627,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        },
+        {
+          "file": "src/preload/trade_pro_agent.js",
+          "line": 674,
+          "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+        }
+      ]
+    }
+  ]
+}

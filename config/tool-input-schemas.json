@@ -1,0 +1,1514 @@
+{
+  "status": "design-schema-not-registered",
+  "tools": [
+    {
+      "name": "get_profile_identity",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "identity.current"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "identity.current"
+      ]
+    },
+    {
+      "name": "list_managed_accounts",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "accounts.tree"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "accounts.search"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "accountRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true
+              },
+              "search": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "birthYearFrom": {
+                "type": "integer",
+                "minimum": 1900,
+                "maximum": 2100
+              },
+              "birthYearTo": {
+                "type": "integer",
+                "minimum": 1900,
+                "maximum": 2100
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "accounts.subaccounts"
+              },
+              "accountRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "operation",
+              "accountRefs"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "accounts.tree",
+        "accounts.search",
+        "accounts.subaccounts"
+      ]
+    },
+    {
+      "name": "get_account_profile",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "profile.detail"
+              },
+              "accountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "operation",
+              "accountRef"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "profile.information"
+              },
+              "accountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "operation",
+              "accountRef"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "profile.authorized"
+              },
+              "accountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "operation",
+              "accountRef"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "profile.detail",
+        "profile.information",
+        "profile.authorized"
+      ]
+    },
+    {
+      "name": "get_customer_overview",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "customers.overview"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "from": {
+                "type": "string",
+                "format": "date"
+              },
+              "to": {
+                "type": "string",
+                "format": "date"
+              }
+            },
+            "required": [
+              "operation",
+              "from",
+              "to"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "customers.overview"
+      ]
+    },
+    {
+      "name": "get_account_assets",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "assets.cash"
+              },
+              "accountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "subaccountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "operation",
+              "accountRef",
+              "subaccountRef"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "assets.stockValue"
+              },
+              "accountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "subaccountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "operation",
+              "accountRef",
+              "subaccountRef"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "assets.margin"
+              },
+              "accountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "subaccountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "operation",
+              "accountRef",
+              "subaccountRef"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "assets.loanSummary"
+              },
+              "accountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "subaccountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "operation",
+              "accountRef",
+              "subaccountRef"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "assets.loanDetail"
+              },
+              "accountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "subaccountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "operation",
+              "accountRef",
+              "subaccountRef"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "assets.cash",
+        "assets.stockValue",
+        "assets.margin",
+        "assets.loanSummary",
+        "assets.loanDetail"
+      ]
+    },
+    {
+      "name": "get_account_portfolio",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "portfolio.account"
+              },
+              "accountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "subaccountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "operation",
+              "accountRef",
+              "subaccountRef"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "portfolio.account"
+      ]
+    },
+    {
+      "name": "get_broker_assets",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "brokerAssets.summary"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "brokerAssets.accounts"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "accountRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "brokerAssets.cash"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "accountRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true
+              },
+              "search": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "brokerAssets.portfolio"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "brokerAssets.summary",
+        "brokerAssets.accounts",
+        "brokerAssets.cash",
+        "brokerAssets.portfolio"
+      ]
+    },
+    {
+      "name": "get_credit_risk",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "credit.guarantees"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "accountRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true
+              },
+              "subaccountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "credit.collateral"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "accountRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true
+              },
+              "subaccountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "credit.guarantees",
+        "credit.collateral"
+      ]
+    },
+    {
+      "name": "get_loan_records",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "loans.current"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "accountRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true
+              },
+              "loanStatus": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "0",
+                    "1",
+                    "2"
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 3,
+                "uniqueItems": true
+              },
+              "loanFrom": {
+                "type": "string",
+                "format": "date"
+              },
+              "loanTo": {
+                "type": "string",
+                "format": "date"
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "loans.history"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "accountRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true
+              },
+              "from": {
+                "type": "string",
+                "format": "date"
+              },
+              "to": {
+                "type": "string",
+                "format": "date"
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "operation",
+              "from",
+              "to"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "loans.repayments"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "accountRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true
+              },
+              "loanFrom": {
+                "type": "string",
+                "format": "date"
+              },
+              "loanTo": {
+                "type": "string",
+                "format": "date"
+              },
+              "expiryFrom": {
+                "type": "string",
+                "format": "date"
+              },
+              "expiryTo": {
+                "type": "string",
+                "format": "date"
+              },
+              "repayFrom": {
+                "type": "string",
+                "format": "date"
+              },
+              "repayTo": {
+                "type": "string",
+                "format": "date"
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "operation",
+              "repayFrom",
+              "repayTo"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "loans.current",
+        "loans.history",
+        "loans.repayments"
+      ]
+    },
+    {
+      "name": "get_order_records",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "orders.history"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "accountRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true
+              },
+              "symbols": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z0-9][A-Z0-9._-]{0,19}$"
+                },
+                "maxItems": 20,
+                "minItems": 1,
+                "uniqueItems": true
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "today",
+                  "history"
+                ]
+              },
+              "from": {
+                "type": "string",
+                "format": "date"
+              },
+              "to": {
+                "type": "string",
+                "format": "date"
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "operation",
+              "mode"
+            ],
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "mode": {
+                      "const": "history"
+                    }
+                  },
+                  "required": [
+                    "mode"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "from",
+                    "to"
+                  ]
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "mode": {
+                      "const": "today"
+                    }
+                  },
+                  "required": [
+                    "mode"
+                  ]
+                },
+                "then": {
+                  "not": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "from"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "to"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "orders.unconfirmed"
+              },
+              "from": {
+                "type": "string",
+                "format": "date"
+              },
+              "to": {
+                "type": "string",
+                "format": "date"
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "operation",
+              "from",
+              "to"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "orders.history",
+        "orders.unconfirmed"
+      ]
+    },
+    {
+      "name": "get_order_summary",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "orderSummary.account"
+              },
+              "accountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "subaccountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "operation",
+              "accountRef",
+              "subaccountRef"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "orderSummary.confirmations"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "orderSummary.top"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "orderSummary.transactions"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "accountRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "orderSummary.account",
+        "orderSummary.confirmations",
+        "orderSummary.top",
+        "orderSummary.transactions"
+      ]
+    },
+    {
+      "name": "get_buying_power",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "buyingPower.preview"
+              },
+              "accountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "subaccountRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Z0-9][A-Z0-9._-]{0,19}$"
+              },
+              "price": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+              }
+            },
+            "required": [
+              "operation",
+              "accountRef",
+              "subaccountRef",
+              "symbol",
+              "price"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "buyingPower.preview"
+      ]
+    },
+    {
+      "name": "get_cash_movements",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "cash.movements"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "accountRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true
+              },
+              "from": {
+                "type": "string",
+                "format": "date"
+              },
+              "to": {
+                "type": "string",
+                "format": "date"
+              },
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "deposit",
+                  "withdrawal",
+                  "all"
+                ]
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "operation",
+              "from",
+              "to"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "cash.movements"
+      ]
+    },
+    {
+      "name": "get_new_accounts_report",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "newAccounts.report"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "from": {
+                "type": "string",
+                "format": "date"
+              },
+              "to": {
+                "type": "string",
+                "format": "date"
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "operation",
+              "from",
+              "to"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "newAccounts.report"
+      ]
+    },
+    {
+      "name": "get_research",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "research.summary"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "research.list"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "search": {
+                "type": "string",
+                "maxLength": 100
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "research.summary",
+        "research.list"
+      ]
+    },
+    {
+      "name": "list_customer_groups",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "groups.list"
+              },
+              "brokerRef": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "accountRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true
+              },
+              "search": {
+                "type": "string",
+                "maxLength": 100
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "groups.list"
+      ]
+    },
+    {
+      "name": "get_sha_market_data",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "market.catalog"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "market.quote"
+              },
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Z0-9][A-Z0-9._-]{0,19}$"
+              }
+            },
+            "required": [
+              "operation",
+              "symbol"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "market.price"
+              },
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Z0-9][A-Z0-9._-]{0,19}$"
+              }
+            },
+            "required": [
+              "operation",
+              "symbol"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "market.ticks"
+              },
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Z0-9][A-Z0-9._-]{0,19}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "operation",
+              "symbol"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "market.candles"
+              },
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Z0-9][A-Z0-9._-]{0,19}$"
+              },
+              "resolution": {
+                "type": "string",
+                "enum": [
+                  "1D"
+                ]
+              },
+              "fromTime": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "toTime": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "operation",
+              "symbol",
+              "resolution",
+              "fromTime",
+              "toTime"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "market.catalog",
+        "market.quote",
+        "market.price",
+        "market.ticks",
+        "market.candles"
+      ]
+    }
+  ],
+  "metadataTools": [
+    "list_profile_capabilities",
+    "get_profile_data_dictionary"
+  ]
+}

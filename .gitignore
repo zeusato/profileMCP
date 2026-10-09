@@ -1,0 +1,18 @@
+node_modules/
+.vercel/
+.env
+.env.*
+!.env.example
+.runtime/
+logs/
+*.log
+credentials/
+sessions/
+coverage/
+dist/
+supabase/.temp/
+
+.vercel
+.env*
+# Only the empty documentation template is versioned; all actual .env files stay ignored.
+!.env.example

@@ -1,0 +1,57 @@
+# Dữ liệu, mâu thuẫn nguồn và điều kiện bật tool
+
+## Thứ tự bằng chứng
+
+Contract mới được kiểm chứng bằng request/response read-only, role và thời gian cụ thể → code hiện hành tại commit ghi trong source manifest → tài liệu API → Swagger/discovery. Bằng chứng ở ngày cũ không chứng minh production hôm nay. Nếu hai nguồn mâu thuẫn, ghi gate; không chọn giá trị tiện nhất rồi giấu khác biệt.
+
+## Các bẫy đã tìm thấy
+
+| Vấn đề | Bằng chứng nguồn | Quy tắc triển khai |
+|---|---|---|
+| SHA khác SHSmart | SHA auth login-v2/matrix/verify-sotp trên api.shs.com.vn | Không reuse /api/v1/login, otpType hoặc expiry của SHSmart |
+| subNo vs subId | list-sub-no và order/balance | Query balance.subNo nhận internal subId; DTO tách display number và reference |
+| remNo không luôn là broker | order-confirm-summary doc dùng login; list-confirm dùng emNo | Builder riêng, không utility thay mọi remNo bằng brokerCode |
+| GET/POST loan-info | Một cái tổng nợ, một cái danh sách khoản vay | Method+path là identity contract |
+| Lịch sử và hôm nay | trade_pro_agent dùng type:0, không dates; dated doc cần dates | Discriminator mode; null interpretation riêng |
+| Price scale | Histories mô tả kVND; list-confirm chuỗi giá VND đã format | Không x1000 toàn bộ order responses |
+| Localized numbers | list-confirm có dấu chấm ngăn nghìn | Parse locale theo schema, không parseFloat |
+| Tổng lặp ở portfolio | evalAmtSum/bookAmtSum trong từng dòng | Check giống nhau rồi lấy một; không sum |
+| Tổng lặp paging | Broker assets/cash/loan reports | Phân biệt total toàn filter với sum của page |
+| Loan key | revenue sync xử lý khoản vay theo nhiều trường | Key accountNo+acctNo+subNo+lndDate+lndTp; không acctNo đơn |
+| sumInt | Loan list có lãi và phí, totalDueAmount | Không cộng sumInt cùng các phần con thêm lần nữa |
+| Account list thiếu ngày mở | list-by-rem-no | Lấy information.openDt nếu cần, không tự gán |
+| Account count vs rows | Cash movements | dpsAccCnt/wthDrwAccCnt là account count, không transaction count |
+| Null account | Deposit/withdraw source có dòng chưa gán account | Chỉ giữ trong broker report được phép, không account scope |
+| Custid/mnId | revenue_sync_agent dùng custid; Swagger dùng mnId | G2 thử payload hiện hành, không gửi cả hai kiểu đoán |
+| Order-account summary | Doc cũ null/sum*; report.js dùng totalTransactionValue/revenueFee | Nonempty fixture; không invent sum fields |
+| depositoryFee | report.js gán pitTax nhưng tên field khác nghĩa | DTO giữ nghĩa chưa xác minh; không công bố là thuế trước đối chiếu |
+| OrdNo | gotchas nói số theo sàn; list-confirm doc phân biệt số công ty | Giữ nguồn/route; key gồm account/date/market khi được chứng minh; không global sort hoặc join mù |
+| Status 4/5 | Nguồn chưa đủ mẫu; status 1 có ghi inferred | Return raw+label null nếu chưa verified; không suy khớp/hủy |
+| list-confirm status N | Enum khác numeric histories | Không map chung |
+| price input balance | Chưa chứng minh ordPri unit | Disable buying-power tool tới khi xác minh |
+| order/sum-transaction kỳ | valueFilterInfo chưa có schema kỳ chắc chắn | period=unknown; không tự nhận from/to chưa upstream support |
+| authorized/top summary | Chỉ null hoặc [] lịch sử | Không suy tài khoản không có dữ liệu; chờ nonempty schema |
+| research Amount | Tổng số khuyến nghị, không tiền | Unit count sau xác minh |
+| Tick ti | Format thời gian nguồn chưa chắc | sourceTimeRaw; chưa đủ ngày/zone => timestamp null |
+| TradingView | Flat arrays, t seconds, s/no_data/nextTime | Parser UDF riêng, kiểm equal-length/chronology |
+| Local dashboard | KPI/SQLCipher/snapshot có các phép tính nội bộ | Không quảng cáo mọi chart là một API SHA tương ứng |
+
+## Không port những suy luận sau thành sự thật upstream
+
+Dashboard nguồn có “active mở mới = NAV > 0 tại lúc đồng bộ”, classifier equity/bond/unknown, cách tính phí chuẩn/phí thực thu và snapshot tháng. Đây là derivation của ứng dụng, không mặc nhiên là contract của SHA API. MVP trả field nguồn được hiểu rõ. Nếu thêm metric dẫn xuất: công thức, kỳ, denominator, attribution, unit, missing policy, rounding và test riêng phải được ghi trong dictionary.
+
+Không tự gọi mã chứng khoán chưa phân loại là equity; không tính return có điều chỉnh quyền/cổ tức khi chưa có chuỗi adjusted đáng tin. Danh mục mã không chứng minh full-universe. Không gộp giá SHSmart/Fialda vào tài sản SHA để lấp thiếu.
+
+## Schema và dữ liệu rỗng
+
+Input strict; output chỉ mapping field allowlist, có thể chấp nhận unknown upstream fields rồi bỏ để tránh phá app khi nguồn thêm field. Nhưng missing field bắt buộc, sai kiểu, mảng/object đổi nhau hoặc query-period mismatch phải là schema error. Chỉ định required vs nullable bằng fixture ở G2; catalog hiện chưa tuyên bố mọi field luôn có.
+
+`0` là số đã có bằng chứng, `null` là giá trị nguồn chưa biết/không áp dụng, missing là field không được trả, empty array là danh sách rỗng theo contract đã xác minh. Không collapse bốn trường hợp thành một. Null-only evidence giữ operation disabled.
+
+## Coverage và freshness
+
+Mỗi kết quả ghi requested period, observed source period nếu có, scope và pagination/truncation. fetchedAt là lúc backend nhận dữ liệu; sourceTimestamp là timestamp dữ liệu có bằng chứng. Nguồn không có ngày kỳ rõ thì không nói “hôm nay” chỉ vì vừa fetch.
+
+Khi có stale/partial/suspicious units, warning machine-readable: `SOURCE_TIMESTAMP_UNAVAILABLE`, `UNIT_UNVERIFIED`, `PARTIAL_PAGE`, `TOTALS_SCOPE_UNKNOWN`, `NON_ATOMIC_SNAPSHOT`, `UNKNOWN_ENUM`, `INSTRUMENT_UNCLASSIFIED`. Có warning không miễn kiểm quyền hoặc schema nền tảng.
+
+Discovery Swagger không tự bật. `docs/api-new-endpoints.md` được nguồn link nhưng không tồn tại trong checkout lúc rà soát; những ghi chú lịch sử “25 APIs/12 successful” không được biến thành live test của dự án này.

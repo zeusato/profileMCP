@@ -1,0 +1,639 @@
+{
+  "status": "NOT_A_RUNTIME_ALLOWLIST",
+  "source": "docs/api/api-docs.json",
+  "sha256": "9d5d3f6416e5eda44e4dd61be8324ea47d837097a6f7eb42d3b2d477f7d99aab",
+  "pathCount": 69,
+  "methodPathCount": 70,
+  "entries": [
+    {
+      "method": "PUT",
+      "sourcePath": "/i/v1/user/setting/set-default-page",
+      "classification": "excluded-write",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Mutates business/settings/OTP/contract state outside SHA login control plane"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/t/v1/remisier/{account}/otp/generate",
+      "classification": "excluded-write",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Mutates business/settings/OTP/contract state outside SHA login control plane"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/t/v1/remisier/{account}/contract/preview",
+      "classification": "excluded-or-review",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Wildcard/export/external-customer-contract/bank scope not authorized for initial project"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/t/v1/remisier/{account}/contract/create",
+      "classification": "excluded-write",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Mutates business/settings/OTP/contract state outside SHA login control plane"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/t/v1/remisier/{account}/bank/query-account",
+      "classification": "excluded-or-review",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Wildcard/export/external-customer-contract/bank scope not authorized for initial project"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/t/v1/remisier/check",
+      "classification": "excluded-or-review",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Wildcard/export/external-customer-contract/bank scope not authorized for initial project"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/remisier/contract/{id}/reject",
+      "classification": "excluded-write",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Mutates business/settings/OTP/contract state outside SHA login control plane"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/remisier/contract/{id}/confirm",
+      "classification": "excluded-write",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Mutates business/settings/OTP/contract state outside SHA login control plane"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/performance/open-new-account",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "newAccounts.report",
+      "gatewayPath": "/prod/v2/sha-service/e/performance/open-new-account",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/order/total-order-summary",
+      "classification": "discovery-hold",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "No approved canonical gateway contract and scoped nonempty fixture"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/order/sum-transaction",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "orderSummary.transactions",
+      "gatewayPath": "/prod/v2/sha-service/e/order/sum-transaction",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/order/sell/create",
+      "classification": "excluded-write",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Mutates business/settings/OTP/contract state outside SHA login control plane"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/order/order-book/export",
+      "classification": "excluded-or-review",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Wildcard/export/external-customer-contract/bank scope not authorized for initial project"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/order/order-book/export-by-account",
+      "classification": "excluded-or-review",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Wildcard/export/external-customer-contract/bank scope not authorized for initial project"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/order/modify",
+      "classification": "excluded-write",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Mutates business/settings/OTP/contract state outside SHA login control plane"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/order/list-confirm",
+      "classification": "excluded-write",
+      "baselineOperation": "orders.unconfirmed",
+      "gatewayPath": "/prod/v2/sha-service/e/order/list-confirm",
+      "enabled": false,
+      "reason": "Mutates business/settings/OTP/contract state outside SHA login control plane"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/order/histories",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "orders.history",
+      "gatewayPath": "/prod/v2/sha-service/e/order/histories",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/order/cancel",
+      "classification": "excluded-write",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Mutates business/settings/OTP/contract state outside SHA login control plane"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/order/buy/create",
+      "classification": "excluded-write",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Mutates business/settings/OTP/contract state outside SHA login control plane"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/order/book",
+      "classification": "discovery-hold",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "No approved canonical gateway contract and scoped nonempty fixture"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/order/balance",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "buyingPower.preview",
+      "gatewayPath": "/prod/v2/sha-service/e/order/balance",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/market/stock/code",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "market.quote",
+      "gatewayPath": "/prod/v2/sha-service/e/market/stock/code",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/customer/recent",
+      "classification": "discovery-hold",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "No approved canonical gateway contract and scoped nonempty fixture"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/customer/recent",
+      "classification": "excluded-write",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Mutates business/settings/OTP/contract state outside SHA login control plane"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/asset/loan-info",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "loans.current",
+      "gatewayPath": "/prod/v2/sha-service/e/asset/loan-info",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/asset/loan-info/history",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "loans.history",
+      "gatewayPath": "/prod/v2/sha-service/e/asset/loan-info/history",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/asset/investment-portfolio",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "brokerAssets.portfolio",
+      "gatewayPath": "/prod/v2/sha-service/e/asset/investment-portfolio",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/asset/information",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "brokerAssets.accounts",
+      "gatewayPath": "/prod/v2/sha-service/e/asset/information",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/asset/guarantee-information-list",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "credit.guarantees",
+      "gatewayPath": "/prod/v2/sha-service/e/asset/guarantee-information-list",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/asset/debt-info/history",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "loans.repayments",
+      "gatewayPath": "/prod/v2/sha-service/e/asset/debt-info/history",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/asset/cash-information",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "brokerAssets.cash",
+      "gatewayPath": "/prod/v2/sha-service/e/asset/cash-information",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/asset/additional-collateral-releases-list",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "credit.collateral",
+      "gatewayPath": "/prod/v2/sha-service/e/asset/additional-collateral-releases-list",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/account/list-by-rem-no",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "accounts.search",
+      "gatewayPath": "/prod/v2/sha-service/e/account/list-by-rem-no",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "POST",
+      "sourcePath": "/i/v1/account/deposit-withdrawal-info",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "cash.movements",
+      "gatewayPath": "/prod/v2/sha-service/e/account/deposit-withdrawal-info",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/t/v1/remisier/{account}/customer/info",
+      "classification": "excluded-or-review",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Wildcard/export/external-customer-contract/bank scope not authorized for initial project"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/t/v1/remisier/{account}/broker/info",
+      "classification": "excluded-or-review",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Wildcard/export/external-customer-contract/bank scope not authorized for initial project"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/t/v1/remisier/{account}/bank/list",
+      "classification": "excluded-or-review",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Wildcard/export/external-customer-contract/bank scope not authorized for initial project"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/user/setting/default-page",
+      "classification": "discovery-hold",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "No approved canonical gateway contract and scoped nonempty fixture"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/user/get-user-login",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "identity.current",
+      "gatewayPath": "/prod/v2/sha-service/e/user/get-user-login",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/stock/list-order-type",
+      "classification": "discovery-hold",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "No approved canonical gateway contract and scoped nonempty fixture"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/remisier/contract",
+      "classification": "excluded-or-review",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Wildcard/export/external-customer-contract/bank scope not authorized for initial project"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/performance/remisiers-performance",
+      "classification": "discovery-hold",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "No approved canonical gateway contract and scoped nonempty fixture"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/order/system-date",
+      "classification": "discovery-hold",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "No approved canonical gateway contract and scoped nonempty fixture"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/order/summary",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "orderSummary.top",
+      "gatewayPath": "/prod/v2/sha-service/e/order/summary",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/order/order-confirm-summary",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "orderSummary.confirmations",
+      "gatewayPath": "/prod/v2/sha-service/e/order/order-confirm-summary",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/order/order-account-summary",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "orderSummary.account",
+      "gatewayPath": "/prod/v2/sha-service/e/order/order-account-summary",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/market/symbol-list",
+      "classification": "discovery-hold",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "No approved canonical gateway contract and scoped nonempty fixture"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/market/securities-price",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "market.price",
+      "gatewayPath": "/prod/v2/sha-service/e/market/securities-price",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/market/get-stock-codes",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "market.catalog",
+      "gatewayPath": "/prod/v2/sha-service/e/market/get-stock-codes",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/forward/cms/**",
+      "classification": "excluded-or-review",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Wildcard/export/external-customer-contract/bank scope not authorized for initial project"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/customer/broker",
+      "classification": "discovery-hold",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "No approved canonical gateway contract and scoped nonempty fixture"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/asset/summary",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "brokerAssets.summary",
+      "gatewayPath": "/prod/v2/sha-service/e/asset/summary",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/asset/stock-value",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "assets.stockValue",
+      "gatewayPath": "/prod/v2/sha-service/e/asset/stock-value",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/asset/portfolio-investment-stock",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "portfolio.account",
+      "gatewayPath": "/prod/v2/sha-service/e/asset/portfolio-investment-stock",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/asset/portfolio-investment-stock/summary",
+      "classification": "discovery-hold",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "No approved canonical gateway contract and scoped nonempty fixture"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/asset/portfolio-investment-stock/export",
+      "classification": "excluded-or-review",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "Wildcard/export/external-customer-contract/bank scope not authorized for initial project"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/asset/money-information",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "assets.cash",
+      "gatewayPath": "/prod/v2/sha-service/e/asset/money-information",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/asset/margin-info",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "assets.margin",
+      "gatewayPath": "/prod/v2/sha-service/e/asset/margin-info",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/asset/loan-information",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "assets.loanSummary",
+      "gatewayPath": "/prod/v2/sha-service/e/asset/loan-information",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/asset/account/summary",
+      "classification": "discovery-hold",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "No approved canonical gateway contract and scoped nonempty fixture"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/account/list-sub-no",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "accounts.subaccounts",
+      "gatewayPath": "/prod/v2/sha-service/e/account/list-sub-no",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/account/information",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "profile.information",
+      "gatewayPath": "/prod/v2/sha-service/e/account/information",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/account/fee-revenue/top/manager-or-staff",
+      "classification": "discovery-hold",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "No approved canonical gateway contract and scoped nonempty fixture"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/account/fee-revenue/top/executive-level",
+      "classification": "discovery-hold",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "No approved canonical gateway contract and scoped nonempty fixture"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/account/detail",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "profile.detail",
+      "gatewayPath": "/prod/v2/sha-service/e/account/detail",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/account/debt/top/manager-or-staff",
+      "classification": "discovery-hold",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "No approved canonical gateway contract and scoped nonempty fixture"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/account/debt/top/executive-level",
+      "classification": "discovery-hold",
+      "baselineOperation": null,
+      "gatewayPath": null,
+      "enabled": false,
+      "reason": "No approved canonical gateway contract and scoped nonempty fixture"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/account/customers-overview",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "customers.overview",
+      "gatewayPath": "/prod/v2/sha-service/e/account/customers-overview",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/account/authorized",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "profile.authorized",
+      "gatewayPath": "/prod/v2/sha-service/e/account/authorized",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    },
+    {
+      "method": "GET",
+      "sourcePath": "/i/v1/account/account-no-and-rem",
+      "classification": "baseline-candidate-still-disabled",
+      "baselineOperation": "accounts.tree",
+      "gatewayPath": "/prod/v2/sha-service/e/account/account-no-and-rem",
+      "enabled": false,
+      "reason": "Canonical gateway mapping has separate historical baseline evidence"
+    }
+  ]
+}

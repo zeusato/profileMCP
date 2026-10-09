@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-10-09T11:17:06.542Z",
+  "scope": "document-consistency-only; not runtime/API acceptance",
+  "status": "passed",
+  "assertions": 749,
+  "files": 80,
+  "readRoutes": 40,
+  "businessTools": 17,
+  "metadataTools": 2,
+  "plannedOperationTestIds": 200,
+  "sourceHashChecks": "not-requested",
+  "failures": []
+}

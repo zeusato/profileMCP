@@ -1,0 +1,78 @@
+{
+  "sourceRootAtReview": "D:/Quyetnm/Dev/SHA PC",
+  "commit": "8363a1a1bec8b0d11251ff6f6830d6ea4f747306",
+  "reviewedOn": "2026-10-09",
+  "copiedSourceFiles": false,
+  "files": [
+    {
+      "path": "docs/api/api-documentation.md",
+      "bytes": 84172,
+      "sha256": "49436b659930419451cb6c7e0db5608c96f6932c431fd33e0bc8f6e03a06a6a9"
+    },
+    {
+      "path": "docs/api/api-docs.json",
+      "bytes": 103457,
+      "sha256": "9d5d3f6416e5eda44e4dd61be8324ea47d837097a6f7eb42d3b2d477f7d99aab"
+    },
+    {
+      "path": "docs/api/api-transformation-guide.md",
+      "bytes": 9345,
+      "sha256": "bfb61dad5a69731b03b75167c8d0b39163b4ff3f25038dbf28e2c7ae9d0f6a5a"
+    },
+    {
+      "path": "docs/api/sha-order-api-gotchas.md",
+      "bytes": 2046,
+      "sha256": "544c5afc9717fd5c6b07f61fe668a1e2c7c4c573b70dd0c07ac5c0513a435ca1"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "bytes": 22694,
+      "sha256": "7d96014c6c0a18d3b4703c9b7195132ca37e992d782bfb3cb64d7d3c9c6f6fd6"
+    },
+    {
+      "path": "docs/modules/dashboard-management-module.md",
+      "bytes": 24567,
+      "sha256": "2d41a9388222c600efbd5b5cbfda1b3f225cd644e4620f9cd076fa3728328672"
+    },
+    {
+      "path": "docs/modules/dashboard-cashflow-newacct-module.md",
+      "bytes": 14462,
+      "sha256": "0b9d981e46d20c82af88643ce3cca2145a89817712f9ed16bdd7d42762cc6f0c"
+    },
+    {
+      "path": "docs/modules/dashboard-kpi-performance-module.md",
+      "bytes": 13079,
+      "sha256": "ee895d237f27f8948f6ae1c4e9f739b8091f86e29117a80e5751ec32d075faed"
+    },
+    {
+      "path": "src/preload/session_identity.js",
+      "bytes": 13158,
+      "sha256": "de047eef039b0f918ed9ef60adfac5cba2af3fdc5b8f2b4e9d479041ed4d76cd"
+    },
+    {
+      "path": "src/preload/trade_pro_agent.js",
+      "bytes": 54688,
+      "sha256": "6e87e553c4dc49a6a831dd8163f5a74bdd6d0829071b163d7b247010bf387d34"
+    },
+    {
+      "path": "src/preload/report.js",
+      "bytes": 40361,
+      "sha256": "2f9c2a16a0d89920cf85169d0525957179e5f4dfb8520e2a2496854ce348d5de"
+    },
+    {
+      "path": "src/preload/revenue_sync_agent.js",
+      "bytes": 75254,
+      "sha256": "4b89afb4394dbae9744a5fdb606d5c58cce326272bd853cbf4face59a5a61561"
+    },
+    {
+      "path": "src/main/modules/auth_session.js",
+      "bytes": 2443,
+      "sha256": "522b3b1e27884908f5993e17ac62c74b2c94a265553756d51a90ad944cba852e"
+    },
+    {
+      "path": "src/main/modules/account_ipc.js",
+      "bytes": 14158,
+      "sha256": "24fe5092825fbd0f2dc74763b5cc1ab5504b85a1cc9f60f66076d04bada302bd"
+    }
+  ]
+}

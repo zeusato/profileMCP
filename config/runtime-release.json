@@ -44,7 +44,7 @@
   "authContract": "verified-2026-10-10: local trace and production Claude connect (login-v2, generate-matrix, verify-sotp, get-user-login, account-no-and-rem)",
   "reason": "Released per Dai ca decision 2026-10-10: live-shape fieldMaps (config/live-shapes-20261010.json), source values with unit status unverified, customer PII behind profile.pii; table tests REQ/RAW/DTO/SCOPE/PAGE. Disabled: profile.authorized (null live), assets.loanDetail (GET 405), orderSummary.top ([] live). Added 2026-10-10: orders.unconfirmed, buyingPower.preview, orderSummary.transactions, knowledge.departments, knowledge.documents.",
   "clientAcceptance": {
-    "gpt": "unverified",
+    "gpt": "2026-10-10: ChatGPT Work connection, two metadata calls and accounts.tree with profile.pii verified (8/8 full account numbers/customer names); OIDC disabled; remaining business/PII/expiry/reconnect/disconnect unverified",
     "claude": "39/39 enabled operations called live via Claude connector 2026-10-10, including SHA login/OTP/consent and KMS text output; live expiry/disconnect and other roles remain unverified"
   }
 }

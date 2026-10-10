@@ -79,7 +79,7 @@ Nhật ký: 09–10/10/2026. Đây là sổ kết quả thực; test IDs trong T
 
 ## Chưa thực hiện / chưa đạt
 
-ChatGPT acceptance, expiry/reconnect/disconnect live đầy đủ, đối chiếu đơn vị với màn hình SHA, G1/G2/G3/G4 toàn bộ tiêu chí, refresh SHA (disabled), account switch browser CSP, complete cross-role/cross-user application matrix, 20-user load, cleanup scheduler, rollback/revoke drill và toàn bộ dev-audit remediation. Hiện 39/42 business operations bật; 3 operation tắt giữ PLANNED. market.candles có test RAW parser; 4 ID còn lại chưa có suite riêng tương ứng. Các test bảng là coverage synthetic, không chứng minh toàn bộ edge case của 210 ID thiết kế.
+ChatGPT acceptance cho nghiệp vụ/PII/vòng đời phiên (kết nối và metadata đã đạt, xem checkpoint bên dưới), expiry/reconnect/disconnect live đầy đủ, đối chiếu đơn vị với màn hình SHA, G1/G2/G3/G4 toàn bộ tiêu chí, refresh SHA (disabled), account switch browser CSP, complete cross-role/cross-user application matrix, 20-user load, cleanup scheduler, rollback/revoke drill và toàn bộ dev-audit remediation. Hiện 39/42 business operations bật; 3 operation tắt giữ PLANNED. market.candles có test RAW parser; 4 ID còn lại chưa có suite riêng tương ứng. Các test bảng là coverage synthetic, không chứng minh toàn bộ edge case của 210 ID thiết kế.
 
 ## 10/10/2026 — hoàn tất tài liệu và kiểm lại checkpoint
 
@@ -89,6 +89,23 @@ ChatGPT acceptance, expiry/reconnect/disconnect live đầy đủ, đối chiế
 - `vercel inspect https://profile-mcp.vercel.app --json` (chỉ đọc metadata): deployment dpl_EzduSGpCgutYVxdMe32Wzhppa9wr, READY, target production, tạo lúc 21:36 ngày 10/10/2026. Metadata lấy được không trả commit SHA của artifact; 77c6bf0 là checkpoint code local. Không deploy trong lần hoàn tất tài liệu này.
 - `npm run check:docs` passed; report máy tại config/document-validation.json. `sourceHashChecks: not-requested` trong report chỉ nói chưa chạy tùy chọn `--verify-source` cho manifest lịch sử 09/10; 4 file SHA_PC bổ sung được kiểm riêng bằng Get-FileHash như trên.
 - Pre-commit: `git diff --cached --check` sạch; `scripts/check-staged-secrets.mjs` passed trên 19 file staged (private path/JWT/private key/token patterns; không có local private material để so sánh). Quét thêm mẫu số tài khoản SHA, email và số điện thoại/giấy tờ không có findings sau khi đối chiếu UUID requestId synthetic trong MCP-CONTRACT; không in giá trị khớp.
+
+## 10/10/2026 — ChatGPT Work: kết nối và metadata
+
+- GPT-CONNECT-01 manual: trên ChatGPT web → Plugins → Add custom MCP server, URL production /api/mcp, OAuth/DCR, 8 scope đọc, bỏ profile.pii, Base scopes trống và bỏ OIDC enabled. Discovery tự điền đúng auth/token/reg/issuer/resource. Đã tạo SHA MCP, Continue to SHA MCP mở trang login có tên ChatGPT; Đại ca tự nhập login/OTP/cấp quyền. Sau callback giao diện báo "Primary is now connected".
+- Cấu hình OIDC mặc định cần chú ý: metadata oidc-provider quảng bá openid; scope gate ở src/interactions.ts không chấp nhận scope này. ChatGPT UI mặc định bật OIDC. Đã kiểm luồng thành công khi tắt OIDC ở client; không đổi Authentication khỏi OAuth, không sửa/deploy runtime. Không thử một lần đăng nhập thất bại với OIDC bật; nguy cơ invalid_scope được suy từ metadata + code + hành vi scope trong tài liệu OpenAI.
+- GPT-META-01 manual: mở Work, @SHA MCP, chỉ yêu cầu list_profile_capabilities và get_profile_data_dictionary. Hoạt động hiển thị hai lượt SHA MCP (Listing Enabled Profile Capabilities; Retrieving Current Identity Profile Data), phản hồi 39 operation bật, 3 tắt, dictionary identity.current có 9 trường. Không gọi nghiệp vụ khách hàng/tài sản/lệnh trong phép thử này. Không lưu token, mật khẩu, OTP hoặc dữ liệu khách hàng.
+- Probe public chỉ đọc: AS metadata và resource metadata HTTP 200; GET /api/mcp không token trả 401 kèm WWW-Authenticate trỏ đúng resource metadata. AS có issuer chính xác, authorization_response_iss_parameter_supported true và PKCE S256.
+- Còn chưa thử qua GPT: 39 operation nghiệp vụ, PII, expiry/reconnect/disconnect và các vai trò khác. Không tính 2 ca manual vào 60 synthetic tests. USER-GUIDE và bản PDF được cập nhật theo UI thật; bổ sung nguyên nhân/điều kiện bật 3 operation đang tắt.
+- Nguồn OpenAI đối chiếu: https://developers.openai.com/plugins/quickstart ; https://developers.openai.com/plugins/build/auth ; https://developers.openai.com/plugins/deploy/connect-chatgpt . Bằng chứng UI local: output/pdf/chatgpt-sha-verified.png (chỉ phép thử metadata).
+
+## 10/10/2026 — sửa cấu hình GPT thiếu profile.pii
+
+- Đại ca yêu cầu hiện đủ tên khách và số tài khoản. Kiểm live kết nối thử cũ: accounts.tree trả displayNumber che, không có accountNumber/customerName; brokerName thuộc cây môi giới, không phải tên khách. Đọc src/interactions.ts xác nhận checkbox consent chỉ được render khi client đã xin profile.pii; bỏ scope ở ChatGPT làm người dùng không thấy checkbox.
+- Tạo kết nối "SHA MCP đầy đủ" với 9 scope (8 đọc + profile.pii), OAuth/DCR, OIDC tắt. Đại ca tự login/OTP và xác nhận đã tick ô PII/cấp quyền. ChatGPT báo connected.
+- GPT-PII-01 manual: @SHA MCP đầy đủ, gọi list_managed_accounts operation accounts.tree. Giao diện hoạt động hiển thị Listing Managed Account Tree; bảng trả 8/8 dòng có accountNumber/customerName, brokerName nối riêng qua brokerRef, không thiếu trường. Không lưu số tài khoản hoặc tên khách vào repo/ảnh bằng chứng. Không thay đổi code/runtime/deploy, chỉ cấu hình client và hướng dẫn.
+- Kết nối cũ còn thiếu scope không thể tự hiện PII; chọn kết nối đầy đủ khi hỏi. PII ở các operation khác và vòng đời phiên vẫn chưa nghiệm thu qua GPT.
+- Đã đổi tên app cũ thành "SHA MCP cũ - che thông tin" để tránh chọn nhầm. Trang /connections xác nhận phiên mới có profile.pii; bằng chứng local output/pdf/chatgpt-full-scope-verified.png không chứa dữ liệu khách hàng.
 
 ## Giới hạn của kiểm tra tài liệu
 

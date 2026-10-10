@@ -7,13 +7,13 @@ Profile MCP cho trợ lý AI **tra cứu** dữ liệu SHA trong đúng quyền 
 | Địa chỉ MCP | `https://profile-mcp.vercel.app/api/mcp` |
 | Đăng nhập | ID SHA + mật khẩu + OTP matrix, nhập trên trang của Profile MCP (không nhập vào khung chat) |
 | Thời hạn phiên | Khoảng 8 giờ (theo phiên SHA); hết hạn thì kết nối lại |
-| Trạng thái | Claude: đã nghiệm thu 10/10/2026. ChatGPT: **chưa nghiệm thu** (cấu hình sẵn, xem mục 3) |
+| Trạng thái | Claude: đã nghiệm thu 10/10/2026. ChatGPT: **đã gọi 2 tool metadata và danh sách 8/8 khách có đủ tên/số tài khoản**; giới hạn kiểm chứng ở mục 3 |
 
 ## 1. Điều kiện
 
 - Tài khoản SHA của chính mình và thẻ matrix OTP.
 - ID SHA đã được quản trị thêm vào **allowlist** của Profile MCP. Chưa có thì bước đăng nhập báo `FORBIDDEN_SCOPE` — liên hệ quản trị.
-- Claude: gói có hỗ trợ custom connector (claude.ai web/desktop/mobile; Claude Code dùng chung connector của claude.ai). ChatGPT: gói có Developer mode cho connector MCP.
+- Claude: gói có hỗ trợ custom connector (claude.ai web/desktop/mobile; Claude Code dùng chung connector của claude.ai). ChatGPT: tài khoản/workspace có quyền thêm custom MCP server trong Plugins; nếu thiếu menu, liên hệ quản trị workspace.
 
 ## 2. Kết nối với Claude
 
@@ -26,14 +26,35 @@ Profile MCP cho trợ lý AI **tra cứu** dữ liệu SHA trong đúng quyền 
 
 Khi mô tả/tool thay đổi sau một lần cập nhật hệ thống, vào Connectors → SHA MCP → **Disconnect** rồi **Connect** lại để nạp danh sách tool mới. Muốn đổi lựa chọn `profile.pii` cũng làm như vậy.
 
-## 3. Kết nối với ChatGPT (chưa nghiệm thu)
+## 3. Kết nối với ChatGPT
 
-Hệ thống đã cho phép callback của ChatGPT (`https://chatgpt.com/connector_platform_oauth_redirect`) và đăng ký client động (DCR). Menu ChatGPT thay đổi theo thời gian; các bước dưới là hướng dẫn tham khảo, sẽ chốt lại sau khi nghiệm thu.
+Menu dưới đây đã đối chiếu trực tiếp trên ChatGPT web ngày 10/10/2026 và với tài liệu OpenAI. Hệ thống dùng OAuth với đăng ký client động (DCR), callback `https://chatgpt.com/connector_platform_oauth_redirect`.
 
-1. Bật **Developer mode**: Settings → Apps (hoặc Connectors) → Advanced settings → Developer mode. Workspace Business/Enterprise có thể cần admin bật trước.
-2. **Create** connector: tên `SHA MCP`, mô tả ngắn ("Tra cứu dữ liệu SHA trong quyền môi giới, chỉ đọc"), MCP server URL `https://profile-mcp.vercel.app/api/mcp`, Authentication **OAuth**. Xác nhận cảnh báo về MCP chưa xác minh nếu có.
-3. ChatGPT mở trang đăng nhập Profile MCP: làm như bước 3–5 phần Claude (ID/mật khẩu → OTP → cấp quyền, tick `profile.pii` nếu cần).
-4. Trong cuộc trò chuyện mới, chọn connector SHA MCP trong menu công cụ rồi đặt câu hỏi. Nếu ChatGPT hiện yêu cầu xác nhận gọi tool, kiểm tra tên chức năng và phạm vi truy vấn trước khi xác nhận. Tất cả tool của Profile MCP đều chỉ đọc.
+1. Vào **Plugins → Add → Add custom MCP server**.
+2. Nhập tên `SHA MCP`, mô tả "Tra cứu dữ liệu SHA trong quyền môi giới, chỉ đọc", **Server URL** `https://profile-mcp.vercel.app/api/mcp`, **Authentication: OAuth**.
+3. Mở **Advanced OAuth settings**, chờ discovery tải xong và cấu hình theo bảng bên dưới. Không tự điền client ID/secret.
+4. Đọc cảnh báo custom MCP, chọn **I understand and want to continue** → **Create as a plugin**. Ở hộp **Connect SHA MCP**, chọn **Continue to SHA MCP**. Nếu tạo xong nhưng chưa cài, vào **Personal** và cài plugin bằng nút dấu cộng.
+5. Trang Profile MCP phải hiện **Kết nối tài khoản SHA** và tên ứng dụng **ChatGPT**. Tự nhập ID/mật khẩu → OTP → cấp quyền như bước 3-5 phần Claude; không gửi thông tin đăng nhập vào chat.
+6. Sau khi được chuyển lại ChatGPT, mở cuộc trò chuyện **Work** mới và dùng `@` chọn **SHA MCP**. Yêu cầu kiểm tra: "Dùng SHA MCP gọi list_profile_capabilities, chỉ báo số operation bật và các chức năng chưa bật, không tra dữ liệu khách hàng".
+7. Chỉ coi kết nối thành công khi có kết quả tool thực tế. Nếu ChatGPT yêu cầu xác nhận gọi tool, kiểm tra chức năng và phạm vi trước khi xác nhận. Sau cập nhật tool, dùng **Refresh** ở chi tiết kết nối rồi mở cuộc trò chuyện mới.
+
+| Advanced OAuth settings | Giá trị cần dùng |
+|---|---|
+| Registration method | Dynamic Client Registration (DCR) |
+| Default scopes | profile.read, accounts.read, assets.read, orders.read, credit.read, reports.read, research.read, market.read |
+| profile.pii | **Giữ chọn** để dùng đầy đủ tên khách và số tài khoản theo nhu cầu của Đại ca; ở trang cấp quyền SHA phải tick thêm ô cho phép xem thông tin này |
+| Base scopes | Để trống |
+| OIDC enabled | **Bỏ chọn**; vẫn giữ Authentication là OAuth |
+| Auth URL / Token URL | `https://profile-mcp.vercel.app/auth` / `https://profile-mcp.vercel.app/token` |
+| Registration URL | `https://profile-mcp.vercel.app/reg` |
+| Authorization server base | `https://profile-mcp.vercel.app` |
+| Resource | `https://profile-mcp.vercel.app/api/mcp` |
+
+**Vì sao phải bỏ OIDC enabled?** Discovery của thư viện OAuth hiện công bố thêm `openid`, trong khi ứng dụng Profile MCP chặn scope này. ChatGPT tự bật OIDC khi tạo kết nối; giữ mặc định có thể dẫn đến `invalid_scope`. Cấu hình bỏ OIDC đã được thử và mở được trang đăng nhập SHA. Không đổi Authentication sang No authentication.
+
+**Tên khách hàng và số tài khoản đầy đủ:** phải xin `profile.pii` ở ChatGPT trước khi đăng nhập SHA. Nếu bỏ scope này ở ChatGPT, trang cấp quyền SHA sẽ không hiện checkbox cho phép xem tên/số tài khoản. Kết nối thiếu scope phải được cấu hình lại để xin scope rồi đăng nhập/cấp quyền lại; chỉ hỏi trợ lý "bỏ che" không thể đổi quyền của token. Khi lập bảng khách hàng, dùng `customerName` cho tên khách và `accountNumber` cho số tài khoản đầy đủ; `brokerName` là tên môi giới quản lý, không thay thế tên khách.
+
+**Mức kiểm chứng ngày 10/10/2026:** đã qua discovery, DCR, người dùng tự login/OTP/consent và callback về ChatGPT. Hai tool metadata trả 39 operation bật, 3 tắt và 9 trường từ điển `identity.current`. Kết nối **SHA MCP đầy đủ** xin profile.pii và được người dùng đồng ý; GPT gọi `accounts.tree`, trả 8/8 khách có đủ `accountNumber` và `customerName`, nối tên môi giới riêng bằng `brokerRef`. Khi dùng chọn **SHA MCP đầy đủ**; kết nối thử cũ thiếu scope vẫn che thông tin. Chưa thử toàn bộ 39 operation, PII ở chức năng khác hoặc hết hạn/kết nối lại/ngắt kết nối.
 
 Nếu ChatGPT báo lỗi đăng ký/đăng nhập, ghi lại thông báo và thời điểm để kiểm log (xem mục 7).
 
@@ -83,6 +104,7 @@ Trợ lý tự chọn tool; câu hỏi càng cụ thể (tên/số tài khoản,
 | Hiện tượng / mã | Ý nghĩa | Cách xử lý |
 |---|---|---|
 | Không vào được trang đăng nhập, client báo lỗi đăng ký | DCR/OAuth của client lỗi | Thử lại; báo quản trị kèm thời điểm và mã tham chiếu (ví dụ `ofid_…` của Claude) |
+| ChatGPT báo `invalid_scope` | Yêu cầu có `openid` hoặc scope ngoài danh sách | Trong Advanced OAuth settings bỏ OIDC enabled, để Base scopes trống; giữ OAuth và các scope đọc trong mục 3 |
 | `FORBIDDEN_SCOPE` khi đăng nhập | ID chưa có trong allowlist, hoặc yêu cầu ngoài quyền | Liên hệ quản trị; với tra cứu: kiểm tra khách/tài khoản có thuộc quyền mình không |
 | `UPSTREAM_AUTH_FAILED` | SHA từ chối (sai mật khẩu/OTP, hoặc phiên SHA hết hạn) | Đăng nhập lại; tránh thử sai nhiều lần để không khóa tài khoản SHA |
 | `REAUTH_REQUIRED` / 401 | Phiên MCP/SHA hết hạn hoặc đã ngắt | Kết nối lại connector |
@@ -94,6 +116,22 @@ Trợ lý tự chọn tool; câu hỏi càng cụ thể (tên/số tài khoản,
 
 ## 8. Giới hạn hiện tại
 
-- Chưa bật: kiểm tra ủy quyền tài khoản, tổng hợp lệnh theo môi giới (SHA chưa trả dữ liệu mẫu), chi tiết vay theo `GET loan-info` (dùng "khoản vay đang mở" thay thế).
-- ChatGPT chưa nghiệm thu; Claude Code chỉ dùng được qua connector claude.ai và đôi khi cần kết nối lại để thấy đủ tool.
+- Ba chức năng chưa bật ở server được giải thích trong bảng dưới; đây không phải giới hạn do GPT tự đặt.
+- ChatGPT đã gọi 2 tool metadata và accounts.tree có đủ tên/số tài khoản; chưa kiểm toàn bộ nghiệp vụ, PII ở chức năng khác hoặc vòng đời phiên qua GPT. Claude Code chỉ dùng được qua connector claude.ai và đôi khi cần kết nối lại để thấy đủ tool.
 - Đơn vị nhiều chỉ tiêu còn ở mức "quan sát", chưa đối chiếu màn hình SHA. Kết quả là ảnh chụp tại thời điểm hỏi, không cập nhật thời gian thực.
+
+| Chức năng tắt | Bằng chứng và lý do | Điều kiện để bật |
+|---|---|---|
+| profile.authorized - thông tin ủy quyền | 8 tài khoản đã thử đều trả null; chưa có mẫu dữ liệu không rỗng để xác minh | Thử tài khoản có ủy quyền thật, xác minh cấu trúc và quyền truy cập |
+| orderSummary.top - tổng hợp lệnh theo môi giới | Lần thử trả mảng rỗng []; chưa xác minh cấu trúc từng dòng | Thử kỳ có giao dịch phù hợp, kiểm tham số và mẫu dữ liệu không rỗng |
+| assets.loanDetail - chi tiết khoản vay | GET loan-info trả HTTP 405 (method không được chấp nhận) | Xác minh đúng method/đường dẫn của API đọc; hiện dùng loans.current để xem khoản vay đang mở |
+
+Kết quả null/rỗng không tự chứng minh API hỏng. Quản trị cần lấy mẫu hợp lệ, hoàn thiện mapping và kiểm thử, cập nhật danh sách operation bật, deploy rồi gọi thử qua connector. Người dùng không thể bật ba chức năng này bằng một tùy chọn trong ChatGPT.
+
+## Nguồn và phiên bản
+
+Bản cập nhật 10/10/2026. Bản PDF được xuất từ tài liệu này. Giao diện và quyền tạo plugin có thể khác theo tài khoản/workspace.
+
+- [OpenAI: Plugins quickstart](https://developers.openai.com/plugins/quickstart).
+- [OpenAI: Authentication](https://developers.openai.com/plugins/build/auth).
+- [OpenAI: Connect to ChatGPT](https://developers.openai.com/plugins/deploy/connect-chatgpt).

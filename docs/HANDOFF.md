@@ -8,9 +8,10 @@ Luôn xưng em, gọi người dùng là Đại ca. Không cần lịch sử cha
 - **Đăng nhập SHA thật** (ID/mật khẩu → matrix OTP → identity → cây tài khoản) chạy từ Vercel syd1; phiên SHA ~8 giờ, refresh SHA không có (refresh_token null) nên hết hạn thì kết nối lại.
 - **39/42 operation bật**, 18 tool nghiệp vụ + 2 metadata. Cả 39 đã gọi live qua Claude connector ngày 10/10/2026 với tài khoản môi giới của Đại ca (vai trò môi giới quản lý nhóm). Tắt 3: profile.authorized (null ×8), orderSummary.top ([]), assets.loanDetail (GET 405; dùng loans.current).
 - **PII** khách hàng (tên, số TK đầy đủ, giấy tờ, ngày sinh, liên hệ, địa chỉ…) chỉ trả khi connection có scope profile.pii (ô chọn trên trang consent, mặc định không tick). Tên nhân viên môi giới không là PII khách hàng.
+- **Nhu cầu Đại ca chốt 10/10:** cần tên khách và số tài khoản đầy đủ, không dùng kết nối che thông tin. Kết nối GPT thử đầu đã bỏ profile.pii ở client nên consent SHA không hiện checkbox. Đã tạo "SHA MCP đầy đủ" xin profile.pii; Đại ca tự login/OTP/tick consent. GPT accounts.tree trả 8/8 dòng có accountNumber/customerName và nối brokerName riêng bằng brokerRef. Không lưu giá trị khách hàng vào repo. Không nhầm brokerName (môi giới) với customerName (khách hàng).
 - **Số liệu**: giá trị nguồn dạng chuỗi decimal chính xác, meta.units status unverified; đơn vị quan sát ghi trong fieldMap (lịch sử lệnh nghìn VND, list-confirm/market/portfolio VND). Khoảng ngày không được vắt qua 22–24/05/2026 (đổi core) → PERIOD_SPANS_DATA_GAP.
 - **Tests**: 60 synthetic pass (bảng REQ/RAW/DTO/SCOPE/PAGE cho 37 operation projection, accounts.tree riêng, RAW-market.candles, OAuth/SDK E2E, security, regressions). Kết quả document validator tại [document-validation.json](../config/document-validation.json); coverage thực tại [TEST-MAP](api/TEST-MAP.md).
-- **GPT chưa nghiệm thu** (callback ChatGPT đã allowlist, DCR chạy); hướng dẫn ở [USER-GUIDE](USER-GUIDE.md) ghi rõ trạng thái này.
+- **GPT đã kiểm ngày 10/10/2026:** tạo plugin → DCR → người dùng login/OTP/consent → callback → gọi 2 tool metadata trong Work (39 bật/3 tắt; identity.current 9 trường), sau đó accounts.tree có PII trên kết nối đầy đủ (8/8 dòng). Phải bỏ OIDC enabled trong Advanced OAuth settings để không yêu cầu openid; vẫn giữ OAuth. Chưa kiểm toàn bộ nghiệp vụ/PII ở operation khác/vòng đời phiên. Xem [USER-GUIDE](USER-GUIDE.md) và [VALIDATION](VALIDATION.md).
 
 ## Cloud và tài khoản
 
@@ -35,7 +36,7 @@ Luôn xưng em, gọi người dùng là Đại ca. Không cần lịch sử cha
 
 ## Việc còn lại
 
-1. **GPT**: kết nối theo USER-GUIDE, nghiệm thu DCR → login/OTP → consent → tools → expiry/reconnect → disconnect; cập nhật USER-GUIDE/VALIDATION theo menu thật.
+1. **GPT**: đã qua DCR/login/OTP/consent/callback, 2 metadata tool và accounts.tree có PII; còn các nghiệp vụ/PII khác, expiry/reconnect/disconnect. USER-GUIDE đã cập nhật theo menu Plugins thực tế; bản PDF ở output/pdf. Metadata thư viện vẫn quảng bá openid trong khi ứng dụng từ chối; hiện cấu hình client tắt OIDC, chưa sửa/deploy runtime.
 2. **Thêm thành viên allowlist**: chạy scripts/add-member.ts trên máy có .runtime (hoặc bổ sung quy trình admin không cần file local); thử vai trò môi giới thường và người ngoài allowlist.
 3. **Đơn vị**: đối chiếu số liệu với màn hình SHA để chuyển các unit từ "observed" sang verified (đặc biệt orders.history kVND, tỷ lệ/percent, rtt).
 4. **3 operation tắt**: bật khi có mẫu không rỗng (khách có ủy quyền; ngày có order/summary), probe lại bằng --extra.

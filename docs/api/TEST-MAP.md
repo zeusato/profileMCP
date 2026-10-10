@@ -1,5 +1,7 @@
 # Ma trận kiểm thử operation
 
+Kiểm thủ công GPT ngày 10/10/2026: `GPT-CONNECT-01` (DCR → login/OTP/consent → callback), `GPT-META-01` (list_profile_capabilities, get_profile_data_dictionary cho identity.current) và `GPT-PII-01` (accounts.tree qua kết nối xin profile.pii, người dùng tick consent; 8/8 accountNumber/customerName, brokerName riêng) đạt trên ChatGPT Work; OIDC tắt ở client. Đây là 3 ca manual, không cộng vào 60 synthetic tests, không đại diện toàn bộ nghiệp vụ/PII/vòng đời phiên. Chi tiết trong [VALIDATION](../VALIDATION.md).
+
 Các ID bên dưới là ma trận thiết kế gồm 5 nhóm cho mỗi trong 42 operation (210 ID); bảng ID không tự chứng minh mọi assertion đã passed. Xem [TEST-PLAN](../TEST-PLAN.md) để biết assertions bắt buộc và [VALIDATION](../VALIDATION.md) để biết kết quả chạy thực.
 
 Release 10/10/2026: 39/42 operation bật. accounts.tree có 5 test riêng (tests/accounts-tree.test.ts); 37 operation dùng projection fieldMap có test bảng REQ/RAW/DTO/SCOPE/PAGE trong tests/released-operations.test.ts (fixture synthetic sinh từ fieldMap, theo shape live hoặc doc-only khi mẫu live rỗng). market.candles có RAW-market.candles trong contracts.test.ts; 4 ID còn lại của candles vẫn là mục tiêu, chưa có suite riêng tương ứng. tests/contracts.test.ts còn có assertions đại diện REQ-A/B, orders/date và DTO/coverage; tests/security.test.ts và tests/oauth.test.ts kiểm platform chung. 3 operation tắt (profile.authorized, assets.loanDetail, orderSummary.top) giữ PLANNED. Kết quả chạy và giới hạn coverage xem [VALIDATION](../VALIDATION.md).

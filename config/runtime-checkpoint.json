@@ -19,7 +19,7 @@
   "enabledBusinessOperations": 39,
   "liveShaLoginVerified": "production-claude-connect-2026-10-10",
   "claudeAcceptance": "39/39 enabled operations called live via connector 2026-10-10",
-  "gptAcceptance": "not-tested",
+  "gptAcceptance": "2026-10-10: ChatGPT Work DCR/login/OTP/consent/callback, two metadata calls, and accounts.tree with profile.pii verified (8/8 rows have accountNumber/customerName, broker names joined separately); OIDC disabled in client; remaining business/PII/session lifecycle not tested",
   "latestLocalChangesDeployed": true,
   "handoff": "docs/HANDOFF.md",
   "dcrRootCause": "AS scopes_supported lacked resource scopes sent in DCR scope (reproduced on production 2026-10-10)",

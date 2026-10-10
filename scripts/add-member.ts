@@ -7,7 +7,8 @@ import { Vault } from '../src/crypto.js';
 const env = JSON.parse(await readFile('.runtime/env.production.json', 'utf8'));
 const vault = new Vault(JSON.parse(env.SESSION_ENCRYPTION_KEYRING), env.TOKEN_HMAC_KEY);
 const reader = createInterface({ input: stdin, output: stdout });
-const username = (await reader.question('Dai ca nhap ID SHA duoc phep test (khong nhap mat khau/OTP): ')).trim(); reader.close();
+// Allowlist subjects are lowercase (SHA IDs are case-insensitive; see Store.member).
+const username = (await reader.question('Dai ca nhap ID SHA duoc phep test (khong nhap mat khau/OTP): ')).trim().toLowerCase(); reader.close();
 if (!/^[A-Za-z0-9_.-]{1,100}$/.test(username)) throw new Error('ID format invalid');
 const id = randomUUID(); const cipher = vault.seal({ onboarding: 'allowlist-pending-authoritative-login' }, `user:${id}:${env.AUTH_ALLOWED_TEAM_ID}`);
 const sql = `BEGIN;

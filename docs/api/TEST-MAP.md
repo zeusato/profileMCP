@@ -2,7 +2,7 @@
 
 Tất cả test bên dưới có trạng thái **PLANNED**, không phải kết quả passed. Mỗi test ID phải trở thành test thực trong tests/ trước khi operation được bật. Xem [TEST-PLAN](../TEST-PLAN.md) để biết assertions bắt buộc.
 
-Checkpoint runtime: tests/contracts.test.ts có assertions đại diện REQ-A/B, orders/date và DTO/coverage; tests/security.test.ts và tests/oauth.test.ts kiểm platform chung. Chưa đủ 5 suites cho từng operation dưới đây; vì vậy giữ PLANNED và 0 enabled. Coverage thực xem [VALIDATION](../VALIDATION.md).
+Checkpoint runtime: tests/contracts.test.ts có assertions đại diện REQ-A/B, orders/date và DTO/coverage; tests/security.test.ts và tests/oauth.test.ts kiểm platform chung. Chưa đủ 5 suites cho từng operation dưới đây; vì vậy giữ PLANNED, **trừ accounts.tree**: 5 suite có thật trong tests/accounts-tree.test.ts và passed 10/10/2026, operation đã release. Coverage thực xem [VALIDATION](../VALIDATION.md).
 
 | Operation | Request | Raw/envelope | DTO/unit | Scope | Pagination/coverage |
 |---|---|---|---|---|---|

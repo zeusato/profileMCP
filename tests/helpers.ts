@@ -1,10 +1,14 @@
 import { PGlite } from '@electric-sql/pglite';
+import assert from 'node:assert/strict';
+import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { generateKeyPair, exportJWK } from 'jose';
 import type { Settings } from '../src/config.js';
 import { Store } from '../src/store.js';
 import { Vault } from '../src/crypto.js';
+import { createApp } from '../src/app.js';
+import { ShaTransport } from '../src/sha/transport.js';
 export async function testStore() {
   const db = new PGlite();
   await db.exec('CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role;');
@@ -23,10 +27,58 @@ export async function testStore() {
   };
   const store = new Store(rpc, vault, settings.teamId); const userId = randomUUID();
   await db.query('INSERT INTO profile_mcp.teams(id,name) VALUES($1,$2)', [settings.teamId, 'Synthetic team']);
-  await db.query('INSERT INTO profile_mcp.users(id,sha_subject_digest,identity_ciphertext,encryption_key_id) VALUES($1,decode($2,\'hex\'),$3,$4)', [userId, vault.digest('sha:preferredUsername:SYNTHETIC'), Buffer.from('synthetic'), 'test']);
+  await db.query('INSERT INTO profile_mcp.users(id,sha_subject_digest,identity_ciphertext,encryption_key_id) VALUES($1,decode($2,\'hex\'),$3,$4)', [userId, vault.digest('sha:preferredUsername:synthetic'), Buffer.from('synthetic'), 'test']);
   await db.query('INSERT INTO profile_mcp.memberships(team_id,user_id,role) VALUES($1,$2,\'member\')', [settings.teamId, userId]);
   return { db, settings, store, vault, userId };
 }
 export const syntheticIdentity = { preferredUsername: 'SYNTHETIC', brokerCodes: ['B001'] };
 export const syntheticEntitlements = { accounts: [{ accountNumber: 'A001', brokerCode: 'B001' }, { accountNumber: 'A002', brokerCode: 'B001' }], brokers: [{ brokerCode: 'B001', children: [] }], subaccounts: [{ accountNo: 'A001', subId: 'INTERNAL001', subNo: '00' }] };
 export function syntheticLogin() { return { bearer: 'SYNTHETIC_SHA_SECRET_CANARY', expiresAt: Date.now() + 3600000, identity: syntheticIdentity, entitlements: syntheticEntitlements }; }
+// Round-robin HTTP over several app instances sharing one store; fake SHA, browser cookie jar and form helpers.
+export async function oauthHarness(instances = 2) {
+  const { db, store, settings } = await testStore(); let requests = 0; const counters = { verify: 0 };
+  let handlers: ReturnType<typeof createApp>[] = [];
+  const server = createServer((req, res) => handlers[requests++ % handlers.length]!.app(req, res));
+  await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
+  const port = (server.address() as { port: number }).port; settings.origin = settings.issuer = `http://127.0.0.1:${port}`; settings.resource = `${settings.origin}/api/mcp`;
+  const fakeSha = { async begin(username: string) { return { username, sessionKey: 'fake-session-key', trustDevice: false, otpType: 2 as const, transactionId: 'fake-transaction', otpIndex: 'A1', expiresAt: Date.now() + 60000 }; }, async verify() { counters.verify++; return syntheticLogin(); } };
+  // Fake SHA read gateway for released operations (identity + account tree); never reaches the network.
+  const shaJson = (data: unknown) => new Response(JSON.stringify({ code: 200, message: 'ok', data }), { headers: { 'Content-Type': 'application/json' } });
+  const reads = new ShaTransport((async (url: unknown) => String(url).endsWith('get-user-login') ? shaJson([{ preferredUsername: 'SYNTHETIC', brokerCode: 'B001', branchCode: 'BR1' }])
+    : shaJson({ accounts: [{ accountNumber: 'A001', customerName: 'CUSTOMER CANARY', brokerCode: 'B001', remNo: 'B001' }, { accountNumber: 'A002', customerName: null, brokerCode: 'B001', remNo: 'B001' }], brokers: [{ brokerCode: 'B001', brokerName: 'ROOT CANARY', children: [] }] })) as typeof fetch);
+  handlers = Array.from({ length: instances }, () => createApp(settings, store, fakeSha, reads));
+  const protocolErrors: string[] = [];
+  for (const handler of handlers) handler.provider.on('server_error', (_ctx, error) => protocolErrors.push(String(error?.stack ?? error)));
+  const cookies = new Map<string, string>();
+  const request = async (path: string | URL, init: RequestInit = {}) => {
+    const response = await fetch(new URL(path, settings.origin), { ...init, redirect: 'manual', headers: { Cookie: [...cookies].map(([k, v]) => `${k}=${v}`).join('; '), ...init.headers } });
+    for (const header of response.headers.getSetCookie()) { const pair = header.split(';')[0]!; const at = pair.indexOf('='); cookies.set(pair.slice(0, at), pair.slice(at + 1)); }
+    return response;
+  };
+  const post = (path: string, values: Record<string, string>) => request(path, { method: 'POST', headers: { Origin: settings.origin, 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(values) });
+  const csrf = (html: string) => { const value = /name="csrf" value="([^"]+)"/.exec(html)?.[1]; assert.ok(value, html.slice(-800)); return value; };
+  // Browser leg: authorization URL → SHA login → OTP → consent → client callback. Fails if consent is requested twice.
+  const approve = async (authorization: string | URL, redirectOrigin: string, { pii = false } = {}) => {
+    let response = await request(authorization); assert.equal(response.status, 303, `${await response.clone().text()} ${protocolErrors.join('\n')}`);
+    const interaction = response.headers.get('location')!;
+    response = await request(interaction); let html = await response.text(); assert.equal(response.status, 200, html);
+    // Browsers serialize Origin as "null" on form POSTs under no-referrer; the page policy must keep same-origin Origin, and null stays rejected.
+    assert.equal(response.headers.get('referrer-policy'), 'same-origin'); assert.ok(response.headers.get('content-security-policy')!.includes("form-action 'self';"));
+    assert.equal((await request(`${interaction}/login`, { method: 'POST', headers: { Origin: 'null', 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ csrf: csrf(html), username: 'SYNTHETIC', password: 'FAKE_PASSWORD_CANARY' }) })).status, 403);
+    response = await post(`${interaction}/login`, { csrf: csrf(html), username: 'SYNTHETIC', password: 'FAKE_PASSWORD_CANARY' }); assert.equal(response.status, 303, await response.clone().text());
+    response = await request(interaction); html = await response.text();
+    response = await post(`${interaction}/verify`, { csrf: csrf(html), otp: 'FAKE_OTP_CANARY' }); assert.equal(response.status, 303, await response.clone().text());
+    response = await request(interaction); html = await response.text(); assert.ok(html.includes('Cấp quyền đọc'));
+    // Chrome applies form-action to the post-consent redirect chain; only the consent page adds the client's redirect origin.
+    assert.ok(response.headers.get('content-security-policy')!.includes(`form-action 'self' ${redirectOrigin};`), response.headers.get('content-security-policy')!);
+    // profile.pii is opt-in: offered only when requested, never pre-checked.
+    if (new URL(authorization, settings.origin).searchParams.get('scope')?.split(' ').includes('profile.pii')) { assert.ok(html.includes('name="pii"')); assert.ok(!/name="pii"[^>]*checked/.test(html)); } else assert.ok(!html.includes('name="pii"'));
+    response = await post(`${interaction}/consent`, { csrf: csrf(html), decision: 'allow', ...(pii ? { pii: '1' } : {}) });
+    assert.equal(response.status, 303, await response.clone().text());
+    for (let n = 0; n < 5 && response.headers.get('location') && !response.headers.get('location')!.startsWith(redirectOrigin); n++) response = await request(response.headers.get('location')!);
+    assert.ok(response.headers.get('location'), `status=${response.status} body=${await response.clone().text()}`);
+    const callback = new URL(response.headers.get('location')!); assert.equal(callback.origin, redirectOrigin); return callback;
+  };
+  const close = async () => { server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); await db.close(); };
+  return { db, store, settings, handlers, protocolErrors, counters, request, post, csrf, approve, close };
+}

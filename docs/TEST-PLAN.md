@@ -1,6 +1,6 @@
 # Kế hoạch kiểm thử và nghiệm thu
 
-Tài liệu này là mục tiêu coverage, không phải danh sách đã passed. Runtime hiện có 13 tests synthetic; coverage thực và những phần còn thiếu ghi tại [VALIDATION](VALIDATION.md), checkpoint tại [HANDOFF](HANDOFF.md). 200 operation IDs chưa được nghiệm thu toàn bộ.
+Tài liệu này là mục tiêu coverage, không phải danh sách đã passed. Runtime hiện có 14 tests synthetic; coverage thực và những phần còn thiếu ghi tại [VALIDATION](VALIDATION.md), checkpoint tại [HANDOFF](HANDOFF.md). 200 operation IDs chưa được nghiệm thu toàn bộ.
 
 ## Theo từng operation
 
@@ -35,6 +35,7 @@ Fixture synthetic dùng tên/mã giả; không copy payload tài khoản thật.
 | OAUTH-04 | Opaque/JWT MCP token sai issuer/audience/scope/revoked không gọi SHA |
 | OAUTH-05 | Refresh rotation/reuse detection và atomic adapter consume nhiều instance |
 | OAUTH-06 | Consent mới theo client; không token passthrough |
+| OAUTH-07 | DCR theo MCP SDK với PRM scopes, một lần consent; scope ngoài read set bị invalid_scope; diagnostic /reg không chứa giá trị |
 | SEC-01 | Fuzz URL/path/header/query injection không thoát host/method allowlist |
 | SEC-02 | Mọi route mua/bán/sửa/hủy/xác nhận/chuyển tiền/settings bị block ở network dispatcher |
 | SEC-03 | Login POST không xuất hiện trong tools/list; không register raw HTTP tool |
@@ -65,6 +66,7 @@ DB-BASE là cấu hình nền có thể nghiệm thu trước code. DB-01..06 y�
 - RUN-01: Native Node ESM import, build, SDK initialization/list/call trên local và Vercel preview.
 - RUN-02: Cold start/two-instance state continuity, concurrent login/revoke, timeout/abort, body size và response budget.
 - RUN-03: Synthetic load khoảng 20 users bằng mock SHA, đo store connections/latency/quota; không load test upstream thật mặc định.
+- CLIENT-DCR-01: synthetic MCP SDK client (callback Claude) discovery → DCR có scope → authorize → token → tools/list. Không thay CLIENT-CLAUDE-01.
 - CLIENT-CLAUDE-01 và CLIENT-GPT-01: OAuth → SHA login/OTP → consent → query → expiry/reconnect → disconnect; ghi phiên bản/client plan ngày thực thử.
 - OPS-01: Rollback deploy không đổi issuer/resource hoặc phá schema; operation kill switch không cần đổi API nguồn.
 - OPS-02: Secret rotation và incident revoke drill bằng fake credentials.

@@ -79,7 +79,9 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 - Ghi chú: Scope bootstrap. Detect cycles/duplicates; brokerCode is not login username. Tree grants must agree with current identity/upstream entitlements.
 - Gate: **G2-contract**, cộng G0/G1 và test scope chung.
 - Nguồn: docs/api/api-documentation.md:178; hash trong manifest.
-- Test cần viết: `REQ-accounts.tree`, `RAW-accounts.tree`, `DTO-accounts.tree`, `SCOPE-accounts.tree`, `PAGE-accounts.tree`; chưa chạy.
+- **Released 10/10/2026** (config/runtime-release.json). Shape live 10/10/2026: accounts{accountNumber, customerName, brokerCode, remNo}; brokers{brokerCode, brokerName, level, remNo, remMng, children, accounts}. Dùng chính response bootstrap, không gọi lần hai.
+- Output: accounts[] {accountRef, displayNumber ***xxx, brokerRef, brokerCode; accountNumber và customerName chỉ khi có profile.pii}; brokers[] {brokerRef, brokerCode, brokerName chỉ khi có profile.pii, children (brokerRef), directAccounts}. Tối đa 400 tài khoản, quá thì coverage.truncated + PARTIAL_PAGE.
+- Test: `REQ-accounts.tree`, `RAW-accounts.tree`, `DTO-accounts.tree`, `SCOPE-accounts.tree`, `PAGE-accounts.tree` trong tests/accounts-tree.test.ts, passed 10/10/2026; E2E SDK trong tests/oauth.test.ts.
 
 | Raw field (sau data envelope) | DTO | Unit/ý nghĩa dự kiến |
 |---|---|---|

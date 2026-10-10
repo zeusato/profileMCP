@@ -1,7 +1,7 @@
 import express from 'express';
 import { randomUUID } from 'node:crypto';
 import { ZodError } from 'zod';
-import type { Settings } from './config.js';
+import { SCOPES, type Settings } from './config.js';
 import { Store } from './store.js';
 import { ShaTransport } from './sha/transport.js';
 import { ShaAuth, type AuthGateway } from './sha/auth.js';
@@ -10,12 +10,14 @@ import { interactions } from './interactions.js';
 import { ReadService } from './service.js';
 import { handleMcp } from './mcp.js';
 import { AppError, ensure, publicError } from './errors.js';
-import { page, escapeHtml } from './web.js';
-export function createApp(settings: Settings, store: Store, auth: AuthGateway = new ShaAuth(new ShaTransport(), settings.liveAuth)) {
-  const app = express(); const provider = createProvider(settings, store); const service = new ReadService(store, new ShaTransport());
+import { page, escapeHtml, contentSecurityPolicy } from './web.js';
+export function createApp(settings: Settings, store: Store, auth: AuthGateway = new ShaAuth(new ShaTransport(), settings.liveAuth), reads = new ShaTransport()) {
+  const app = express(); const provider = createProvider(settings, store); const service = new ReadService(store, reads);
   app.disable('x-powered-by'); app.set('trust proxy', settings.environment !== 'local');
   app.use((req, res, next) => {
-    res.locals.requestId = randomUUID(); res.set({ 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'X-Frame-Options': 'DENY', 'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'", 'X-Request-Id': res.locals.requestId });
+    // same-origin, not no-referrer: under no-referrer browsers send "Origin: null" on form POSTs, which the Origin checks reject.
+    // Cross-origin navigations (e.g. the redirect carrying the code) still get no Referer.
+    res.locals.requestId = randomUUID(); res.set({ 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'same-origin', 'X-Frame-Options': 'DENY', 'Content-Security-Policy': contentSecurityPolicy(), 'X-Request-Id': res.locals.requestId });
     if (settings.environment !== 'local') res.set('Strict-Transport-Security', 'max-age=31536000');
     if (req.headers.host !== new URL(settings.origin).host) { res.status(421).json({ error: 'INVALID_HOST' }); return; }
     if (req.headers.origin && req.headers.origin !== settings.origin) { res.status(403).json({ error: 'INVALID_ORIGIN' }); return; }
@@ -24,7 +26,7 @@ export function createApp(settings: Settings, store: Store, auth: AuthGateway = 
   app.get('/', (_req, res) => res.type('html').send(page('Dữ liệu SHA, trong quyền của bạn.', `<p>Kết nối trợ lý với tài khoản SHA cá nhân để tra cứu. Mỗi kết nối có phiên xác thực và quyền đọc riêng.</p><section><p>Địa chỉ MCP</p><code>${escapeHtml(settings.resource)}</code><p>Thêm địa chỉ này vào client MCP hỗ trợ OAuth, sau đó đăng nhập SHA và cấp quyền trên website.</p><a class="button" href="/connections">Quản lý kết nối hiện tại</a></section><small>API tra cứu chỉ xuất hiện sau khi được kiểm chứng. GPT và Claude đang chờ nghiệm thu trên môi trường thật.</small>`)));
   app.get('/api/health', (_req, res) => res.json({ status: 'ok', service: 'profile-mcp', version: '0.1.0' }));
   app.get('/api/ready', async (_req, res) => { const state = await store.rpc('health', {}); ensure(state?.version >= '20261009_002', 'STORE_UNAVAILABLE'); res.json({ status: 'ready' }); });
-  const metadata = (_req: express.Request, res: express.Response) => res.json({ resource: settings.resource, authorization_servers: [settings.issuer], scopes_supported: ['profile.read', 'accounts.read', 'assets.read', 'orders.read', 'credit.read', 'reports.read', 'research.read', 'market.read'], bearer_methods_supported: ['header'], resource_name: 'Profile MCP SHA' });
+  const metadata = (_req: express.Request, res: express.Response) => res.json({ resource: settings.resource, authorization_servers: [settings.issuer], scopes_supported: SCOPES, bearer_methods_supported: ['header'], resource_name: 'Profile MCP SHA' });
   app.get('/.well-known/oauth-protected-resource/api/mcp', metadata); app.get('/.well-known/oauth-protected-resource', metadata);
   app.all('/api/mcp', express.json({ limit: '128kb', strict: true }), async (req, res) => {
     const challenge = `Bearer resource_metadata="${settings.origin}/.well-known/oauth-protected-resource/api/mcp"`;

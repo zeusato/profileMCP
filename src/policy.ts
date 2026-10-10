@@ -5,8 +5,10 @@ export interface Entitlements { accounts: { accountNumber: string; brokerCode: s
 const identifier = (x: unknown): x is string => typeof x === 'string' && /^[A-Za-z0-9_.-]{1,100}$/.test(x);
 export function parseIdentity(raw: unknown, username: string): Json {
   ensure(Array.isArray(raw) && raw.length > 0 && raw.length <= 30);
-  ensure(raw.every(r => r && r.preferredUsername === username && identifier(r.brokerCode)));
-  return { preferredUsername: username, brokerCodes: [...new Set(raw.map(r => r.brokerCode))], rows: raw.map(r => ({ preferredUsername: r.preferredUsername, brokerCode: r.brokerCode, branchCode: r.branchCode })) };
+  // SHA IDs are case-insensitive: login-v2 echoes the typed case, get-user-login returns the canonical preferredUsername (live 10/10/2026).
+  const canonical = raw[0]?.preferredUsername; ensure(identifier(canonical) && canonical.toLowerCase() === username.toLowerCase());
+  ensure(raw.every(r => r && r.preferredUsername === canonical && identifier(r.brokerCode)));
+  return { preferredUsername: canonical, brokerCodes: [...new Set(raw.map(r => r.brokerCode))], rows: raw.map(r => ({ preferredUsername: r.preferredUsername, brokerCode: r.brokerCode, branchCode: r.branchCode })) };
 }
 export function parseEntitlements(raw: Json, identity: Json): Entitlements {
   ensure(raw && Array.isArray(raw.accounts) && Array.isArray(raw.brokers) && raw.accounts.length <= 10000 && raw.brokers.length <= 1000);

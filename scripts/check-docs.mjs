@@ -35,7 +35,8 @@ const tests=new Set();
 const testMap=read('docs/api/TEST-MAP.md');
 const endpoints=read('docs/api/ENDPOINTS.md');
 for(const r of routes){
- check(r.enabled===false&&r.status==='planned-candidate','No candidate enabled '+r.id);
+ const released=get('config/runtime-release.json').enabledOperations.includes(r.id);
+ check(r.enabled===released&&r.status===(released?'released':'planned-candidate'),'Catalog release state matches runtime-release '+r.id);
  check(['GET','POST'].includes(r.method)&&r.host==='https://api.shs.com.vn','Fixed transport '+r.id);
  check(!denySet.has(r.method+' '+r.path)&&!r.path.includes('/auth/'),'No business/auth write '+r.id);
  check(r.fieldMap.length>0&&r.provenance.length>0&&r.tests.length===5&&!!r.requestBinding&&!!r.rawResponse,'Traceability '+r.id);

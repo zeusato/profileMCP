@@ -1,43 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createServer } from 'node:http';
 import { createHash, randomBytes } from 'node:crypto';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-import { createApp } from '../src/app.js';
-import { testStore, syntheticLogin } from './helpers.js';
+import { auth, type OAuthClientProvider } from '@modelcontextprotocol/sdk/client/auth.js';
+import type { OAuthClientInformationMixed, OAuthTokens } from '@modelcontextprotocol/sdk/shared/auth.js';
+import { SCOPES } from '../src/config.js';
+import { oauthHarness } from './helpers.js';
 test('OAUTH-01..06 / AUTH-01,03,08 / RUN-01,02: two-instance OAuth, PKCE, SDK and revoke', { timeout: 120000 }, async () => {
-  const { db, store, settings } = await testStore(); let requests = 0; let verifyCount = 0;
-  let handlers: ReturnType<typeof createApp>[] = [];
-  const server = createServer((req, res) => handlers[requests++ % handlers.length]!.app(req, res));
-  await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
-  const port = (server.address() as { port: number }).port; settings.origin = settings.issuer = `http://127.0.0.1:${port}`; settings.resource = `${settings.origin}/api/mcp`;
-  const fakeSha = { async begin(username: string) { return { username, sessionKey: 'fake-session-key', trustDevice: false, otpType: 2 as const, transactionId: 'fake-transaction', otpIndex: 'A1', expiresAt: Date.now() + 60000 }; }, async verify() { verifyCount++; return syntheticLogin(); } };
-  handlers = [createApp(settings, store, fakeSha), createApp(settings, store, fakeSha)];
-  const protocolErrors: string[] = [];
-  for (const handler of handlers) handler.provider.on('server_error', (_ctx, error) => protocolErrors.push(String(error?.stack ?? error)));
-  const cookies = new Map<string, string>();
-  const request = async (path: string, init: RequestInit = {}) => {
-    const response = await fetch(new URL(path, settings.origin), { ...init, redirect: 'manual', headers: { Cookie: [...cookies].map(([k, v]) => `${k}=${v}`).join('; '), ...init.headers } });
-    for (const header of response.headers.getSetCookie()) { const pair = header.split(';')[0]!; const at = pair.indexOf('='); cookies.set(pair.slice(0, at), pair.slice(at + 1)); }
-    return response;
-  };
-  const post = (path: string, values: Record<string, string>) => request(path, { method: 'POST', headers: { Origin: settings.origin, 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(values) });
-  const csrf = (html: string) => { const value = /name="csrf" value="([^"]+)"/.exec(html)?.[1]; assert.ok(value, html.slice(-800)); return value; };
+  const h = await oauthHarness(); const { db, store, settings, request, post, csrf } = h;
   const login = async () => {
     const verifier = randomBytes(32).toString('base64url'); const params = new URLSearchParams({ client_id: 'synthetic-client', redirect_uri: 'https://client.example/callback', response_type: 'code', scope: 'profile.read accounts.read', resource: settings.resource, state: 'synthetic-state', code_challenge: createHash('sha256').update(verifier).digest('base64url'), code_challenge_method: 'S256' });
-    let response = await request(`/auth?${params}`); assert.equal(response.status, 303, `${await response.clone().text()} ${protocolErrors.join('\n')}`);
-    const interaction = response.headers.get('location')!;
-    response = await request(interaction); let html = await response.text(); assert.equal(response.status, 200, html);
-    response = await post(`${interaction}/login`, { csrf: csrf(html), username: 'SYNTHETIC', password: 'FAKE_PASSWORD_CANARY' }); assert.equal(response.status, 303, await response.clone().text());
-    response = await request(interaction); html = await response.text();
-    response = await post(`${interaction}/verify`, { csrf: csrf(html), otp: 'FAKE_OTP_CANARY' }); assert.equal(response.status, 303, await response.clone().text());
-    response = await request(interaction); html = await response.text(); assert.ok(html.includes('Cấp quyền đọc'));
-    response = await post(`${interaction}/consent`, { csrf: csrf(html), decision: 'allow' });
-    assert.equal(response.status, 303, await response.clone().text());
-    for (let n = 0; n < 5 && response.headers.get('location') && !response.headers.get('location')!.startsWith('https://client.example'); n++) response = await request(response.headers.get('location')!);
-    assert.ok(response.headers.get('location'), `status=${response.status} body=${await response.clone().text()}`);
-    const callback = new URL(response.headers.get('location')!); assert.equal(callback.origin, 'https://client.example');
+    const callback = await h.approve(`/auth?${params}`, 'https://client.example');
     assert.equal(callback.searchParams.get('state'), 'synthetic-state'); assert.equal(callback.searchParams.get('iss'), settings.issuer);
     assert.ok(callback.searchParams.get('code'), callback.toString()); return { code: callback.searchParams.get('code')!, verifier };
   };
@@ -64,14 +38,62 @@ test('OAUTH-01..06 / AUTH-01,03,08 / RUN-01,02: two-instance OAuth, PKCE, SDK an
     tokens.access_token = rotated.access_token; tokens.refresh_token = rotated.refresh_token;
     const client = new Client({ name: 'synthetic-sdk', version: '1' });
     const transport = new StreamableHTTPClientTransport(new URL(settings.resource), { requestInit: { headers: { Authorization: `Bearer ${tokens.access_token}` } } });
-    await client.connect(transport); const list = await client.listTools(); assert.equal(list.tools.length, 2);
+    await client.connect(transport); const list = await client.listTools(); assert.deepEqual(list.tools.map(t => t.name), ['list_profile_capabilities', 'get_profile_data_dictionary', 'list_managed_accounts']);
+    // accounts.tree without profile.pii: references and masked numbers only.
+    const tree = await client.callTool({ name: 'list_managed_accounts', arguments: { operation: 'accounts.tree' } }) as any; assert.equal(tree.isError, undefined, JSON.stringify(tree));
+    assert.equal(tree.structuredContent.data.accounts.length, 2); assert.ok(!/CANARY|"A001"/.test(JSON.stringify(tree)));
     const result = await client.callTool({ name: 'list_profile_capabilities', arguments: {} }); assert.equal(result.isError, undefined); assert.ok(!JSON.stringify(result).includes('SYNTHETIC_SHA_SECRET_CANARY')); await client.close();
-    assert.equal(verifyCount, 2);
+    assert.equal(h.counters.verify, 2);
     const dump = await db.query<{ text: string }>("select convert_from(payload_ciphertext,'UTF8') as text from profile_mcp.oauth_artifacts");
     assert.ok(!JSON.stringify(dump.rows).includes('FAKE_PASSWORD_CANARY')); assert.ok(!JSON.stringify(dump.rows).includes('FAKE_OTP_CANARY'));
     const manage = await request('/connections'); const html = await manage.text();
     assert.equal((await post('/connections/disconnect', { csrf: csrf(html) })).status, 200);
     const revoked = await request('/api/mcp', { method: 'POST', headers: { Authorization: `Bearer ${tokens.access_token}`, 'Content-Type': 'application/json' }, body: '{}' }); assert.equal(revoked.status, 401);
     const refresh = await post('/token', { grant_type: 'refresh_token', client_id: 'synthetic-client', refresh_token: tokens.refresh_token, resource: settings.resource }); assert.equal(refresh.status, 400);
-  } finally { server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); await db.close(); }
+  } finally { await h.close(); }
+});
+test('OAUTH-07 / CLIENT-DCR-01: official SDK client registers with PRM scopes, consents once and calls tools', { timeout: 120000 }, async () => {
+  // Mirrors the hosted Claude flow: no scope in WWW-Authenticate, so the SDK registers and authorizes with PRM scopes_supported.
+  const h = await oauthHarness(); const { settings, request } = h; const serverUrl = new URL(settings.resource);
+  let information: OAuthClientInformationMixed | undefined; let tokens: OAuthTokens | undefined; let verifier = ''; let authorization: URL | undefined;
+  const provider: OAuthClientProvider = {
+    redirectUrl: 'https://claude.ai/api/mcp/auth_callback',
+    clientMetadata: { client_name: 'Claude', redirect_uris: ['https://claude.ai/api/mcp/auth_callback'], grant_types: ['authorization_code', 'refresh_token'], response_types: ['code'], token_endpoint_auth_method: 'none' },
+    state: () => 'claude-state', clientInformation: () => information, saveClientInformation: value => { information = value; },
+    tokens: () => tokens, saveTokens: value => { tokens = value; }, redirectToAuthorization: url => { authorization = url; },
+    saveCodeVerifier: value => { verifier = value; }, codeVerifier: () => verifier,
+  };
+  try {
+    const warnings: string[] = []; const warn = console.warn; console.warn = (...args: unknown[]) => { warnings.push(args.map(String).join(' ')); };
+    let rejected: Response;
+    try { rejected = await request('/reg', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...provider.clientMetadata, scope: 'profile.read admin.write' }) }); }
+    finally { console.warn = warn; }
+    assert.equal(rejected.status, 400); assert.equal((await rejected.json() as any).error, 'invalid_client_metadata');
+    // SEC-06: diagnostic names fields and an allowlisted reason, never metadata values.
+    assert.equal(warnings.length, 1); const diagnostic = JSON.parse(warnings[0]!);
+    assert.deepEqual(diagnostic, { event: 'oauth.registration_rejected', error: 'invalid_client_metadata', reason: 'scope must only contain Authorization Server supported scope values', fields: ['client_name', 'grant_types', 'redirect_uris', 'response_types', 'scope', 'token_endpoint_auth_method'] });
+    assert.ok(!warnings[0]!.includes('admin.write') && !warnings[0]!.includes('claude.ai'));
+    // A client without registered scope asking for a non-read scope gets invalid_scope instead of a consent loop.
+    const unsupported = new URLSearchParams({ client_id: 'synthetic-client', redirect_uri: 'https://client.example/callback', response_type: 'code', scope: 'openid profile.read', resource: settings.resource, state: 's', code_challenge: 'x'.repeat(43), code_challenge_method: 'S256' });
+    let hop = await request(`/auth?${unsupported}`);
+    for (let n = 0; n < 4 && !hop.headers.get('location')?.startsWith('https://client.example'); n++) hop = await request(hop.headers.get('location')!);
+    assert.equal(new URL(hop.headers.get('location')!).searchParams.get('error'), 'invalid_scope'); assert.equal(h.counters.verify, 0);
+    assert.equal(await auth(provider, { serverUrl }), 'REDIRECT');
+    assert.ok(SCOPES.includes('profile.pii'));
+    assert.ok(information?.client_id); assert.equal(authorization?.searchParams.get('scope'), SCOPES.join(' ')); assert.equal(authorization?.searchParams.get('resource'), settings.resource);
+    // Scope wider than the client's registration is refused before any SHA login.
+    const wider = new URL(authorization!); wider.searchParams.set('scope', `${SCOPES.join(' ')} openid`);
+    const refused = await request(wider); assert.equal(refused.status, 303); assert.equal(new URL(refused.headers.get('location')!).searchParams.get('error'), 'invalid_scope');
+    const callback = await h.approve(authorization!, 'https://claude.ai', { pii: true });
+    assert.equal(callback.searchParams.get('state'), 'claude-state'); assert.equal(callback.searchParams.get('iss'), settings.issuer);
+    assert.equal(await auth(provider, { serverUrl, authorizationCode: callback.searchParams.get('code')! }), 'AUTHORIZED');
+    assert.deepEqual(tokens?.scope?.split(' ').sort(), [...SCOPES].sort()); assert.ok(tokens?.refresh_token);
+    const client = new Client({ name: 'claude-shaped-sdk', version: '1' });
+    await client.connect(new StreamableHTTPClientTransport(serverUrl, { authProvider: provider }));
+    assert.equal((await client.listTools()).tools.length, 3);
+    // With the opt-in profile.pii box ticked, the same tool returns full numbers and customer names.
+    const tree = await client.callTool({ name: 'list_managed_accounts', arguments: { operation: 'accounts.tree' } }) as any;
+    assert.deepEqual(tree.structuredContent.data.accounts.map((a: any) => [a.accountNumber, a.customerName]), [['A001', 'CUSTOMER CANARY'], ['A002', null]]); await client.close();
+    assert.equal(h.counters.verify, 1); assert.deepEqual(h.protocolErrors, []);
+  } finally { await h.close(); }
 });

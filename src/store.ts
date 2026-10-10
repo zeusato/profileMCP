@@ -34,9 +34,13 @@ export class Store {
   async consume(model: string, id: string) { return !!await this.rpc('artifact.consume', { model, id: this.vault.digest(`${model}:${id}`) }); }
   async destroy(model: string, id: string) { await this.rpc('artifact.destroy', { model, id: this.vault.digest(`${model}:${id}`) }); }
   async revokeGrant(id: string) { await this.rpc('grant.revoke', { grant: this.vault.digest(`grant:${id}`), teamId: this.teamId }); }
+  // SHA IDs are case-insensitive, so allowlist subjects are lowercase; the exact-case lookup keeps entries provisioned before 10/10/2026 working.
   async member(username: string): Promise<string> {
-    const row = await this.rpc('member.get', { teamId: this.teamId, subject: this.vault.digest(`sha:preferredUsername:${username}`) });
-    if (!row) throw new AppError('FORBIDDEN_SCOPE', 403); return row.userId;
+    for (const subject of new Set([username.toLowerCase(), username])) {
+      const row = await this.rpc('member.get', { teamId: this.teamId, subject: this.vault.digest(`sha:preferredUsername:${subject}`) });
+      if (row) return row.userId;
+    }
+    throw new AppError('FORBIDDEN_SCOPE', 403);
   }
   async createSession(value: Omit<Session, 'id' | 'teamId' | 'generation'>, id = randomUUID()): Promise<Session> {
     const s = { ...value, id, teamId: this.teamId, generation: 1 };

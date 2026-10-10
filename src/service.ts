@@ -5,6 +5,8 @@ import { isEnabled, route, scopeFor, validateInput } from './sha/catalog.js';
 import { ShaTransport } from './sha/transport.js';
 import { buildRequest } from './sha/requests.js';
 import { candles, mappedObject, pageCoverage, repeatedTotals } from './dto.js';
+import { PII_SCOPE } from './config.js';
+const TREE_MAX_ACCOUNTS = 400;
 export class ReadService {
   constructor(readonly store: Store, readonly sha: ShaTransport) {}
   async call(id: string, input: unknown, session: Session, scopes: string[], requestId: string) {
@@ -15,8 +17,11 @@ export class ReadService {
     ensure(isEnabled(id), 'CAPABILITY_UNAVAILABLE'); ensure(scopes.includes(scopeFor(id)), 'FORBIDDEN_SCOPE');
     const i = validateInput(id, input); const r = route(id); const signal = AbortSignal.timeout(20000);
     await this.store.fence(session); await this.store.quota(`read:${session.userId}`, 30); await this.store.quota('read-project', 120);
-    const identity = parseIdentity(await this.sha.bootstrap('identity.current', session.bearer, signal), session.identity.preferredUsername);
-    const entitlements = parseEntitlements(await this.sha.bootstrap('accounts.tree', session.bearer, signal) as Json, identity);
+    // An upstream 401 during bootstrap means the SHA session is gone: revoke like a failed read.
+    const upstream = async <T>(call: () => Promise<T>) => { try { return await call(); } catch (error) { if (error instanceof AppError && error.code === 'UPSTREAM_AUTH_FAILED') await this.store.revoke(session); throw error; } };
+    const identity = parseIdentity(await upstream(() => this.sha.bootstrap('identity.current', session.bearer, signal)), session.identity.preferredUsername);
+    const tree = await upstream(() => this.sha.bootstrap('accounts.tree', session.bearer, signal)) as Json;
+    const entitlements = parseEntitlements(tree, identity);
     const p = new Policy({ ...session, identity }, this.store.vault, entitlements);
     if (i.subaccountRef) {
       const account = p.account(i.accountRef); const raw = await this.sha.read(buildRequest('accounts.subaccounts', { operation: 'accounts.subaccounts', accountRefs: [i.accountRef] }, p), session.bearer, signal);
@@ -30,12 +35,17 @@ export class ReadService {
     }
     const request = buildRequest(id, i, p, cursor?.page ?? 1);
     try {
-      const raw = await this.sha.read(request, session.bearer, signal) as Json;
+      // accounts.tree is the entitlement source itself (already fetched and validated by parseEntitlements); no second upstream call.
+      const raw = id === 'accounts.tree' ? tree : await this.sha.read(request, session.bearer, signal) as Json;
       const fetchedAt = new Date().toISOString();
-      p.checkResponse(raw, request.accountNos, request.broker);
+      if (id !== 'accounts.tree') p.checkResponse(raw, request.accountNos, request.broker);
       let data: Json; let coverage: Json = { returned: 1, total: null, complete: true, nextCursor: null, truncated: false, reason: 'single-record-contract', pagesFetched: 1, totalsScope: 'unknown' };
       const warnings = new Set(['SOURCE_TIMESTAMP_UNAVAILABLE', 'UNIT_UNVERIFIED', 'NON_ATOMIC_SNAPSHOT']); const missing: string[] = [];
-      if (id === 'accounts.tree') data = this.references(p);
+      if (id === 'accounts.tree') {
+        const t = this.tree(tree, p, scopes.includes(PII_SCOPE)); data = t.data; missing.push(...t.missing); warnings.delete('UNIT_UNVERIFIED');
+        coverage = { returned: t.data.accounts.length, total: t.total, complete: !t.truncated, nextCursor: null, truncated: t.truncated, reason: t.truncated ? 'nonpaged-output-budget' : 'nonpaged-full-tree', pagesFetched: 1, totalsScope: 'all-entitled-accounts' };
+        if (t.truncated) warnings.add('PARTIAL_PAGE');
+      }
       else if (id === 'accounts.subaccounts') {
         const subs = this.subaccounts(raw, p, request.accountNos);
         data = { items: subs.map(s => ({ accountRef: p.ref('acct', s.accountNo), subaccountRef: p.ref('sub', s.subId), displayNumber: s.subNo })) }; coverage.returned = subs.length;
@@ -69,7 +79,21 @@ export class ReadService {
       await this.store.fence(session); return result;
     } catch (error) { if (error instanceof AppError && error.code === 'UPSTREAM_AUTH_FAILED') await this.store.revoke(session); throw error; }
   }
-  private references(p: Policy) { return { accounts: p.entitlements.accounts.map(a => ({ accountRef: p.ref('acct', a.accountNumber), displayNumber: `***${a.accountNumber.slice(-3)}`, brokerRef: p.ref('broker', a.brokerCode) })), brokers: p.entitlements.brokers.map(b => ({ brokerRef: p.ref('broker', b.brokerCode), children: b.children.map(x => p.ref('broker', x)) })) }; }
+  // Refs, masked number and broker codes always; full account number, customer name and broker name only with profile.pii.
+  // Live shape 10/10/2026: accounts{accountNumber,customerName,brokerCode,remNo}, brokers{brokerCode,brokerName,level,remNo,remMng,children,accounts}.
+  private tree(raw: Json, p: Policy, pii: boolean) {
+    const names = new Map<string, unknown>(raw.accounts.map((a: Json) => [a.accountNumber, a.customerName]));
+    const brokerNames = new Map<string, unknown>(); const walk = (rows: Json[]) => rows.forEach(b => { brokerNames.set(b.brokerCode, b.brokerName); walk(b.children); }); walk(raw.brokers);
+    const text = (v: unknown) => { if (v === undefined || v === null) return null; ensure(typeof v === 'string' && v.length <= 300); return v; };
+    const all = p.entitlements.accounts; const shown = all.slice(0, TREE_MAX_ACCOUNTS); const missing: string[] = [];
+    if (pii && shown.some(a => names.get(a.accountNumber) === undefined)) missing.push('accounts[].customerName');
+    if (pii && p.entitlements.brokers.some(b => brokerNames.get(b.brokerCode) === undefined)) missing.push('brokers[].brokerName');
+    const accounts = shown.map(a => ({ accountRef: p.ref('acct', a.accountNumber), displayNumber: `***${a.accountNumber.slice(-3)}`, brokerRef: p.ref('broker', a.brokerCode), brokerCode: a.brokerCode,
+      ...(pii ? { accountNumber: a.accountNumber, customerName: text(names.get(a.accountNumber)) } : {}) }));
+    const brokers = p.entitlements.brokers.map(b => ({ brokerRef: p.ref('broker', b.brokerCode), brokerCode: b.brokerCode, ...(pii ? { brokerName: text(brokerNames.get(b.brokerCode)) } : {}),
+      children: b.children.map(x => p.ref('broker', x)), directAccounts: all.filter(a => a.brokerCode === b.brokerCode).length }));
+    return { data: { accounts, brokers }, total: all.length, truncated: all.length > shown.length, missing };
+  }
   private subaccounts(raw: unknown, policy: Policy, accounts: string[]): Entitlements['subaccounts'] {
     ensure(Array.isArray(raw)); const seen = new Set<string>(); return raw.flatMap(row => {
       ensure(row && accounts.includes(row.accountNo) && Array.isArray(row.subAccounts), 'FORBIDDEN_SCOPE');

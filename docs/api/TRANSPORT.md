@@ -15,7 +15,7 @@ Swagger `/i/v1/...` và `/t/v1/...` là path nguồn nội bộ, không gọi ng
 
 ## Headers và envelope
 
-Read client gắn SHA bearer đúng session; Accept JSON, Accept-Language vi, Correlation-Id UUID mỗi request. Referer `https://sha.shs.com.vn` được nguồn cũ mô tả nhưng cần fresh probe xác minh điều kiện thực; không giả mạo fingerprint Electron. Không forward auth MCP hoặc arbitrary header từ client sang SHA.
+Read client gắn SHA bearer đúng session; Accept JSON, Accept-Language vi, Correlation-Id UUID mỗi request. Auth control plane gửi `Authorization: Bearer null` như client chính thức và thêm `Session-Key` (sessionKey của login-v2) cho generate-matrix/verify-sotp; xem AUTH-AND-SESSIONS §3. Referer `https://sha.shs.com.vn` được nguồn cũ mô tả nhưng cần fresh probe xác minh điều kiện thực; không giả mạo fingerprint Electron. Không forward auth MCP hoặc arbitrary header từ client sang SHA.
 
 SHA có code string `"200"` và numeric `200`; chỉ success theo schema của endpoint. Không chấp nhận mọi 2xx hoặc mọi code=0. Discovery `stock/list-order-type` có code=0 riêng và vẫn disabled. TradingView history là flat UDF, phải parser riêng.
 

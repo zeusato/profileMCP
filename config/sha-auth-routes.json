@@ -8,7 +8,10 @@
       "toolExposed": false,
       "enabled": false,
       "purpose": "browser-login-control-plane-only",
-      "status": "historical-contract-needs-G1"
+      "status": "verified-local-2026-10-10-vercel-unverified",
+      "headers": [
+        "Authorization: Bearer null"
+      ]
     },
     {
       "method": "POST",
@@ -17,7 +20,11 @@
       "toolExposed": false,
       "enabled": false,
       "purpose": "browser-login-control-plane-only",
-      "status": "historical-contract-needs-G1"
+      "status": "verified-local-2026-10-10-vercel-unverified",
+      "headers": [
+        "Authorization: Bearer null",
+        "Session-Key: <login-v2 sessionKey>"
+      ]
     },
     {
       "method": "POST",
@@ -26,13 +33,17 @@
       "toolExposed": false,
       "enabled": false,
       "purpose": "browser-login-control-plane-only",
-      "status": "historical-contract-needs-G1"
+      "status": "verified-local-2026-10-10-vercel-unverified",
+      "headers": [
+        "Authorization: Bearer null",
+        "Session-Key: <login-v2 sessionKey>"
+      ]
     }
   ],
   "refresh": {
     "path": "/prod/v1/author-service/p/auth/refresh-token",
     "method": "POST",
     "enabled": false,
-    "contract": "UNVERIFIED: path mentioned only; do not guess body, rotation or OTP renewal"
+    "contract": "UNVERIFIED: path mentioned only; verify-sotp returned refresh_token null on 2026-10-10; do not guess body, rotation or OTP renewal"
   }
 }

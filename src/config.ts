@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import type { ClientMetadata } from 'oidc-provider';
-export const SCOPES = ['profile.read', 'accounts.read', 'assets.read', 'orders.read', 'credit.read', 'reports.read', 'research.read', 'market.read'];
+export const SCOPES = ['profile.read', 'accounts.read', 'assets.read', 'orders.read', 'credit.read', 'reports.read', 'research.read', 'market.read', 'profile.pii'];
+// Customer names and full account numbers; opt-in per connection on the consent page, never granted by default.
+export const PII_SCOPE = 'profile.pii';
 export interface Settings {
   origin: string; resource: string; issuer: string; databaseUrl: string; databaseCa?: string; teamId: string;
   keyring: { active: string; keys: Record<string, string> }; hmacKey: string;

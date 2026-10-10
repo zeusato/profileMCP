@@ -1,6 +1,6 @@
 # Đăng nhập SHA và phiên MCP
 
-Checkpoint 09/10/2026: đã implement control plane và OAuth, 13 tests synthetic tổng thể passed; chưa live login SHA. Claude lỗi DCR trước form, GPT chưa test. Quyết định runtime/các khác biệt còn thiếu ghi trong [HANDOFF](HANDOFF.md); các flow dưới là hợp đồng mục tiêu, không tự chứng minh live acceptance.
+Checkpoint 10/10/2026: đã implement control plane và OAuth, 14 tests synthetic tổng thể passed; chưa live login SHA. Claude lỗi DCR trước form (đã sửa và deploy 10/10, chờ Connect lại), GPT chưa test. Quyết định runtime/các khác biệt còn thiếu ghi trong [HANDOFF](HANDOFF.md); các flow dưới là hợp đồng mục tiêu, không tự chứng minh live acceptance.
 
 ## 1. Hai lớp xác thực
 
@@ -43,19 +43,23 @@ sequenceDiagram
 
 Consent phải hiển thị đúng client, tài khoản SHA hiện tại và phạm vi đọc. Không tự đồng ý client mới dựa vào đăng nhập sẵn. Browser interaction cookie HttpOnly, Secure, SameSite thích hợp luồng redirect; mọi form POST có CSRF token và kiểm Origin. Redirect URI so khớp chính xác đăng ký, không wildcard tùy ý.
 
-## 3. Contract SHA lịch sử — cần G1 xác minh
+## 3. Contract SHA — G1 kiểm local 10/10/2026
 
 Host cố định `https://api.shs.com.vn`; prefix `/prod/v1/author-service/p/auth/`. Schema success vẫn cần check envelope trước khi đọc data.
 
-| Bước | Method/path | Body allowlist | Trường trả về được dùng |
-|---|---|---|---|
-| A1 | POST login-v2 | username, password | username, sessionKey, trustDevice, otpType[] |
-| A2 | POST generate-matrix | username, sessionKey, trustDevice, otpType từ transaction A1 | username, otpIndex, transactionId, remainSeconds; note chỉ để hiển thị đã escape |
-| A3 | POST verify-sotp | username, sessionKey, trustDevice, otpType=`2`, transactionId, otp | access_token, refresh_token, token_type, expires_in, refresh_expires_in |
+Bằng chứng: scripts/trace-sha-login.ts chạy adapter production từ máy local (IP Việt Nam), Đại ca tự nhập ID/password/OTP, một tài khoản vai trò môi giới; cùng DevTools capture web gốc sha.shs.com.vn. Chỉ ghi tên field/kiểu, không giá trị. **Chưa xác minh từ egress Vercel.**
 
-`otpType` ở A1/A2 là capability theo nguồn, A3 chọn SOTP/matrix `2` được mô tả. Không tự suy mapping `5` hoặc SMS từ SHSmart. Nếu server trả capability khác, UI báo chưa hỗ trợ và dừng; không thử brute-force loại OTP.
+| Bước | Method/path | Body allowlist | Header bắt buộc | Response data đã thấy |
+|---|---|---|---|---|
+| A1 | POST login-v2 | username, password | Authorization: Bearer null (client chính thức gửi; local không gửi vẫn 200) | username (lặp lại kiểu chữ người gõ), sessionKey (UUID), trustDevice **null**, otpType mảng chuỗi ["5","2"] |
+| A2 | POST generate-matrix | username, sessionKey, trustDevice, otpType nguyên giá trị A1 | Bearer null + **Session-Key = sessionKey**; thiếu thì HTTP 400 code "405" "Session hết hạn" | username, otpIndex (chuỗi), transactionId, note (chuỗi), remainSeconds (300) |
+| A3 | POST verify-sotp | username, sessionKey, trustDevice, otpType=`2`, transactionId, otp | Bearer null + Session-Key (capture web gốc) | access_token, **refresh_token null**, token_type, expires_in (~8 giờ), refresh_expires_in |
 
-Tài liệu SHA có mâu thuẫn header: một nguồn gửi `Authorization: Bearer null` cho public auth, nguồn chuyển đổi nói không cần bearer. G1 cần xác minh một profile request chính thức; không lần lượt retry credentials trên nhiều biến thể. Chưa đưa header giả vào code production.
+Envelope auth: `{timestamp, code: "200", message, data}`; code là chuỗi; timestamp giờ địa phương không offset. Lỗi nghiệp vụ có thể là HTTP 400 kèm `code` khác và `traceId`. `otpType` "2" là SOTP/matrix; "5" chưa rõ nghĩa, không tự suy. Nếu không có "2", UI báo chưa hỗ trợ và dừng; không thử brute-force loại OTP. Origin/Referer không gửi từ backend (trình duyệt tự thêm ở web gốc, không phải contract app).
+
+Sau A3 (Bearer = access_token): get-user-login envelope `{code, message, data}` (không timestamp), data mảng 1 dòng: branchCode, brokerCode, brokerName, preferredUsername (dạng chuẩn SHA, có thể khác kiểu chữ ID người gõ), saleGroupName, saleGroupNo, positionLevel, homeOrder, custodyCd. account-no-and-rem: data `{accounts[], brokers[]}`; accounts: accountNumber, customerName, brokerCode, remNo; brokers: brokerCode, brokerName, level, remNo, remMng, children (lồng), accounts. Runtime chỉ giữ accountNumber/brokerCode và cây brokerCode; customerName bị bỏ.
+
+ID SHA không phân biệt hoa/thường: identity so khớp không phân biệt kiểu chữ rồi dùng preferredUsername của SHA; allowlist digest theo ID chữ thường (Store.member vẫn đọc bản ghi cũ đúng kiểu chữ).
 
 Không coi capture token trong Electron là API đăng nhập server. Các interceptor `account_ipc.js` và browser storage của ứng dụng nguồn chỉ giải thích môi trường cũ; không port.
 
@@ -66,7 +70,7 @@ Không coi capture token trong Electron là API đăng nhập server. Các inter
 - Đối chiếu user với allowlist nội bộ trước cấp MCP grant. Tài khoản SHA hợp lệ nhưng chưa được allowlist không có quyền truy cập Profile MCP.
 - JWT decode chỉ để đọc metadata, không chứng minh chữ ký. Nếu chọn xác minh JWT tại backend: pin issuer SHA đã kiểm, allowlist JWKS URL, kiểm alg/kid/signature/aud/exp; `aud` và discovery/JWKS còn phải xác minh ở G1. Không fetch URL từ `iss` tùy ý trong token. Có thể dùng token mới do TLS login trả + authoritative API response để bootstrap khi JWT verification chưa được cấu hình, nhưng không nhận bearer SHA do client MCP tự đưa vào.
 - `accessExpiresAt` lấy expiry do SHA chứng minh; nếu có cả exp và expires_in thì dùng giới hạn sớm hơn, trừ clock skew 60 giây (chính sách đề xuất). Không hardcode 8 giờ.
-- Chưa có contract refresh được chứng minh. `/auth/refresh-token` chỉ được nhắc tên; **không gọi tự động**. Session hết hạn chuyển `reauth_required`. MCP refresh token chỉ gia hạn quyền MCP khi SHA session vẫn hợp lệ; nó không tự gia hạn SHA.
+- Chưa có contract refresh được chứng minh; verify-sotp live 10/10/2026 trả refresh_token null. `/auth/refresh-token` chỉ được nhắc tên; **không gọi tự động**. Session hết hạn chuyển `reauth_required`. MCP refresh token chỉ gia hạn quyền MCP khi SHA session vẫn hợp lệ; nó không tự gia hạn SHA.
 
 ## 4. State machine và đồng thời
 
@@ -105,6 +109,8 @@ Cache quyền gợi ý tối đa 60 giây, gắn session và version; thời h�
 
 ## 7. Dữ liệu tối thiểu
 
-Scope đề xuất: `profile.read`, `accounts.read`, `assets.read`, `orders.read`, `credit.read`, `reports.read`, `research.read`, `market.read`; `profile.pii` tách riêng và mặc định không cấp. Scope `openid` chỉ dùng nếu OAuth library thực triển khai OIDC, không tự thêm vì tên thư viện.
+Scope đề xuất: `profile.read`, `accounts.read`, `assets.read`, `orders.read`, `credit.read`, `reports.read`, `research.read`, `market.read`; `profile.pii` tách riêng và mặc định không cấp: trang consent hiện ô chọn riêng, không tick sẵn, chỉ khi client xin scope này; bỏ trống thì grant ghi profile.pii là rejected (tránh lặp consent) và token không có scope đó. Scope `openid` chỉ dùng nếu OAuth library thực triển khai OIDC, không tự thêm vì tên thư viện.
+
+Runtime: 8 read scopes được khai báo cả ở AS (`scopes`, để DCR có `scope` của MCP client hợp lệ) và resource server; consent grant cùng tập ở hai phía. `openid` do oidc-provider luôn công bố nhưng không được cấp: authorization xin scope ngoài 8 read scopes nhận `invalid_scope` trước login SHA.
 
 Log không chứa Authorization, cookie, username/password, OTP, access/refresh token, request/response body tài khoản. Audit chỉ operation, subject ID nội bộ/hmac, request ID, result code, duration, row count và gate version. Không đẩy PII vào analytics/tracing.

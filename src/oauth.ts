@@ -10,7 +10,9 @@ export function createProvider(settings: Settings, store: Store) {
     adapter: oidcAdapter(store), clients: settings.clients,
     jwks: settings.signingKeys as any,
     cookies: { keys: settings.cookieKeys, short: { httpOnly: true, sameSite: 'lax', secure: settings.environment !== 'local' }, long: { httpOnly: true, sameSite: 'lax', secure: settings.environment !== 'local' } },
-    scopes: [], claims: {}, responseTypes: ['code'],
+    // MCP clients register (DCR) and authorize with the protected-resource scopes; the AS must list them or /reg returns invalid_client_metadata.
+    // They are therefore also OIDC-level scopes for the consent prompt, so consent grants them on both the OIDC and resource sides.
+    scopes: SCOPES, claims: {}, responseTypes: ['code'],
     pkce: { required: () => true },
     clientBasedCORS: (_ctx, origin) => origin === settings.origin,
     features: {
@@ -56,8 +58,15 @@ export function createProvider(settings: Settings, store: Store) {
   });
   // Provider protocol errors are sanitized; do not attach error/HTTP objects to logs.
   provider.on('server_error', () => {});
+  // Registration rejections log only the error code, an allowlisted reason and metadata field names; never values.
+  provider.on('registration_create.error', (ctx, error: any) => {
+    const fields = Object.keys(ctx.oidc?.body ?? {}).filter(k => /^[a-z_]{1,64}$/.test(k)).sort().slice(0, 40);
+    const code = typeof error?.error === 'string' && /^[a-z_]{1,40}$/.test(error.error) ? error.error : 'unclassified';
+    console.warn(JSON.stringify({ event: 'oauth.registration_rejected', error: code, reason: REGISTRATION_REASONS.includes(error?.error_description) ? error.error_description : 'unclassified', fields }));
+  });
   return provider;
 }
+const REGISTRATION_REASONS = ['scope must only contain Authorization Server supported scope values', 'Redirect URI is not approved', 'Unsupported token authentication', 'Remote client metadata URLs are not supported'];
 export async function authenticate(provider: Provider, store: Store, bearer: string, resource: string) {
   const token = await provider.AccessToken.find(bearer);
   ensure(token && !token.isExpired && token.aud === resource && token.accountId && token.grantId, 'UNAUTHENTICATED');

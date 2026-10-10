@@ -26,7 +26,9 @@
 | list_profile_capabilities | Operation thực sự đã bật cho user, giới hạn và gate |
 | get_profile_data_dictionary | Đơn vị, nguồn, enum, null và định nghĩa chỉ tiêu |
 
-Một tool chỉ đăng ký những nhánh schema đã được bật; nếu chưa có operation nào thì không đưa tool đó vào tools/list. `readOnlyHint:true`, `destructiveHint:false`, `openWorldHint:true` là metadata; quyền và an toàn do runtime allowlist/policy thực thi.
+Một tool chỉ đăng ký những nhánh schema đã được bật; nếu chưa có operation nào thì không đưa tool đó vào tools/list. Các operation đã bật của một tool được gộp thành một object schema (operation là enum), không dùng oneOf/anyOf/allOf ở cấp cao nhất vì tool input_schema của Claude không nhận; server vẫn validate đúng schema riêng từng operation.
+
+Release 10/10/2026: chỉ `list_managed_accounts` với operation `accounts.tree`. Số tài khoản đầy đủ, tên khách hàng và tên môi giới chỉ trả khi connection có scope `profile.pii` (Đại ca chọn ngày 10/10/2026); không có scope này thì chỉ accountRef, số che `***123`, brokerRef/brokerCode. `readOnlyHint:true`, `destructiveHint:false`, `openWorldHint:true` là metadata; quyền và an toàn do runtime allowlist/policy thực thi.
 
 ## Input chung
 

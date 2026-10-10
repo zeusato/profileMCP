@@ -4,11 +4,11 @@ import type Provider from 'oidc-provider';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { Settings } from './config.js';
-import { SCOPES } from './config.js';
+import { SCOPES, PII_SCOPE } from './config.js';
 import { Store, type Json } from './store.js';
 import type { AuthGateway } from './sha/auth.js';
 import { AppError, ensure } from './errors.js';
-import { page, escapeHtml as e, hidden } from './web.js';
+import { page, escapeHtml as e, hidden, contentSecurityPolicy } from './web.js';
 function cookie(req: Request, name: string) { return req.headers.cookie?.split(';').map(x => x.trim()).find(x => x.startsWith(`${name}=`))?.slice(name.length + 1); }
 export function interactions(app: Express, provider: Provider, settings: Settings, store: Store, sha: AuthGateway) {
   const secure = settings.environment !== 'local';
@@ -28,6 +28,9 @@ export function interactions(app: Express, provider: Provider, settings: Setting
   const fields = (f: Json) => hidden('csrf', f.csrf);
   app.get('/interaction/:uid', async (req, res) => {
     const detail = await provider.interactionDetails(req, res); const uid = String(req.params.uid); ensure(detail.uid === uid, 'REAUTH_REQUIRED');
+    // Only the read scopes can be consented; anything else (e.g. openid) would re-prompt forever, so return invalid_scope before any SHA login.
+    const requested = String(detail.params.scope ?? '').split(' ').filter(Boolean);
+    if (!requested.length || requested.some(s => !SCOPES.includes(s))) { await provider.interactionFinished(req, res, { error: 'invalid_scope', error_description: 'Requested scope is not supported' }, { mergeWithLastSubmission: false }); return; }
     let flow: Json;
     try { flow = (await load(req, uid)).flow; } catch (error) {
       if (!(error instanceof AppError && error.code === 'REAUTH_REQUIRED')) throw error;
@@ -40,8 +43,12 @@ export function interactions(app: Express, provider: Provider, settings: Setting
     if (flow.stage === 'login') res.type('html').send(page('Kết nối tài khoản SHA', `<p>Đăng nhập tài khoản của bạn để cấp quyền đọc cho <strong>${clientName}</strong>.</p><section><form method="post" action="${action}/login">${fields(flow)}<label for="username">ID đăng nhập SHA</label><input id="username" name="username" autocomplete="username" required maxlength="100"><label for="password">Mật khẩu</label><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="256"><button>Tiếp tục</button></form></section>`));
     else if (flow.stage === 'otp') res.type('html').send(page('Xác thực tài khoản', `<p>Nhập OTP theo yêu cầu từ SHA. Phiên xác thực hết hạn theo thời gian SHA cung cấp.</p><section><p>Vị trí xác thực</p><div class="challenge">${e(Array.isArray(flow.challenge.otpIndex) ? flow.challenge.otpIndex.join(' · ') : flow.challenge.otpIndex)}</div><form method="post" action="${action}/verify">${fields(flow)}<label for="otp">Mã OTP</label><input id="otp" name="otp" type="password" autocomplete="one-time-code" required maxlength="32"><button>Xác thực</button></form></section>`));
     else if (flow.stage === 'consent') {
-      const scopes = String(detail.params.scope ?? '').split(' ').filter(s => SCOPES.includes(s)); ensure(scopes.length, 'FORBIDDEN_SCOPE');
-      res.type('html').send(page('Cấp quyền đọc', `<p><strong>${clientName}</strong> yêu cầu đọc dữ liệu trong quyền của tài khoản SHA vừa xác thực.</p><section><p>Chuyển về: <strong>${e(new URL(String(detail.params.redirect_uri)).hostname)}</strong></p><p>Tài khoản: ${e(flow.login.identity.preferredUsername)}</p><ul>${scopes.map(s => `<li>${e(s)}</li>`).join('')}</ul><p>Ứng dụng không cung cấp thao tác đặt lệnh, chuyển tiền hoặc sửa hồ sơ.</p><form method="post" action="${action}/consent">${fields(flow)}<button name="decision" value="allow">Cho phép kết nối</button><button class="secondary" name="decision" value="deny">Từ chối</button></form></section>`));
+      const scopes = String(detail.params.scope ?? '').split(' ').filter(s => SCOPES.includes(s)); const read = scopes.filter(s => s !== PII_SCOPE); ensure(read.length, 'FORBIDDEN_SCOPE');
+      // profile.pii is opt-in: an unchecked box by default, only when the client asked for it.
+      const pii = scopes.includes(PII_SCOPE) ? `<label class="check"><input type="checkbox" name="pii" value="1"><span>Cho phép xem <strong>số tài khoản đầy đủ và tên khách hàng</strong> (${e(PII_SCOPE)}). Không chọn thì chỉ thấy mã tham chiếu và số tài khoản che.</span></label>` : '';
+      // Allow/deny both end in a redirect to the provider-validated redirect_uri.
+      res.set('Content-Security-Policy', contentSecurityPolicy([String(detail.params.redirect_uri)]));
+      res.type('html').send(page('Cấp quyền đọc', `<p><strong>${clientName}</strong> yêu cầu đọc dữ liệu trong quyền của tài khoản SHA vừa xác thực.</p><section><p>Chuyển về: <strong>${e(new URL(String(detail.params.redirect_uri)).hostname)}</strong></p><p>Tài khoản: ${e(flow.login.identity.preferredUsername)}</p><ul>${read.map(s => `<li>${e(s)}</li>`).join('')}</ul><p>Ứng dụng không cung cấp thao tác đặt lệnh, chuyển tiền hoặc sửa hồ sơ.</p><form method="post" action="${action}/consent">${fields(flow)}${pii}<button name="decision" value="allow">Cho phép kết nối</button><button class="secondary" name="decision" value="deny">Từ chối</button></form></section>`));
     } else throw new AppError('REAUTH_REQUIRED');
   });
   app.post('/interaction/:uid/:step', form, async (req, res) => {
@@ -65,13 +72,18 @@ export function interactions(app: Express, provider: Provider, settings: Setting
         await save(res, { uid, params: flow.params, clientId: flow.clientId, stage: 'consent', csrf: store.vault.nonce(), login, userId }, handle);
         res.redirect(303, `/interaction/${encodeURIComponent(uid)}`);
       } else if (req.params.step === 'consent' && flow.stage === 'consent') {
-        const input = z.object({ csrf: z.string(), decision: z.enum(['allow', 'deny']) }).strict().parse(req.body);
+        const input = z.object({ csrf: z.string(), decision: z.enum(['allow', 'deny']), pii: z.literal('1').optional() }).strict().parse(req.body);
         await store.destroy('ShaFlow', handle); res.clearCookie(name, options);
         if (input.decision === 'deny') { await provider.interactionFinished(req, res, { error: 'access_denied' }, { mergeWithLastSubmission: false }); return; }
-        const scopes = String(detail.params.scope ?? '').split(' ').filter(s => SCOPES.includes(s)); ensure(scopes.length, 'FORBIDDEN_SCOPE');
+        const requested = String(detail.params.scope ?? '').split(' ').filter(s => SCOPES.includes(s));
+        const scopes = requested.filter(s => s !== PII_SCOPE || input.pii === '1'); ensure(scopes.some(s => s !== PII_SCOPE), 'FORBIDDEN_SCOPE');
         ensure(flow.login.expiresAt > Date.now(), 'REAUTH_REQUIRED');
         const sessionId = randomUUID(); const grant = new provider.Grant({ accountId: flow.userId, clientId: flow.clientId });
-        grant.addResourceScope(settings.resource, scopes.join(' ')); const grantId = await grant.save();
+        // Read scopes are both AS-listed (OIDC side, consent prompt) and resource scopes (access token audience/scope).
+        grant.addOIDCScope(scopes.join(' ')); grant.addResourceScope(settings.resource, scopes.join(' '));
+        // A declined profile.pii is recorded as rejected so the consent prompt does not re-ask in a loop.
+        if (requested.includes(PII_SCOPE) && !scopes.includes(PII_SCOPE)) { grant.rejectOIDCScope(PII_SCOPE); grant.rejectResourceScope(settings.resource, PII_SCOPE); }
+        const grantId = await grant.save();
         try {
           const session = await store.createSession({ ...flow.login, userId: flow.userId, clientId: flow.clientId, grantId, scopes, resource: settings.resource }, sessionId);
           const manageHandle = store.vault.nonce(); await store.put('Management', manageHandle, { sessionId: session.id, csrf: store.vault.nonce() }, Math.min(28800, Math.floor((session.expiresAt - Date.now()) / 1000)));

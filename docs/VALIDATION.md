@@ -24,6 +24,31 @@ Ngày: 09/10/2026. Đây là sổ kết quả thực; test IDs trong TEST-PLAN/T
 - Claude thử thật: discovery 200, MCP 401, POST /reg 400. **CLIENT-CLAUDE-01 chưa passed**, không tới form SHA. GPT chưa test.
 - Supabase CLI lần cuối projects list không có project Digital16, admin query 403. Runtime vẫn healthy; cần login CLI đúng account trước admin/cleanup. Không sửa lại schema để xử lý lỗi CLI.
 
+## 10/10/2026 — DCR Claude
+
+- Clone D:\Dev\profileMCP, npm ci từ lockfile. Baseline trước sửa: typecheck và 13/13 tests passed.
+- OAUTH-07 / CLIENT-DCR-01 (tests/oauth.test.ts): MCP SDK 1.32.1 auth() tự discovery, DCR với callback Claude và scope từ PRM scopes_supported. Trước sửa: fail InvalidClientMetadataError "scope must only contain Authorization Server supported scope values". Sau sửa: DCR 201, authorization scope đủ 8 read scopes, một lần consent, code exchange, token scope 8 scopes, SDK listTools 2. Cùng test: DCR scope lạ 400 và log diagnostic chỉ có code/reason/field names; client DCR xin thêm openid bị invalid_scope; pre-registered client xin openid nhận invalid_scope trước login SHA (verify count 0).
+- Mutation check thủ công: bỏ grant.addOIDCScope thì OAUTH-07 fail tại trang login SHA (consent loop); đã khôi phục.
+- Live production (artifact cũ dpl_99wAQ6f6L1r9ZYhSfQKYRdSDN3v1): một DCR kiểu SDK/Claude có resource scopes trả HTTP 400 invalid_client_metadata cùng thông điệp, AS scopes_supported ["openid"], không cấp client. Không gọi SHA.
+- Sau sửa: typecheck, 14/14 tests, build, native ESM smoke, document validator passed. npm audit --omit=dev 0 vulnerabilities; npm audit đầy đủ 34 findings dev tree.
+- Đại ca tự deploy production dpl_oazx1484NUdnHyg4PTC4seDnG3WT (Ready, alias canonical). Sau deploy: health/ready/PRM/AS metadata 200; MCP không token 401 + resource_metadata; AS scopes_supported 8 read scopes + openid; probe-registration 4/4 HTTP 201, gồm DCR none + 8 resource scopes. Không gọi SHA.
+- **CLIENT-CLAUDE-01 vẫn chưa passed** cho tới khi Claude Connect thật đi qua DCR, login SHA/OTP, consent và tools/list.
+- Claude Connect trên dpl_oazx1484NUdnHyg4PTC4seDnG3WT: qua DCR, mở form SHA; submit login trả {"error":"INVALID_ORIGIN"} (Đại ca chụp màn hình). Không gọi SHA.
+- Tái hiện bằng Chromium của app trên server synthetic local (PGlite, fake SHA, ID/password/OTP giả): POST login 403 INVALID_ORIGIN do Referrer-Policy no-referrer → Origin null. Sau đổi same-origin: login/OTP qua, consent bị CSP form-action 'self' chặn redirect (console). Sau thêm origin redirect_uri vào form-action riêng trang consent: đi tới callback client. Typecheck và 14/14 tests pass với assertions mới trong approve(). Đại ca deploy dpl_BE7kQpGHx1HJqGswsJnQuuLsJ9WS: health/ready/PRM/AS 200, MCP không token 401, AS 9 scopes, Referrer-Policy same-origin trên production.
+
+## 10/10/2026 — G1 trace local (AUTH-01 một phần)
+
+- Claude Connect trên dpl_BE7kQpGHx1HJqGswsJnQuuLsJ9WS: POST login 401 UPSTREAM_AUTH_FAILED (read-safe-logs). Không có log bước SHA trên artifact đó.
+- scripts/trace-sha-login.ts --live trên máy local; Đại ca tự nhập ID/password/OTP của chính mình; output chỉ status/kiểu/tên field/số lượng, không giá trị. Kết quả từng lần: (1) login-v2 200, schema fail trustDevice null; (2) generate-matrix HTTP 400 code 405 "Session hết hạn"; (3) sau thêm Session-Key + Bearer null: login-v2/generate-matrix/verify-sotp/get-user-login 200, parseIdentity fail do khác kiểu chữ preferredUsername; (4) sau sửa: login-v2 → generate-matrix → verify-sotp → get-user-login → account-no-and-rem đều 200, session_ready TTL ~479 phút, 1 identity row, 8 accounts, 6 brokers. refresh_token null.
+- DevTools web gốc (Đại ca chụp): Authorization: Bearer null cho auth công khai; Session-Key header ở generate-matrix và verify-sotp; Correlation-Id khác nhau mỗi request; login-v2 không Set-Cookie.
+- Một tài khoản, một vai trò, từ IP local. **Chưa xác minh từ Vercel**; AUTH-02..09, role khác, logout/đa phiên chưa thử. typecheck, 15/15 tests (thêm SEC-06 diagnostics, trustDevice null + Session-Key, identity case), document validator passed. Chưa deploy.
+
+## 10/10/2026 — production connect và accounts.tree
+
+- dpl_4rRDrodsumhqpGc1azvCuBYBTqsR: Đại ca Connect trên Claude thành công (login/OTP qua Vercel). Em gọi qua connector: list_profile_capabilities trả 40 candidates, liveOperations []; get_profile_data_dictionary trả đủ 40/40 entry, không lỗi. read-safe-logs: /api/mcp có token 200/202; vài POST 400 chưa phân tích.
+- Từ điển còn sai lệch cần sửa theo từng operation: evidenceStatus cũ ở mọi entry; identity.current thiếu homeOrder/custodyCd; tiền tố DTO lẫn items[]/data[]/content[]/list[]; nhiều unit unverified.
+- accounts.tree + profile.pii (chưa deploy): tests/accounts-tree.test.ts REQ/RAW/DTO/SCOPE/PAGE passed; oauth.test.ts gọi list_managed_accounts qua SDK có/không PII; SEC-02 kiểm tool schema không có oneOf cấp cao nhất. 20/20 tests, typecheck, document validator passed. Mutation bỏ chặn PII làm DTO-accounts.tree fail.
+
 ## Chưa thực hiện / chưa đạt
 
 Live SHA login/OTP/read probes và đơn vị dữ liệu, G1/G2/G4 đầy đủ, refresh SHA (disabled), account switch browser CSP, complete cross-role/cross-user application matrix, 20-user load, cleanup scheduler, rollback/revoke drill và toàn bộ dev-audit remediation. 0 business operations enabled. Local có thay đổi nhỏ sau production chưa redeploy; xem [HANDOFF](HANDOFF.md).

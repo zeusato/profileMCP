@@ -99,8 +99,8 @@
     {
       "id": "accounts.tree",
       "tool": "list_managed_accounts",
-      "enabled": false,
-      "status": "planned-candidate",
+      "enabled": true,
+      "status": "released",
       "releaseGate": "G2-contract",
       "method": "GET",
       "host": "https://api.shs.com.vn",
@@ -118,46 +118,91 @@
         ]
       },
       "requestBinding": "query=none; body=none",
-      "rawResponse": "data object accounts[] + brokers[]",
+      "rawResponse": "data object accounts[] + brokers[]; live 2026-10-10: accounts{accountNumber,customerName,brokerCode,remNo}, brokers{brokerCode,brokerName,level,remNo,remMng,children,accounts}",
       "fieldMap": [
         {
           "raw": "accounts[].accountNumber",
           "dto": "accounts[].accountRef",
           "unit": "opaque-reference",
           "nullPolicy": "preserve; missing is distinct from zero",
-          "evidenceStatus": "source-described-not-live-verified"
+          "evidenceStatus": "live-shape-verified-2026-10-10"
+        },
+        {
+          "raw": "accounts[].accountNumber",
+          "dto": "accounts[].displayNumber",
+          "unit": "masked-text",
+          "nullPolicy": "last 3 digits only",
+          "evidenceStatus": "live-shape-verified-2026-10-10"
+        },
+        {
+          "raw": "accounts[].accountNumber",
+          "dto": "accounts[].accountNumber",
+          "unit": "identifier",
+          "scope": "profile.pii",
+          "nullPolicy": "returned only with profile.pii",
+          "evidenceStatus": "live-shape-verified-2026-10-10"
+        },
+        {
+          "raw": "accounts[].customerName",
+          "dto": "accounts[].customerName",
+          "unit": "text",
+          "scope": "profile.pii",
+          "nullPolicy": "returned only with profile.pii; null/missing preserved as null and listed in fieldAvailability.missing",
+          "evidenceStatus": "live-shape-verified-2026-10-10"
         },
         {
           "raw": "accounts[].brokerCode",
           "dto": "accounts[].brokerCode",
           "unit": "identifier",
           "nullPolicy": "preserve; missing is distinct from zero",
-          "evidenceStatus": "source-described-not-live-verified"
+          "evidenceStatus": "live-shape-verified-2026-10-10"
+        },
+        {
+          "raw": "accounts[].brokerCode",
+          "dto": "accounts[].brokerRef",
+          "unit": "opaque-reference",
+          "nullPolicy": "preserve; missing is distinct from zero",
+          "evidenceStatus": "live-shape-verified-2026-10-10"
         },
         {
           "raw": "brokers[].brokerCode",
           "dto": "brokers[].brokerRef",
           "unit": "opaque-reference",
           "nullPolicy": "preserve; missing is distinct from zero",
-          "evidenceStatus": "source-described-not-live-verified"
+          "evidenceStatus": "live-shape-verified-2026-10-10"
+        },
+        {
+          "raw": "brokers[].brokerCode",
+          "dto": "brokers[].brokerCode",
+          "unit": "identifier",
+          "nullPolicy": "preserve; missing is distinct from zero",
+          "evidenceStatus": "live-shape-verified-2026-10-10"
+        },
+        {
+          "raw": "brokers[].brokerName",
+          "dto": "brokers[].brokerName",
+          "unit": "text",
+          "scope": "profile.pii",
+          "nullPolicy": "returned only with profile.pii",
+          "evidenceStatus": "live-shape-verified-2026-10-10"
         },
         {
           "raw": "brokers[].children",
           "dto": "brokers[].children",
           "unit": "tree",
-          "nullPolicy": "preserve; missing is distinct from zero",
-          "evidenceStatus": "source-described-not-live-verified"
+          "nullPolicy": "flattened; children as brokerRef list",
+          "evidenceStatus": "live-shape-verified-2026-10-10"
         },
         {
-          "raw": "brokers[].remMng",
-          "dto": "brokers[].remMng",
-          "unit": "identifier",
-          "nullPolicy": "preserve; missing is distinct from zero",
-          "evidenceStatus": "source-described-not-live-verified"
+          "raw": "accounts[].brokerCode",
+          "dto": "brokers[].directAccounts",
+          "unit": "count",
+          "nullPolicy": "derived: accounts whose brokerCode equals this broker",
+          "evidenceStatus": "live-shape-verified-2026-10-10"
         }
       ],
       "scopeRule": "Derive subject/broker/account/subaccount from verified server session; authorize request and response; see AUTH-AND-SESSIONS.md",
-      "notes": "Scope bootstrap. Detect cycles/duplicates; brokerCode is not login username. Tree grants must agree with current identity/upstream entitlements.",
+      "notes": "Scope bootstrap. Detect cycles/duplicates; brokerCode is not login username. Tree grants must agree with current identity/upstream entitlements. Full account number, customer name and broker name only with profile.pii (opt-in on consent). Output capped at 400 accounts with coverage.truncated; remNo/remMng/level/brokers[].accounts not returned.",
       "tests": [
         "REQ-accounts.tree",
         "RAW-accounts.tree",

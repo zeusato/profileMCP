@@ -1,6 +1,6 @@
 # Validation thực tế
 
-Ngày: 09/10/2026. Đây là sổ kết quả thực; test IDs trong TEST-PLAN/TEST-MAP vẫn là planned nếu không ghi rõ ở đây.
+Nhật ký: 09–10/10/2026. Đây là sổ kết quả thực; test IDs trong TEST-PLAN/TEST-MAP vẫn là planned nếu không ghi rõ ở đây. Các checkpoint có ngày giữ nguyên kết quả lịch sử; trạng thái hiện tại xem HANDOFF và mục kiểm lại cuối nhật ký.
 
 ## Đã thực hiện
 
@@ -79,7 +79,16 @@ Ngày: 09/10/2026. Đây là sổ kết quả thực; test IDs trong TEST-PLAN/T
 
 ## Chưa thực hiện / chưa đạt
 
-Live SHA login/OTP/read probes và đơn vị dữ liệu, G1/G2/G4 đầy đủ, refresh SHA (disabled), account switch browser CSP, complete cross-role/cross-user application matrix, 20-user load, cleanup scheduler, rollback/revoke drill và toàn bộ dev-audit remediation. 0 business operations enabled. Local có thay đổi nhỏ sau production chưa redeploy; xem [HANDOFF](HANDOFF.md).
+ChatGPT acceptance, expiry/reconnect/disconnect live đầy đủ, đối chiếu đơn vị với màn hình SHA, G1/G2/G3/G4 toàn bộ tiêu chí, refresh SHA (disabled), account switch browser CSP, complete cross-role/cross-user application matrix, 20-user load, cleanup scheduler, rollback/revoke drill và toàn bộ dev-audit remediation. Hiện 39/42 business operations bật; 3 operation tắt giữ PLANNED. market.candles có test RAW parser; 4 ID còn lại chưa có suite riêng tương ứng. Các test bảng là coverage synthetic, không chứng minh toàn bộ edge case của 210 ID thiết kế.
+
+## 10/10/2026 — hoàn tất tài liệu và kiểm lại checkpoint
+
+- Hoàn tất README/USER-GUIDE/HANDOFF, đồng bộ kiến trúc/auth/operation/test map và runtime config với trạng thái 39/42 operation; sửa các dòng hiện trạng cũ, giữ nguyên số 13/14 tests trong checkpoint lịch sử.
+- SHA_PC tại D:\Dev\SHA_PC\SHA_PC_code: HEAD 7261a8dbf4ab9ba4cb086b869909b59579e8b417; kiểm Git và SHA256 của 4 file trong SOURCE-MAP đều khớp, không thay đổi nguồn hoặc chạy script nguồn.
+- Node 24.21.0 từ dependency đã pin: `npm run typecheck`, `npm run build`, `npm run smoke:esm` passed. Lần đầu `npm test`: 58/60 pass, 2 OAuth tests bị sandbox chặn loopback (connect EACCES 127.0.0.1). Chạy lại toàn bộ với quyền kết nối localhost: **60/60 passed, 0 fail/skip**; fake SHA/PGlite, không gọi SHA/cloud thật.
+- `vercel inspect https://profile-mcp.vercel.app --json` (chỉ đọc metadata): deployment dpl_EzduSGpCgutYVxdMe32Wzhppa9wr, READY, target production, tạo lúc 21:36 ngày 10/10/2026. Metadata lấy được không trả commit SHA của artifact; 77c6bf0 là checkpoint code local. Không deploy trong lần hoàn tất tài liệu này.
+- `npm run check:docs` passed; report máy tại config/document-validation.json. `sourceHashChecks: not-requested` trong report chỉ nói chưa chạy tùy chọn `--verify-source` cho manifest lịch sử 09/10; 4 file SHA_PC bổ sung được kiểm riêng bằng Get-FileHash như trên.
+- Pre-commit: `git diff --cached --check` sạch; `scripts/check-staged-secrets.mjs` passed trên 19 file staged (private path/JWT/private key/token patterns; không có local private material để so sánh). Quét thêm mẫu số tài khoản SHA, email và số điện thoại/giấy tờ không có findings sau khi đối chiếu UUID requestId synthetic trong MCP-CONTRACT; không in giá trị khớp.
 
 ## Giới hạn của kiểm tra tài liệu
 

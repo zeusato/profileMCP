@@ -4,7 +4,7 @@
 
 Người nội bộ kết nối MCP, mở website đăng nhập SHA, hoàn tất OTP và cấp quyền đọc. Client nhận token MCP; câu hỏi về tài sản, khoản vay, giao dịch hoặc báo cáo được trả bằng dữ liệu SHA trong quyền của chính người dùng. Không có đường đi từ tool tới đặt/sửa/hủy/xác nhận lệnh hoặc thao tác thay đổi nghiệp vụ.
 
-Đã triển khai runtime và production trong ngày 09/10/2026 theo yêu cầu Đại ca; xem [HANDOFF](HANDOFF.md) và [VALIDATION](VALIDATION.md). Các bước dưới là tiêu chí thiết kế để đối chiếu, không phải mọi mục còn chưa khởi công hoặc đã hoàn tất. Hiện Claude DCR lỗi 400, live SHA chưa nghiệm thu, 40 read operations vẫn disabled; không đổi planned thành passed vì đã viết code.
+Trạng thái gate 10/10/2026 (chi tiết [HANDOFF](HANDOFF.md), [VALIDATION](VALIDATION.md)): **G0** đạt (OAuth/PKCE/SDK, hai instance). **G1** login đã kiểm cho một tài khoản môi giới (login-v2 → matrix → verify-sotp → identity → cây quyền, chạy từ Vercel); role thường/ngoài allowlist và đa phiên chưa thử. **G2**: 39/42 operation bật theo quyết định của Đại ca — fieldMap từ shape live hoặc doc-only khi mẫu rỗng, đơn vị gắn unverified (nhánh "ghi rõ" của AGENTS.md), coverage chi tiết ở TEST-MAP; 3 operation tắt vì thiếu mẫu/route bị từ chối. **G3** một phần (security/regression synthetic; load/drill chưa). **G4** Claude đã kiểm login/tools và gọi live 39/39; expiry/disconnect live còn mở, GPT chưa thử. **G5** production đang chạy cho 1 thành viên; mở rộng team sau khi thêm allowlist và nghiệm thu GPT. Các bước dưới là tiêu chí thiết kế gốc để đối chiếu.
 
 ## G0 — nền tảng và OAuth spike
 
@@ -18,7 +18,7 @@ Người nội bộ kết nối MCP, mở website đăng nhập SHA, hoàn tất
 
 ## G1 — login SHA, identity và session store
 
-1. Schema private cơ sở đã áp dụng theo yêu cầu bổ sung của Đại ca, xem CLOUD-SETUP. Tiếp tục implement repository/RPC và migration tăng phiên bản, tách preview/prod và role migration/runtime/cleanup. Encryption runtime, TTL và generation CAS vẫn chưa được triển khai.
+1. Schema private cơ sở và migration 002 đã áp dụng theo yêu cầu bổ sung của Đại ca, xem CLOUD-SETUP/SUPABASE. Repository/RPC, encryption runtime, TTL và generation fence đã triển khai; kiểm chứng synthetic ghi tại VALIDATION. Tách store/keys preview khỏi production và cấu hình cleanup scheduler vẫn còn mở; thay đổi schema tiếp theo dùng migration tăng phiên bản.
 2. Xây trang ID/password, challenge matrix và OTP. Không làm login tool. Bind browser cookie, auth transaction, client/redirect/resource/PKCE và SHA challenge.
 3. Implement 3 auth calls từ [AUTH-AND-SESSIONS](AUTH-AND-SESSIONS.md). Dùng contract synthetic trước; fresh login chỉ khi người dùng tự thao tác form và được phép sử dụng tài khoản test.
 4. Kiểm khác biệt `Bearer null`/không Authorization trên public auth, otpType thực nhận, TTL, mã lỗi OTP sai/hết hạn, verify timeout, nhiều login song song, logout SHA có ảnh hưởng phiên khác không.

@@ -1,8 +1,8 @@
 # Ma trận kiểm thử operation
 
-Tất cả test bên dưới có trạng thái **PLANNED**, không phải kết quả passed. Mỗi test ID phải trở thành test thực trong tests/ trước khi operation được bật. Xem [TEST-PLAN](../TEST-PLAN.md) để biết assertions bắt buộc.
+Các ID bên dưới là ma trận thiết kế gồm 5 nhóm cho mỗi trong 42 operation (210 ID); bảng ID không tự chứng minh mọi assertion đã passed. Xem [TEST-PLAN](../TEST-PLAN.md) để biết assertions bắt buộc và [VALIDATION](../VALIDATION.md) để biết kết quả chạy thực.
 
-Checkpoint runtime: tests/contracts.test.ts có assertions đại diện REQ-A/B, orders/date và DTO/coverage; tests/security.test.ts và tests/oauth.test.ts kiểm platform chung. Release 10/10/2026: 34 operation bật. accounts.tree có 5 suite riêng (tests/accounts-tree.test.ts); 33 operation dùng projection fieldMap có test bảng REQ/RAW/DTO/SCOPE/PAGE trong tests/released-operations.test.ts (fixture tổng hợp sinh từ fieldMap, fieldMap sinh từ shape live); market.candles dùng RAW-market.candles trong contracts.test.ts. Tất cả passed 10/10/2026. 6 operation còn tắt giữ PLANNED. Coverage thực xem [VALIDATION](../VALIDATION.md).
+Release 10/10/2026: 39/42 operation bật. accounts.tree có 5 test riêng (tests/accounts-tree.test.ts); 37 operation dùng projection fieldMap có test bảng REQ/RAW/DTO/SCOPE/PAGE trong tests/released-operations.test.ts (fixture synthetic sinh từ fieldMap, theo shape live hoặc doc-only khi mẫu live rỗng). market.candles có RAW-market.candles trong contracts.test.ts; 4 ID còn lại của candles vẫn là mục tiêu, chưa có suite riêng tương ứng. tests/contracts.test.ts còn có assertions đại diện REQ-A/B, orders/date và DTO/coverage; tests/security.test.ts và tests/oauth.test.ts kiểm platform chung. 3 operation tắt (profile.authorized, assets.loanDetail, orderSummary.top) giữ PLANNED. Kết quả chạy và giới hạn coverage xem [VALIDATION](../VALIDATION.md).
 
 | Operation | Request | Raw/envelope | DTO/unit | Scope | Pagination/coverage |
 |---|---|---|---|---|---|

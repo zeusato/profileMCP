@@ -1,10 +1,10 @@
 # Kế hoạch kiểm thử và nghiệm thu
 
-Tài liệu này là mục tiêu coverage, không phải danh sách đã passed. Runtime hiện có 14 tests synthetic; coverage thực và những phần còn thiếu ghi tại [VALIDATION](VALIDATION.md), checkpoint tại [HANDOFF](HANDOFF.md). 200 operation IDs chưa được nghiệm thu toàn bộ.
+Tài liệu này là mục tiêu coverage, không phải danh sách đã passed. Runtime hiện có 60 tests synthetic (tests/*.test.ts, gồm bảng REQ/RAW/DTO/SCOPE/PAGE trong released-operations.test.ts); coverage thực và những phần còn thiếu ghi tại [VALIDATION](VALIDATION.md), checkpoint tại [HANDOFF](HANDOFF.md). 210 operation test IDs chưa được nghiệm thu toàn bộ.
 
 ## Theo từng operation
 
-[TEST-MAP](api/TEST-MAP.md) có 5 test ID cho mỗi trong 40 operation, tổng 200 ID thiết kế. Một ID có thể là test suite nhiều assertions.
+[TEST-MAP](api/TEST-MAP.md) có 5 test ID cho mỗi trong 42 operation, tổng 210 ID; operation đã bật có test thật tương ứng. Một ID có thể là test suite nhiều assertions.
 
 | Prefix | Assertions bắt buộc |
 |---|---|

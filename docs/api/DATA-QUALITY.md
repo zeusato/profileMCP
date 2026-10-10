@@ -28,7 +28,7 @@ Contract mới được kiểm chứng bằng request/response read-only, role v
 | OrdNo | gotchas nói số theo sàn; list-confirm doc phân biệt số công ty | Giữ nguồn/route; key gồm account/date/market khi được chứng minh; không global sort hoặc join mù |
 | Status 4/5 | Nguồn chưa đủ mẫu; status 1 có ghi inferred | Return raw+label null nếu chưa verified; không suy khớp/hủy |
 | list-confirm status N | Enum khác numeric histories | Không map chung |
-| price input balance | Chưa chứng minh ordPri unit | Disable buying-power tool tới khi xác minh |
+| price input balance | Probe live 10/10/2026 với price chuỗi VND | buying-power đã bật theo quyết định release; giữ số liệu trả về/unit unverified, không đặt lệnh |
 | order/sum-transaction kỳ | valueFilterInfo chưa có schema kỳ chắc chắn | period=unknown; không tự nhận from/to chưa upstream support |
 | authorized/top summary | Chỉ null hoặc [] lịch sử | Không suy tài khoản không có dữ liệu; chờ nonempty schema |
 | research Amount | Tổng số khuyến nghị, không tiền | Unit count sau xác minh |

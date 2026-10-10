@@ -1,6 +1,6 @@
 # Hợp đồng tra cứu SHA: danh mục triển khai
 
-Ngày rà soát: 09/10/2026. **40 method/path tra cứu dự kiến**, nhóm thành **17 tool nghiệp vụ**. Tất cả disabled trong cấu hình tài liệu; chưa có runtime hoặc live probe mới. Cộng thêm 2 tool metadata nội bộ, không gọi upstream.
+Ngày rà soát: 09/10/2026; cập nhật release 10/10/2026. **42 method/path tra cứu** (40 gốc + 2 KMS), nhóm thành **18 tool nghiệp vụ**; 39 bật, 3 tắt — trạng thái từng operation ghi ở dòng "Release 10/10/2026" trong mục của nó. Cộng thêm 2 tool metadata nội bộ, không gọi upstream.
 
 Nguồn JSON chuẩn: [sha-read-candidates.json](../../config/sha-read-candidates.json). Schema input: [tool-input-schemas.json](../../config/tool-input-schemas.json). Schema này là thiết kế; cần Zod/JSON Schema validation thực khi implementation. Quy tắc giải mã ngày, scope, phân trang, đơn vị và null nằm trong [TRANSPORT](TRANSPORT.md) và [DATA-QUALITY](DATA-QUALITY.md).
 

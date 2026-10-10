@@ -2,7 +2,7 @@
 
 ## Tool surface
 
-17 tool nghiệp vụ, mỗi tool nhận `operation` enum và schema theo operation; thêm 2 tool metadata không gọi SHA. Không dùng một tool generic nhận URL/method/body. Danh mục đầy đủ và input chính xác nằm trong [ENDPOINTS](api/ENDPOINTS.md), [JSON Schema](../config/tool-input-schemas.json).
+18 tool nghiệp vụ (từ 10/10/2026 thêm get_knowledge_library), mỗi tool nhận `operation` enum và schema theo operation; thêm 2 tool metadata không gọi SHA. Không dùng một tool generic nhận URL/method/body. Danh mục đầy đủ và input chính xác nằm trong [ENDPOINTS](api/ENDPOINTS.md), [JSON Schema](../config/tool-input-schemas.json).
 
 | Tool | Nội dung đọc |
 |---|---|
@@ -17,18 +17,19 @@
 | get_loan_records | Món vay, lịch sử món vay và lịch sử thu nợ |
 | get_order_records | Lịch sử/sổ lệnh đọc, lệnh chờ xác nhận |
 | get_order_summary | Tổng hợp giao dịch/lệnh |
-| get_buying_power | Tra cứu sức mua theo giá giả định; chỉ bật sau xác minh unit |
+| get_buying_power | Tra cứu sức mua theo giá giả định; price theo đơn vị VND đã quan sát, số liệu trả về gắn unit unverified |
 | get_cash_movements | Báo cáo nộp/rút; không nộp/rút tiền |
 | get_new_accounts_report | Báo cáo tài khoản mở mới; không mở tài khoản |
 | get_research | Danh sách và tổng hợp khuyến nghị nguồn |
 | list_customer_groups | Đọc nhóm và thành viên được phép |
 | get_sha_market_data | Danh mục mã, giá, giao dịch gần nhất và nến |
+| get_knowledge_library | Kho tri thức nội bộ KMS: phòng ban và bài viết (văn bản không tin cậy) |
 | list_profile_capabilities | Operation thực sự đã bật cho user, giới hạn và gate |
 | get_profile_data_dictionary | Đơn vị, nguồn, enum, null và định nghĩa chỉ tiêu |
 
 Một tool chỉ đăng ký những nhánh schema đã được bật; nếu chưa có operation nào thì không đưa tool đó vào tools/list. Các operation đã bật của một tool được gộp thành một object schema (operation là enum), không dùng oneOf/anyOf/allOf ở cấp cao nhất vì tool input_schema của Claude không nhận; server vẫn validate đúng schema riêng từng operation.
 
-Release 10/10/2026 (lần 2): 34 operation thuộc 16 tool; tắt profile.authorized, assets.loanDetail, orders.unconfirmed, orderSummary.top, orderSummary.transactions, buyingPower.preview (get_buying_power chưa có trong tools/list). Mỗi tool có mô tả operation và quy tắc dữ liệu cho Claude. Lần 1 chỉ có `list_managed_accounts`/`accounts.tree`. Số tài khoản đầy đủ, tên khách hàng và tên môi giới chỉ trả khi connection có scope `profile.pii` (Đại ca chọn ngày 10/10/2026); không có scope này thì chỉ accountRef, số che `***123`, brokerRef/brokerCode. `readOnlyHint:true`, `destructiveHint:false`, `openWorldHint:true` là metadata; quyền và an toàn do runtime allowlist/policy thực thi.
+Release 10/10/2026 (lần 3): 39/42 operation thuộc 18 tool; tắt profile.authorized, assets.loanDetail, orderSummary.top. Tiểu khoản nhận subaccountRef hoặc subNo. Mỗi tool có mô tả operation và quy tắc dữ liệu cho Claude. Lần 1 chỉ có `list_managed_accounts`/`accounts.tree`. Số tài khoản đầy đủ và tên khách hàng chỉ trả khi connection có scope `profile.pii` (Đại ca chọn ngày 10/10/2026); không có scope này thì dùng accountRef, số che `***123`, brokerRef/brokerCode. Tên nhân viên môi giới vẫn được trả trong scope đọc. `readOnlyHint:true`, `destructiveHint:false`, `openWorldHint:true` là metadata; quyền và an toàn do runtime allowlist/policy thực thi.
 
 ## Input chung
 

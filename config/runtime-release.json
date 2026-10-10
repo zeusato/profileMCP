@@ -45,6 +45,6 @@
   "reason": "Released per Dai ca decision 2026-10-10: live-shape fieldMaps (config/live-shapes-20261010.json), source values with unit status unverified, customer PII behind profile.pii; table tests REQ/RAW/DTO/SCOPE/PAGE. Disabled: profile.authorized (null live), assets.loanDetail (GET 405), orderSummary.top ([] live). Added 2026-10-10: orders.unconfirmed, buyingPower.preview, orderSummary.transactions, knowledge.departments, knowledge.documents.",
   "clientAcceptance": {
     "gpt": "unverified",
-    "claude": "accounts.tree verified via Claude connector 2026-10-10 with profile.pii (8/8 accounts); client listed 1 of 3 tools after re-enable"
+    "claude": "39/39 enabled operations called live via Claude connector 2026-10-10, including SHA login/OTP/consent and KMS text output; live expiry/disconnect and other roles remain unverified"
   }
 }

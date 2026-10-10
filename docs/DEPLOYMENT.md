@@ -1,10 +1,10 @@
 # Triển khai và kết nối CLI
 
-Checkpoint 09/10/2026: đã deploy production theo yêu cầu Đại ca; live SHA/client acceptance chưa hoàn tất. Đọc [HANDOFF](HANDOFF.md). Không tạo project mới, chạy lại migration hoặc tự sinh bộ keys mới.
+Trạng thái 10/10/2026: production chạy release 39 operation; Đại ca tự deploy bằng lệnh dưới (Claude Code auto mode chặn deploy production). Commit trước khi deploy để production khớp Git. Đọc [HANDOFF](HANDOFF.md). Không tạo project mới, chạy lại migration hoặc tự sinh bộ keys mới.
 
 ## Local
 
-    Set-Location 'D:\Quyetnm\Dev\Profile MCP'
+    Set-Location 'D:\Dev\profileMCP'   # máy gốc: D:\Quyetnm\Dev\Profile MCP
     npm ci
     npm run typecheck
     npm test
@@ -75,4 +75,4 @@ Runtime kiểm TLS có CA, role đúng, EXECUTE-only, 12 FORCE RLS. Server SSL e
 
 ## Rollback
 
-Rollback code giữ issuer/resource/keys/schema. Không restore DB để rollback code vì có thể hồi sinh token. Tắt operation qua release config, không fallback nguồn. Chưa tuyên bố hỗ trợ GPT/Claude end to end trước acceptance. Cập nhật HANDOFF/VALIDATION/evidence sau deploy.
+Rollback code giữ issuer/resource/keys/schema. Không restore DB để rollback code vì có thể hồi sinh token. Tắt operation qua release config, không fallback nguồn. Claude đã kiểm login/tools và gọi live các operation đọc; ChatGPT và expiry/disconnect live còn chưa nghiệm thu. Cập nhật HANDOFF/VALIDATION/evidence sau deploy.

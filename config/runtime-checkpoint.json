@@ -5,7 +5,8 @@
   "productionOrigin": "https://profile-mcp.vercel.app",
   "resource": "https://profile-mcp.vercel.app/api/mcp",
   "vercelProjectId": "prj_gCrysy0jokg400TLZHJvfnVwi8nB",
-  "vercelDeploymentId": "dpl_4rRDrodsumhqpGc1azvCuBYBTqsR",
+  "vercelDeploymentId": "dpl_EzduSGpCgutYVxdMe32Wzhppa9wr",
+  "deploymentMetadataStatus": "READY/production verified 2026-10-10 via vercel inspect; artifact commit SHA not returned",
   "supabaseProjectRef": "rcdmgdnxndyjnosxikbu",
   "schemaVersion": "20261009_002",
   "tablesWithForcedRls": 12,
@@ -23,5 +24,6 @@
   "handoff": "docs/HANDOFF.md",
   "dcrRootCause": "AS scopes_supported lacked resource scopes sent in DCR scope (reproduced on production 2026-10-10)",
   "previousVercelDeploymentId": "dpl_BE7kQpGHx1HJqGswsJnQuuLsJ9WS",
-  "repositoryCommit": "5ab3f22"
+  "repositoryCommit": "77c6bf0",
+  "repositoryCommitEvidence": "local runtime code checkpoint; subsequent handoff/config/documentation update, not a verified deployment commit"
 }

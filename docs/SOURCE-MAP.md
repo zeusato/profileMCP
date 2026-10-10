@@ -28,22 +28,37 @@ Quét literal Gateway path trong toàn bộ `src/**/*.js` và `src/**/*.ts` tìm
 
 - [MCP Authorization 2025-11-25](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization): OAuth resource authorization.
 - [MCP security](https://modelcontextprotocol.io/docs/2025-11-25/tutorials/security/security_best_practices): token passthrough, redirect/consent threats.
-- [oidc-provider](https://github.com/panva/node-oidc-provider): đã chọn 9.12.2, two-instance synthetic flow passed và metadata production chạy; live client acceptance còn mở.
+- [oidc-provider](https://github.com/panva/node-oidc-provider): đã chọn 9.12.2, two-instance synthetic flow passed và metadata production chạy; trạng thái client cập nhật 10/10 tại HANDOFF/VALIDATION.
 - [Supabase secure data](https://supabase.com/docs/guides/database/secure-data), [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [serverless Postgres](https://supabase.com/docs/guides/database/connecting-to-postgres/serverless-drivers): private store và kết nối backend.
 
 Các quyết định TTL, schema, limits, grouping tool và policy trong bộ tài liệu là **thiết kế Profile MCP**, không gán nhầm thành tính năng/bảo đảm của SHA, Supabase hoặc Vercel.
 
-## Mapping runtime tại checkpoint 09/10/2026
+## Mapping runtime cập nhật 10/10/2026
 
 Không copy source code/credentials/fixtures thật. Runtime mới viết theo catalog/provenance đã hash ở trên.
 
 | Contract/source đã hash | Destination | Biến đổi và kiểm chứng |
 |---|---|---|
-| Gateway auth contract, AUTH-AND-SESSIONS | src/sha/auth.ts, src/sha/transport.ts, src/interactions.ts | Browser-only, fixed host/3 routes, không refresh/retry; synthetic OAuth dùng fake gateway; live G1 chưa đạt |
-| 40 route requestBinding/inputSchema trong config/sha-read-candidates.json | src/sha/catalog.ts, src/sha/requests.ts | Strict AJV, switch allowlist, scope server-derived; tests/contracts.test.ts đại diện, không 40 route accepted |
+| Gateway auth contract, AUTH-AND-SESSIONS | src/sha/auth.ts, src/sha/transport.ts, src/interactions.ts | Browser-only, fixed host/3 routes, không refresh/retry; synthetic OAuth dùng fake gateway; login/OTP production đã kiểm với một tài khoản môi giới qua Claude |
+| 42 route requestBinding/inputSchema trong config/sha-read-candidates.json | src/sha/catalog.ts, src/sha/requests.ts | Strict AJV, switch allowlist, scope server-derived; 39 route bật/đã gọi live qua Claude, 3 giữ disabled; tests/contracts.test.ts và tests/released-operations.test.ts, coverage chi tiết trong TEST-MAP |
 | identity/tree theo session_identity và Gateway docs | src/policy.ts | Authoritative username/broker tree, HMAC subject/session/generation refs; synthetic cross-user/response drift assertions |
-| fieldMap/unit trong catalog, report/revenue_sync contract | src/dto.ts, src/service.ts | Decimal/null/missing, whitelist, paging budget/repeated totals; đơn vị vẫn unverified, release disabled |
+| fieldMap/unit trong catalog, report/revenue_sync contract | src/dto.ts, src/service.ts | Decimal/null/missing, whitelist, paging budget/repeated totals; fieldMap theo live-shapes hoặc doc-only khi mẫu rỗng, đơn vị vẫn unverified, PII khách hàng theo profile.pii |
 | Kiến trúc Profile MCP (không SHA feature) | src/oauth.ts, src/store.ts, src/crypto.ts, migration 002 | Official library adapter, encrypted artifacts, atomic consume/quota/revoke, EXECUTE-only; tests/security.test.ts, tests/oauth.test.ts |
-| MCP authorization/SDK chính thức | src/mcp.ts, src/app.ts, api/index.ts | Stateless Streamable HTTP, 401/discovery, 2 metadata tools, SDK integration test |
+| MCP authorization/SDK chính thức | src/mcp.ts, src/app.ts, api/index.ts | Stateless Streamable HTTP, 401/discovery, 2 metadata + 18 business tools (schema gộp, mô tả), SDK integration test |
 
-Callback được đối chiếu [OpenAI auth](https://developers.openai.com/plugins/build/auth), [Claude authentication](https://claude.com/docs/connectors/building/authentication). Claude thực tế đang DCR 400; không ghi supported/passed. CA TLS được đối chiếu source Supabase Studio; URL/fingerprint tại [database-ca-provenance.json](../config/database-ca-provenance.json). Native runtime dependencies pin trong package-lock.json.
+Callback được đối chiếu [OpenAI auth](https://developers.openai.com/plugins/build/auth), [Claude authentication](https://claude.com/docs/connectors/building/authentication). DCR/login/tools của Claude đã kiểm ngày 10/10; ChatGPT chưa nghiệm thu. CA TLS được đối chiếu source Supabase Studio; URL/fingerprint tại [database-ca-provenance.json](../config/database-ca-provenance.json). Native runtime dependencies pin trong package-lock.json.
+
+## Bổ sung 10/10/2026 — SHA_PC @7261a8d và bằng chứng live
+
+Đại ca chỉ nguồn D:\Dev\SHA_PC\SHA_PC_code (HEAD 7261a8dbf4ab9ba4cb086b869909b59579e8b417; working tree có file đang sửa, các file dưới không nằm trong số đó). Chỉ đọc; không chạy script, không đọc logs/output/tmp.
+
+Kiểm lại ngày 10/10/2026 khi hoàn tất tài liệu: `git rev-parse HEAD` khớp commit trên, `git status --short -- <4 file dưới>` không có thay đổi, và `Get-FileHash -Algorithm SHA256` khớp cả 4 hash. Không copy nội dung nguồn, credential hoặc dữ liệu tài khoản.
+
+| File | sha256 | Dùng cho |
+|---|---|---|
+| docs/api/api-documentation.md | a3eec0f16b1a4ac8959e0573dc201fa08009402075e6dbc5ac723c9bbe7ac618 | Danh mục 46 endpoint, field portfolio/guarantee/collateral (fieldMap doc-only), list-confirm emNo/định dạng, balance, sum-transaction, loan-info/history |
+| src/preload/kms_library.js | bb50db4bc233da99d9af9b84ba23c27fbe6942ea68440dcce5cc4e818b0f0755 | KMS forward/cms departments + knowledge-shares/department/{code} |
+| src/preload/dashboard_notice.js | 80641fdad1e9da8bfd80734ce7905300accf72000dda54d901ff084ddb73c0fb | Body cấp môi giới {brokerCode, page} của guarantee/collateral |
+| src/preload/trade_pro_agent.js | a69374eb18afb262bc1babda8853ffff2dda816c16084a62290c9125763bcb38 | Body theo tiểu khoản {brokerCode, accounts, subId} của guarantee |
+
+Bằng chứng live (không giá trị, chỉ tên field/kiểu): [live-shapes-20261010.json](../config/live-shapes-20261010.json) từ scripts/trace-sha-login.ts --live --probe [--extra] với tài khoản của Đại ca; DevTools web gốc sha.shs.com.vn do Đại ca chụp (Authorization: Bearer null, Session-Key) cho contract đăng nhập.

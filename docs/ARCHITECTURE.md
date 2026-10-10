@@ -1,6 +1,6 @@
 # Kiến trúc đề xuất
 
-Checkpoint 09/10/2026: runtime Node 24/Express/official MCP SDK/oidc-provider đã deploy; xem [HANDOFF](HANDOFF.md). Mô tả bên dưới là kiến trúc mục tiêu; G1/G2/G4 còn mở. RPC EXECUTE-only và encrypted artifacts được chọn. ShaFlow lưu trong oauth_artifacts thay cho bảng auth_transactions; entitlement_snapshots chưa dùng, runtime đọc scope mới mỗi lần. Không có durable state trong RAM.
+Trạng thái 10/10/2026: runtime Node 24/Express/official MCP SDK/oidc-provider chạy production; 39 operation đọc qua một bộ chiếu fieldMap chung (src/dto.ts project) với PII theo scope profile.pii, mã tham chiếu theo phiên, số decimal chính xác và phân trang theo shape; thêm nguồn KMS forward/cms (đường dẫn cố định, một tham số kiểm chặt). Xem [HANDOFF](HANDOFF.md). RPC EXECUTE-only và encrypted artifacts được chọn. ShaFlow lưu trong oauth_artifacts thay cho bảng auth_transactions; entitlement_snapshots chưa dùng, runtime đọc scope mới mỗi lần. Không có durable state trong RAM.
 
 ## 1. Quyết định
 
@@ -55,10 +55,10 @@ Không đồng nhất ba giá trị: `preferredUsername` (login), `brokerCode` (
 
 Một upstream session gắn một user và một OAuth grant/connection. Nhiều client có thể đăng nhập riêng; không mặc định gộp token. G1 phải thử việc SHA có thu hồi phiên cũ khi login mới. Nếu có, UI phải thông báo reconnect thay vì retry ngầm hoặc dùng tài khoản chung.
 
-## 5. Điều kiện kỹ thuật chưa chốt
+## 5. Quyết định kỹ thuật và giới hạn kiểm chứng
 
-Chọn framework và OAuth AS sau spike. Ứng viên là official MCP TypeScript SDK + handler tương thích, Next.js Route Handler hoặc Vercel Node handler, thư viện `oidc-provider` với adapter Postgres. Thư viện có các thành phần OAuth/PKCE/resource indicators cần thiết, nhưng khả năng chạy đúng trên Vercel và đáp ứng client MCP phải được kiểm trước khi quyết định. [Nguồn thư viện](https://github.com/panva/node-oidc-provider).
+Đã chọn Express/Vercel Node handler, official MCP TypeScript SDK 1.32.1 và `oidc-provider` 9.12.2 với adapter Postgres. OAuth/PKCE/resource indicators đã chạy synthetic qua hai instance và production với Claude; ChatGPT còn chưa nghiệm thu. [Nguồn thư viện](https://github.com/panva/node-oidc-provider).
 
-Chưa chọn phiên bản dependency bằng suy đoán. G0 kiểm registry, engine Node, exports ESM, handler/SDK compatibility, native import và preview; pin phiên bản/lockfile sau đó. Không mang `better-sqlite3`, Electron, Windows safeStorage hoặc SQLCipher của SHA PC lên Vercel.
+Registry và engine/exports đã kiểm khi implementation; phiên bản pin trong package.json/package-lock.json, native ESM smoke chạy bằng Node 24. Không mang `better-sqlite3`, Electron, Windows safeStorage hoặc SQLCipher của SHA PC lên Vercel. Store/keys preview riêng còn chưa cấu hình.
 
 Các giới hạn duration, vùng deploy, kết nối database và gói Vercel/Supabase được kiểm theo account thực lúc triển khai; không dựa vào con số gói cố định trong tài liệu này.

@@ -4,7 +4,7 @@
 
 Kết nối MCP → website login SHA → OTP → consent đọc → quay về client. Website quản lý connections hiển thị client, thời điểm login, expiry và nút disconnect. Khi hết phiên SHA, trả REAUTH_REQUIRED và cho mở trang reconnect; không yêu cầu nhập OTP vào hội thoại model.
 
-Chưa xây UI hoặc đăng ký client trong phiên làm tài liệu. Sau G4, tạo hướng dẫn Claude/GPT có ảnh/menu đã kiểm thực tế và URL production mới, tuyệt đối không hướng dẫn dùng endpoint no-auth của dự án trước.
+Hướng dẫn người dùng Claude/ChatGPT: [USER-GUIDE](USER-GUIDE.md) (Claude đã kiểm thực tế 10/10/2026; phần ChatGPT là tham khảo, cập nhật sau nghiệm thu). Trang quản lý kết nối: https://profile-mcp.vercel.app/connections.
 
 ## Theo dõi
 
@@ -24,6 +24,9 @@ Không log URL có query tài khoản nguyên vẹn. Correlation ID riêng cho r
 | Nhiều login SHA thu hồi nhau | Báo người dùng giới hạn upstream đã kiểm; cân nhắc one active connection bằng ADR |
 | Quota/429 | Backoff có giới hạn, giảm concurrency; không chuyển nguồn ngầm |
 | Pagination đổi total | PARTIAL/unstable snapshot, không khẳng định sum đủ |
+| Người dùng báo lỗi kết nối/đăng nhập | node scripts/read-safe-logs.mjs: status /reg và /interaction/[redacted]/login, verify, consent; event oauth.registration_rejected và sha.upstream (bước SHA, HTTP/envelope code) |
+| Shape SHA đổi (UPSTREAM_SHAPE_CHANGED tăng) | Probe lại bằng scripts/trace-sha-login.ts --live --probe [--extra] (người dùng tự login), cập nhật live-shapes, chạy node scripts/gen-fieldmaps.mjs, npm test, deploy; operation chưa sửa kịp thì bỏ khỏi runtime-release.json |
+| Thêm thành viên | scripts/add-member.ts trên máy có .runtime (ID lưu chữ thường); không tạo lại keys |
 
 ## Secret rotation
 

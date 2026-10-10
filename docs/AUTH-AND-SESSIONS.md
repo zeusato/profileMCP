@@ -1,6 +1,6 @@
 # Đăng nhập SHA và phiên MCP
 
-Checkpoint 10/10/2026: đã implement control plane và OAuth, 14 tests synthetic tổng thể passed; chưa live login SHA. Claude lỗi DCR trước form (đã sửa và deploy 10/10, chờ Connect lại), GPT chưa test. Quyết định runtime/các khác biệt còn thiếu ghi trong [HANDOFF](HANDOFF.md); các flow dưới là hợp đồng mục tiêu, không tự chứng minh live acceptance.
+Trạng thái 10/10/2026: control plane và OAuth chạy production; đăng nhập SHA thật đã nghiệm thu với Claude (contract đã kiểm ở §3); consent có ô profile.pii; GPT chưa thử. Các flow dưới là hợp đồng mục tiêu, phần đã kiểm ghi rõ ngày.
 
 ## 1. Hai lớp xác thực
 
@@ -47,7 +47,7 @@ Consent phải hiển thị đúng client, tài khoản SHA hiện tại và ph�
 
 Host cố định `https://api.shs.com.vn`; prefix `/prod/v1/author-service/p/auth/`. Schema success vẫn cần check envelope trước khi đọc data.
 
-Bằng chứng: scripts/trace-sha-login.ts chạy adapter production từ máy local (IP Việt Nam), Đại ca tự nhập ID/password/OTP, một tài khoản vai trò môi giới; cùng DevTools capture web gốc sha.shs.com.vn. Chỉ ghi tên field/kiểu, không giá trị. **Chưa xác minh từ egress Vercel.**
+Bằng chứng contract: scripts/trace-sha-login.ts chạy adapter production từ máy local (IP Việt Nam), Đại ca tự nhập ID/password/OTP, một tài khoản vai trò môi giới; cùng DevTools capture web gốc sha.shs.com.vn. Chỉ ghi tên field/kiểu, không giá trị. Sau đó cùng flow đã chạy từ Vercel qua Claude Connect ngày 10/10/2026; các role khác và đa phiên còn chưa thử (xem VALIDATION).
 
 | Bước | Method/path | Body allowlist | Header bắt buộc | Response data đã thấy |
 |---|---|---|---|---|
@@ -86,13 +86,13 @@ Auth transaction: `created → password_submitted → challenge_ready → verify
 
 ## 5. OAuth AS và client registration
 
-Dùng thư viện chuẩn có authorization code, PKCE S256, discovery, resource indicators, token endpoint, revocation và storage adapter. `oidc-provider` là ứng viên, chưa được quyết định/pin. G0 phải chứng minh chạy trên Vercel và persistence/atomic consume trong Supabase.
+Dùng `oidc-provider` 9.12.2 đã pin, có authorization code, PKCE S256, discovery, resource indicators, token endpoint, revocation và storage adapter Postgres. G0 đã kiểm two-instance synthetic, persistence/atomic consume và runtime Vercel; kiểm chứng client Claude ghi trong VALIDATION, ChatGPT chưa nghiệm thu.
 
-Expose protected-resource metadata, authorization-server metadata, authorize, token, revoke và endpoints thư viện yêu cầu. URL cuối phải khớp issuer production cố định. Client chưa đăng ký có thể dùng cơ chế pre-registration/CIMD/DCR mà thư viện và client thực hỗ trợ; lựa chọn cụ thể chốt tại G0/G4. Dynamic registration nếu bật cần quota và validation redirect/client metadata, không nhận URL nội bộ/localhost ngoài trường hợp localhost native client được chuẩn cho phép và đã thiết kế riêng.
+Runtime expose protected-resource metadata, authorization-server metadata, authorize, token, revoke và endpoints thư viện yêu cầu, cùng issuer production cố định. DCR đã bật với quota và allowlist callback chính xác của Claude/ChatGPT; có pre-registered clients từ config cho test. CIMD và localhost native callback chưa được hỗ trợ. Redirect/client metadata có validation, không nhận URL nội bộ hoặc remote metadata tùy ý.
 
 MCP token phải bind client_id, subject, team, resource, scope, grant và session generation. Với opaque token: lưu digest HMAC, lookup server-side. Với JWT: kiểm chữ ký và claims, vẫn check revoke/session trong store. Token payload và cookie không chứa bearer SHA. [MCP security: token passthrough và confused deputy](https://modelcontextprotocol.io/docs/2025-11-25/tutorials/security/security_best_practices).
 
-TTL nội bộ đề xuất để kiểm thử, chưa phải thông số SHA: authorization code 60 giây và dùng một lần; access token MCP 10 phút nhưng không quá thời hạn session; rotating MCP refresh tối đa 7 ngày nhưng không vượt session SHA/revoke. Authorization-server library quản lý rotation/replay, adapter phải triển khai atomicity được test.
+TTL runtime (src/oauth.ts), không phải thông số SHA: authorization code 60 giây và dùng một lần; access token MCP tối đa 10 phút, giới hạn theo session; rotating MCP refresh 1 giờ, grant/session OAuth 8 giờ. Mỗi lần dùng token vẫn kiểm SHA session/expiry/revoke trong store. Thư viện quản lý rotation; atomic consume và rotation/disconnect có synthetic test, refresh replay đầy đủ còn mở.
 
 ## 6. Phân quyền request
 
@@ -111,6 +111,6 @@ Cache quyền gợi ý tối đa 60 giây, gắn session và version; thời h�
 
 Scope đề xuất: `profile.read`, `accounts.read`, `assets.read`, `orders.read`, `credit.read`, `reports.read`, `research.read`, `market.read`; `profile.pii` tách riêng và mặc định không cấp (từ 10/10/2026 gồm mọi PII khách hàng: tên, số TK, giấy tờ, ngày sinh, liên hệ, địa chỉ — Đại ca chọn): trang consent hiện ô chọn riêng, không tick sẵn, chỉ khi client xin scope này; bỏ trống thì grant ghi profile.pii là rejected (tránh lặp consent) và token không có scope đó. Scope `openid` chỉ dùng nếu OAuth library thực triển khai OIDC, không tự thêm vì tên thư viện.
 
-Runtime: 8 read scopes được khai báo cả ở AS (`scopes`, để DCR có `scope` của MCP client hợp lệ) và resource server; consent grant cùng tập ở hai phía. `openid` do oidc-provider luôn công bố nhưng không được cấp: authorization xin scope ngoài 8 read scopes nhận `invalid_scope` trước login SHA.
+Runtime: 8 read scopes và `profile.pii` được khai báo cả ở AS (`scopes`, để DCR có `scope` của MCP client hợp lệ) và resource server; consent grant cùng tập được chọn ở hai phía. `openid` do oidc-provider luôn công bố nhưng không được cấp: authorization xin scope ngoài tập của Profile MCP nhận `invalid_scope` trước login SHA.
 
 Log không chứa Authorization, cookie, username/password, OTP, access/refresh token, request/response body tài khoản. Audit chỉ operation, subject ID nội bộ/hmac, request ID, result code, duration, row count và gate version. Không đẩy PII vào analytics/tracing.

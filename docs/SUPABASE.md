@@ -1,6 +1,6 @@
 # Supabase: lưu trữ và cấu hình
 
-Checkpoint 09/10/2026: đã chọn phương án RPC EXECUTE-only, apply [migration 002](database/20261009_002_runtime.sql), tạo login profile_mcp_app và private role profile_mcp_runtime. Hiện 12 bảng FORCE RLS (thêm request_leases). ShaFlow/Management/Cursor/OAuth dùng encrypted oauth_artifacts; auth_transactions/entitlement_snapshots chưa được runtime sử dụng. Cleanup function đã có nhưng chưa scheduler. CLI quản trị cuối phiên mất quyền project đúng; runtime TLS vẫn healthy. Xem [HANDOFF](HANDOFF.md) và [DEPLOYMENT](DEPLOYMENT.md).
+Checkpoint 09/10/2026 (không đổi đến 10/10/2026 — các release operation không cần migration): đã chọn phương án RPC EXECUTE-only, apply [migration 002](database/20261009_002_runtime.sql), tạo login profile_mcp_app và private role profile_mcp_runtime. Hiện 12 bảng FORCE RLS (thêm request_leases). ShaFlow/Management/Cursor/OAuth dùng encrypted oauth_artifacts; auth_transactions/entitlement_snapshots chưa được runtime sử dụng. Cleanup function đã có nhưng chưa scheduler. Xem [HANDOFF](HANDOFF.md) và [DEPLOYMENT](DEPLOYMENT.md).
 
 ## Vai trò
 

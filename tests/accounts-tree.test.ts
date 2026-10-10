@@ -45,7 +45,8 @@ test('DTO-accounts.tree: PII only with profile.pii; null and missing names prese
     const result = await h.call({ operation: 'accounts.tree' }) as any; const text = JSON.stringify(result);
     assert.equal(result.data.accounts.length, 2); assert.equal(result.data.accounts[0].displayNumber, '***001'); assert.equal(result.data.accounts[1].brokerCode, 'B002');
     assert.ok(result.data.accounts.every((a: any) => !('accountNumber' in a) && !('customerName' in a) && /^acct_/.test(a.accountRef) && /^broker_/.test(a.brokerRef)));
-    assert.ok(!/CANARY|"A001"|"A002"/.test(text), 'no names or full numbers without profile.pii');
+    assert.ok(!/CUSTOMER CANARY|"A001"|"A002"/.test(text), 'no customer names or full numbers without profile.pii');
+    assert.deepEqual(result.data.brokers.map((b: any) => b.brokerName).sort(), ['CHILD CANARY', 'ROOT CANARY'], 'staff names are not customer PII');
     assert.deepEqual(result.data.brokers.map((b: any) => [b.brokerCode, b.directAccounts, b.children.length]), [['B002', 1, 0], ['B001', 1, 1]]);
   } finally { await h.close(); }
   const missingName = tree(); delete (missingName.accounts[1] as any).customerName;

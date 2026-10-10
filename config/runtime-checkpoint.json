@@ -1,6 +1,6 @@
 {
   "date": "2026-10-10",
-  "status": "accounts-tree-released-in-repo-awaiting-deploy",
+  "status": "release-3-live-verified",
   "repository": "https://github.com/zeusato/profileMCP.git",
   "productionOrigin": "https://profile-mcp.vercel.app",
   "resource": "https://profile-mcp.vercel.app/api/mcp",
@@ -14,13 +14,14 @@
   "tlsCertificateVerified": true,
   "cleanupSchedulerConfigured": false,
   "supabaseCliProjectAccessAtCheckpoint": false,
-  "syntheticTestsPassed": 20,
-  "enabledBusinessOperations": 1,
+  "syntheticTestsPassed": 60,
+  "enabledBusinessOperations": 39,
   "liveShaLoginVerified": "production-claude-connect-2026-10-10",
-  "claudeAcceptance": "connected-2026-10-10-metadata-tools-ok; accounts.tree pending deploy+reconnect",
+  "claudeAcceptance": "39/39 enabled operations called live via connector 2026-10-10",
   "gptAcceptance": "not-tested",
-  "latestLocalChangesDeployed": false,
+  "latestLocalChangesDeployed": true,
   "handoff": "docs/HANDOFF.md",
   "dcrRootCause": "AS scopes_supported lacked resource scopes sent in DCR scope (reproduced on production 2026-10-10)",
-  "previousVercelDeploymentId": "dpl_BE7kQpGHx1HJqGswsJnQuuLsJ9WS"
+  "previousVercelDeploymentId": "dpl_BE7kQpGHx1HJqGswsJnQuuLsJ9WS",
+  "repositoryCommit": "5ab3f22"
 }

@@ -51,6 +51,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## identity.current
 
+- **Release 10/10/2026: bật.** 9 field (1 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_profile_identity`; `GET /prod/v2/sha-service/e/user/get-user-login`.
 - Input bắt buộc: operation. Input được phép: operation; field khác bị từ chối.
 - Request: query=none; body=none.
@@ -72,6 +73,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## accounts.tree
 
+- **Release 10/10/2026: bật.** 11 field (2 field sau profile.pii); bằng chứng: live-shape-verified-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `list_managed_accounts`; `GET /prod/v2/sha-service/e/account/account-no-and-rem`.
 - Input bắt buộc: operation. Input được phép: operation; field khác bị từ chối.
 - Request: query=none; body=none.
@@ -93,6 +95,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## accounts.search
 
+- **Release 10/10/2026: bật.** 23 field (17 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `list_managed_accounts`; `POST /prod/v2/sha-service/e/account/list-by-rem-no`.
 - Input bắt buộc: operation. Input được phép: operation, brokerRef, accountRefs, search, birthYearFrom, birthYearTo, cursor, limit; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; body={accountNumbers:resolve(accountRefs) or [],remNos:[B.code],fromBirthYear:birthYearFrom as string or '',toBirthYear:birthYearTo as string or '',searchKey:search or '',page,size}; page=cursor.page or 1; size=limit or 50; cursor bound to subject+sessionGeneration+operation+filters.
@@ -112,6 +115,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## accounts.subaccounts
 
+- **Release 10/10/2026: bật.** 7 field (1 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `list_managed_accounts`; `GET /prod/v2/sha-service/e/account/list-sub-no`.
 - Input bắt buộc: operation, accountRefs. Input được phép: operation, accountRefs; field khác bị từ chối.
 - Request: query accountNos=resolved accountNumbers joined by comma; body=none.
@@ -131,6 +135,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## profile.detail
 
+- **Release 10/10/2026: bật.** 35 field (29 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_account_profile`; `GET /prod/v2/sha-service/e/account/detail`.
 - Input bắt buộc: operation, accountRef. Input được phép: operation, accountRef; field khác bị từ chối.
 - Request: query accountNo=resolve(accountRef).accountNo; body=none.
@@ -153,6 +158,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## profile.information
 
+- **Release 10/10/2026: bật.** 21 field (3 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_account_profile`; `GET /prod/v2/sha-service/e/account/information`.
 - Input bắt buộc: operation, accountRef. Input được phép: operation, accountRef; field khác bị từ chối.
 - Request: query accountNo=resolve(accountRef).accountNo; body=none.
@@ -174,6 +180,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## profile.authorized
 
+- **Release 10/10/2026: tắt.** live 10/10/2026 trả data null cho cả 8 tài khoản; chưa có shape.
 - Tool: `get_account_profile`; `GET /prod/v2/sha-service/e/account/authorized`.
 - Input bắt buộc: operation, accountRef. Input được phép: operation, accountRef; field khác bị từ chối.
 - Request: query accountNo=resolve(accountRef).accountNo; body=none.
@@ -189,6 +196,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## customers.overview
 
+- **Release 10/10/2026: bật.** 14 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_customer_overview`; `GET /prod/v2/sha-service/e/account/customers-overview`.
 - Input bắt buộc: operation, from, to. Input được phép: operation, brokerRef, from, to; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; query brokerCode=B.code,fromDate=ymd(from),toDate=ymd(to); body=none.
@@ -215,6 +223,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## assets.cash
 
+- **Release 10/10/2026: bật.** 22 field (1 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_account_assets`; `GET /prod/v2/sha-service/e/asset/money-information`.
 - Input bắt buộc: operation, accountRef, subaccountRef. Input được phép: operation, accountRef, subaccountRef; field khác bị từ chối.
 - Request: query accountNo=resolve(accountRef).accountNo; afAccountNo=resolve(subaccountRef).subId; assert subaccount belongs to account; body=none.
@@ -241,6 +250,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## assets.stockValue
 
+- **Release 10/10/2026: bật.** 22 field (2 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_account_assets`; `GET /prod/v2/sha-service/e/asset/stock-value`.
 - Input bắt buộc: operation, accountRef, subaccountRef. Input được phép: operation, accountRef, subaccountRef; field khác bị từ chối.
 - Request: query accountNo=resolve(accountRef).accountNo; afAccountNo=resolve(subaccountRef).subId; assert subaccount belongs to account; body=none.
@@ -268,6 +278,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## assets.margin
 
+- **Release 10/10/2026: bật.** 28 field (1 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_account_assets`; `GET /prod/v2/sha-service/e/asset/margin-info`.
 - Input bắt buộc: operation, accountRef, subaccountRef. Input được phép: operation, accountRef, subaccountRef; field khác bị từ chối.
 - Request: query accountNo=resolve(accountRef).accountNo; afAccountNo=resolve(subaccountRef).subId; assert subaccount belongs to account; subId=resolved subId; body=none.
@@ -295,6 +306,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## assets.loanSummary
 
+- **Release 10/10/2026: bật.** 17 field (1 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_account_assets`; `GET /prod/v2/sha-service/e/asset/loan-information`.
 - Input bắt buộc: operation, accountRef, subaccountRef. Input được phép: operation, accountRef, subaccountRef; field khác bị từ chối.
 - Request: query accountNo=resolve(accountRef).accountNo; afAccountNo=resolve(subaccountRef).subId; assert subaccount belongs to account; body=none.
@@ -318,6 +330,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## assets.loanDetail
 
+- **Release 10/10/2026: tắt.** GET loan-info trả HTTP 405 live; khoản vay dùng loans.current (POST cùng path).
 - Tool: `get_account_assets`; `GET /prod/v2/sha-service/e/asset/loan-info`.
 - Input bắt buộc: operation, accountRef, subaccountRef. Input được phép: operation, accountRef, subaccountRef; field khác bị từ chối.
 - Request: query accountNo=resolve(accountRef).accountNo; afAccountNo=resolve(subaccountRef).subId; assert subaccount belongs to account; body=none.
@@ -344,6 +357,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## portfolio.account
 
+- **Release 10/10/2026: bật.** 18 field (0 field sau profile.pii); bằng chứng: live-connector-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_account_portfolio`; `GET /prod/v2/sha-service/e/asset/portfolio-investment-stock`.
 - Input bắt buộc: operation, accountRef, subaccountRef. Input được phép: operation, accountRef, subaccountRef; field khác bị từ chối.
 - Request: query accountNo=resolve(accountRef).accountNo; afAccountNo=resolve(subaccountRef).subId; assert subaccount belongs to account; subId=resolved subId; body=none.
@@ -370,6 +384,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## brokerAssets.summary
 
+- **Release 10/10/2026: bật.** 15 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_broker_assets`; `GET /prod/v2/sha-service/e/asset/summary`.
 - Input bắt buộc: operation. Input được phép: operation, brokerRef; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; query remNo=B.code; body=none.
@@ -393,6 +408,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## brokerAssets.accounts
 
+- **Release 10/10/2026: bật.** 22 field (2 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_broker_assets`; `POST /prod/v2/sha-service/e/asset/information`.
 - Input bắt buộc: operation. Input được phép: operation, brokerRef, accountRefs, cursor, limit; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; body brokerCode=B.code,accountNumbers=resolved accountRefs or [],page,size; page=cursor.page or 1; size=limit or 50; cursor bound to subject+sessionGeneration+operation+filters.
@@ -416,6 +432,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## brokerAssets.cash
 
+- **Release 10/10/2026: bật.** 22 field (2 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_broker_assets`; `POST /prod/v2/sha-service/e/asset/cash-information`.
 - Input bắt buộc: operation. Input được phép: operation, brokerRef, accountRefs, search, cursor, limit; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; body remNo=B.code,accountNumbers=resolved accountRefs or [],searchValue=search or '',page,size; page=cursor.page or 1; size=limit or 50; cursor bound to subject+sessionGeneration+operation+filters.
@@ -441,6 +458,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## brokerAssets.portfolio
 
+- **Release 10/10/2026: bật.** 16 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_broker_assets`; `POST /prod/v2/sha-service/e/asset/investment-portfolio`.
 - Input bắt buộc: operation. Input được phép: operation, brokerRef, cursor, limit; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; body tlId=B.code,page,size; page=cursor.page or 1; size=limit or 50; cursor bound to subject+sessionGeneration+operation+filters.
@@ -466,6 +484,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## credit.guarantees
 
+- **Release 10/10/2026: bật.** 34 field (2 field sau profile.pii); bằng chứng: doc-only-live-sample-empty. Đơn vị số liệu gắn status unverified.
 - Tool: `get_credit_risk`; `POST /prod/v2/sha-service/e/asset/guarantee-information-list`.
 - Input bắt buộc: operation. Input được phép: operation, brokerRef, accountRefs, subaccountRef, cursor, limit; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; body brokerCode=B.code,accounts=resolved accountRefs or explicit broker-scope value,subId=resolved optional subaccountRef,page,size; page=cursor.page or 1; size=limit or 50; cursor bound to subject+sessionGeneration+operation+filters.
@@ -492,6 +511,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## credit.collateral
 
+- **Release 10/10/2026: bật.** 28 field (2 field sau profile.pii); bằng chứng: doc-only-live-sample-empty. Đơn vị số liệu gắn status unverified.
 - Tool: `get_credit_risk`; `POST /prod/v2/sha-service/e/asset/additional-collateral-releases-list`.
 - Input bắt buộc: operation. Input được phép: operation, brokerRef, accountRefs, subaccountRef, cursor, limit; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; body brokerCode=B.code,accounts=resolved accountRefs,subId=resolved optional subaccountRef,page,size; page=cursor.page or 1; size=limit or 50; cursor bound to subject+sessionGeneration+operation+filters.
@@ -517,6 +537,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## loans.current
 
+- **Release 10/10/2026: bật.** 28 field (3 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_loan_records`; `POST /prod/v2/sha-service/e/asset/loan-info`.
 - Input bắt buộc: operation. Input được phép: operation, brokerRef, accountRefs, loanStatus, loanFrom, loanTo, cursor, limit; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; body remNo=B.code,accounts=resolved accountRefs,loanStatus=input or ['0','1','2'],lndTp=null,mnId=null,fromLndDate=ymd(loanFrom) or null,toLndDate=ymd(loanTo) or null; other source filters fixed null only after fixture; page=cursor.page or 1; size=limit or 50; cursor bound to subject+sessionGeneration+operation+filters.
@@ -548,6 +569,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## loans.history
 
+- **Release 10/10/2026: bật.** 31 field (3 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_loan_records`; `POST /prod/v2/sha-service/e/asset/loan-info/history`.
 - Input bắt buộc: operation, from, to. Input được phép: operation, brokerRef, accountRefs, from, to, cursor, limit; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; body remNo=B.code,accounts=resolved accountRefs,fromLndDate=ymd(from),toLndDate=ymd(to),page,size; page=cursor.page or 1; size=limit or 50; cursor bound to subject+sessionGeneration+operation+filters.
@@ -570,6 +592,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## loans.repayments
 
+- **Release 10/10/2026: bật.** 32 field (3 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_loan_records`; `POST /prod/v2/sha-service/e/asset/debt-info/history`.
 - Input bắt buộc: operation, repayFrom, repayTo. Input được phép: operation, brokerRef, accountRefs, loanFrom, loanTo, expiryFrom, expiryTo, repayFrom, repayTo, cursor, limit; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; body remNo=B.code,accounts=resolved accountRefs,fromLndDate/toLndDate=loan pair,fromExpDate/toExpDate=expiry pair,fromRepayDate/toRepayDate=repay pair (all ymd); fromInitialDebt,toInitialDebt,fromAdjRepayAmt,toAdjRepayAmt,mnId,lndTp=null after fixture; page=cursor.page or 1; size=limit or 50; cursor bound to subject+sessionGeneration+operation+filters.
@@ -598,6 +621,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## orders.history
 
+- **Release 10/10/2026: bật.** 40 field (2 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_order_records`; `POST /prod/v2/sha-service/e/order/histories`.
 - Input bắt buộc: operation, mode. Input được phép: operation, brokerRef, accountRefs, symbols, mode, from, to, cursor, limit; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; body brokerCodes=[B.code],accountNumbers=resolved accountRefs,stockCodes=symbols or [],page,pageSize=limit or 50; mode=history: fromDateTrades/toDateTrades=ymd dates,ordType:[],mdmType:[],ordStatus:[]; mode=today: type:0,ordStatus:['0','2','1','4','3','5','6'],omit date fields; cursor resolves page.
@@ -625,6 +649,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## orders.unconfirmed
 
+- **Release 10/10/2026: bật.** 19 field (2 field sau profile.pii); bằng chứng: live-shape-2026-10-10. pageSize cố định 30 (live: 5 bị từ chối "Invalid parameter pageSize"); giá/khối lượng vi-VN, đơn vị đồng. Đơn vị số liệu gắn status unverified.
 - Tool: `get_order_records`; `POST /prod/v2/sha-service/e/order/list-confirm`.
 - Input bắt buộc: operation, from, to. Input được phép: operation, from, to, cursor, limit; field khác bị từ chối.
 - Request: body fromDate=ymd(from),toDate=ymd(to),emNo=verified preferredUsername in evidenced format,page,pageSize; no model-provided emNo; cursor resolves page.
@@ -648,6 +673,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## orderSummary.account
 
+- **Release 10/10/2026: bật.** 8 field (0 field sau profile.pii); bằng chứng: doc-only-live-sample-null. Đơn vị số liệu gắn status unverified.
 - Tool: `get_order_summary`; `GET /prod/v2/sha-service/e/order/order-account-summary`.
 - Input bắt buộc: operation, accountRef, subaccountRef. Input được phép: operation, accountRef, subaccountRef; field khác bị từ chối.
 - Request: query accountNo=resolve(accountRef).accountNo; afAccountNo=resolve(subaccountRef).subId; assert subaccount belongs to account; subId=resolved subId; body=none.
@@ -670,6 +696,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## orderSummary.confirmations
 
+- **Release 10/10/2026: bật.** 7 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_order_summary`; `GET /prod/v2/sha-service/e/order/order-confirm-summary`.
 - Input bắt buộc: operation. Input được phép: operation; field khác bị từ chối.
 - Request: query remNo=verified preferredUsername per historical doc (NOT brokerCode); body=none; binding must be verified.
@@ -691,6 +718,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## orderSummary.top
 
+- **Release 10/10/2026: tắt.** live 10/10/2026 data [] (2 lần probe); chưa có shape.
 - Tool: `get_order_summary`; `GET /prod/v2/sha-service/e/order/summary`.
 - Input bắt buộc: operation. Input được phép: operation, brokerRef; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; query remNo=B.code; body=none.
@@ -706,6 +734,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## orderSummary.transactions
 
+- **Release 10/10/2026: bật.** 9 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. tổng trong ngày; ngoài giờ giao dịch mọi tổng null → SOURCE_NULL; dòng chi tiết chưa có shape nên bỏ. Đơn vị số liệu gắn status unverified.
 - Tool: `get_order_summary`; `POST /prod/v2/sha-service/e/order/sum-transaction`.
 - Input bắt buộc: operation. Input được phép: operation, brokerRef, accountRefs, cursor, limit; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; query page,size; body brokerCode=[B.code],accountNumbers=resolved accountRefs,valueFilterInfo={}; page=cursor.page or 1; size=limit or 50; cursor bound to subject+sessionGeneration+operation+filters.
@@ -730,6 +759,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## buyingPower.preview
 
+- **Release 10/10/2026: bật.** 8 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. probe --extra: chỉ tính sức mua (order/balance), không tạo lệnh; price là chuỗi VND. Đơn vị số liệu gắn status unverified.
 - Tool: `get_buying_power`; `POST /prod/v2/sha-service/e/order/balance`.
 - Input bắt buộc: operation, accountRef, subaccountRef, symbol, price. Input được phép: operation, accountRef, subaccountRef, symbol, price; field khác bị từ chối.
 - Request: body subNo=resolved subId,stkCd=symbol,ordPri=price string in VERIFIED upstream unit; accountRef is authorization context only.
@@ -751,6 +781,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## cash.movements
 
+- **Release 10/10/2026: bật.** 15 field (3 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_cash_movements`; `POST /prod/v2/sha-service/e/account/deposit-withdrawal-info`.
 - Input bắt buộc: operation, from, to. Input được phép: operation, brokerRef, accountRefs, from, to, direction, cursor, limit; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; body brokerCode=B.code,accounts=resolved accountRefs or null for explicit authorized broker scope,fromDate=ymd(from),toDate=ymd(to),status=null,transTp=deposit:'1'/withdrawal:'2'/all:null,type='[Perfomance] load deposit-withdrawal info',page,size; page=cursor.page or 1; size=limit or 50; cursor bound to subject+sessionGeneration+operation+filters.
@@ -775,6 +806,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## newAccounts.report
 
+- **Release 10/10/2026: bật.** 3 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_new_accounts_report`; `POST /prod/v2/sha-service/e/performance/open-new-account`.
 - Input bắt buộc: operation, from, to. Input được phép: operation, brokerRef, from, to, cursor, limit; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; body brokerCode=B.code,fromActDate=ymd(from),toActDate=ymd(to),statAcc=null,custid=authorized subtree codes per current revenue_sync_agent.js,page,size; page=cursor.page or 1; size=limit or 50; cursor bound to subject+sessionGeneration+operation+filters.
@@ -793,6 +825,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## research.summary
 
+- **Release 10/10/2026: bật.** 4 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_research`; `POST /prod/v2/sha-advice/e/dashboard/info-advice`.
 - Input bắt buộc: operation. Input được phép: operation, brokerRef; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; body brokerCodes=[B.code].
@@ -811,6 +844,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## research.list
 
+- **Release 10/10/2026: bật.** 13 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_research`; `POST /prod/v2/sha-advice/e/get-all`.
 - Input bắt buộc: operation. Input được phép: operation, brokerRef, search; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; body brokerCodes=[B.code],searchValue=search or '',tag='ALL'.
@@ -837,6 +871,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## groups.list
 
+- **Release 10/10/2026: bật.** 11 field (2 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `list_customer_groups`; `POST /prod/v2/sha-customer/e/customer-group/get-all-group-customer`.
 - Input bắt buộc: operation. Input được phép: operation, brokerRef, accountRefs, search; field khác bị từ chối.
 - Request: B=authorized broker selected by brokerRef; brokerRef absent only when one root is unambiguous; body brokerCodes=[B.code],accountNumbers=resolved accountRefs or [],searchValue=search or ''.
@@ -859,6 +894,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## market.catalog
 
+- **Release 10/10/2026: bật.** 4 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_sha_market_data`; `GET /prod/v2/sha-service/e/market/get-stock-codes`.
 - Input bắt buộc: operation. Input được phép: operation; field khác bị từ chối.
 - Request: query=none; body=none.
@@ -877,6 +913,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## market.quote
 
+- **Release 10/10/2026: bật.** 21 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_sha_market_data`; `POST /prod/v2/sha-service/e/market/stock/code`.
 - Input bắt buộc: operation, symbol. Input được phép: operation, symbol; field khác bị từ chối.
 - Request: body stk_cd=symbol.
@@ -905,6 +942,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## market.price
 
+- **Release 10/10/2026: bật.** 24 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_sha_market_data`; `GET /prod/v2/sha-service/e/market/securities-price`.
 - Input bắt buộc: operation, symbol. Input được phép: operation, symbol; field khác bị từ chối.
 - Request: query securities=symbol; body=none.
@@ -927,6 +965,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## market.ticks
 
+- **Release 10/10/2026: bật.** 13 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. Đơn vị số liệu gắn status unverified.
 - Tool: `get_sha_market_data`; `GET /prod/v2/sha-system/e/trading/stock-quote-list`.
 - Input bắt buộc: operation, symbol. Input được phép: operation, symbol, limit; field khác bị từ chối.
 - Request: query symbol=symbol,fetchCount=limit or 50; body=none.
@@ -949,6 +988,7 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## market.candles
 
+- **Release 10/10/2026: bật.** 8 field (0 field sau profile.pii); bằng chứng: source-described-not-live-verified, semantic-or-unit-verification-required. Đơn vị số liệu gắn status unverified.
 - Tool: `get_sha_market_data`; `GET /prod/v2/advisor-service/e/market/tradingview/history`.
 - Input bắt buộc: operation, symbol, resolution, fromTime, toTime. Input được phép: operation, symbol, resolution, fromTime, toTime; field khác bị từ chối.
 - Request: query symbol=symbol,resolution=1D,from=epochSeconds(fromTime),to=epochSeconds(toTime); body=none.
@@ -968,3 +1008,16 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 | `v[]` | `items[].volume` | unverified |
 | `s` | `status` | raw-enum |
 | `nextTime` | `nextTime` | epoch-seconds |
+
+## knowledge.departments
+
+- **Release 10/10/2026: bật.** 8 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. KMS Strapi {data, meta.pagination}; 6 phòng ban live. Đơn vị số liệu gắn status unverified.
+- Tool: `get_knowledge_library`; `GET /prod/v2/sha-service/e/forward/cms/departments`. Nguồn: SHA_PC src/preload/kms_library.js:25 @7261a8d.
+- Danh sách phòng ban của kho tri thức KMS; mã phòng dùng cho knowledge.documents.
+
+## knowledge.documents
+
+- **Release 10/10/2026: bật.** 14 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. KMS; mã phòng phải nằm trong danh sách live; Content là văn bản không tin cậy, cắt 4000 ký tự; phân trang meta.pagination. Đơn vị số liệu gắn status unverified.
+- Tool: `get_knowledge_library`; `GET /prod/v2/sha-service/e/forward/cms/knowledge-shares/department/{department}`; query keyword, pageSize, page.
+- Mã phòng ban kiểm theo mẫu và phải có trong danh sách phòng ban live; nội dung là dữ liệu không tin cậy.
+

@@ -50,8 +50,13 @@ export class ShaTransport {
   }
   private async checkedRead(request: ReadRequest, bearer: string, signal?: AbortSignal) {
     const r = route(request.operation); ensure(request.method === r.method && request.path === r.path && r.host === HOST, 'FORBIDDEN_SCOPE');
-    const raw = await this.send(r.method, r.path, request.query, request.body, bearer, signal);
-    return request.operation === 'market.candles' ? raw : envelope(raw);
+    // Catalog paths are fixed; a {placeholder} segment takes only a strictly validated token (no slashes, dots or encodings).
+    const path = r.path.replace(/\{(\w+)\}/g, (_m, k: string) => { const v = request.pathParams?.[k]; ensure(typeof v === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(v), 'INVALID_INPUT'); return v; });
+    const raw = await this.send(r.method, path, request.query, request.body, bearer, signal);
+    if (request.operation === 'market.candles') return raw;
+    // KMS (forward/cms) answers {data, meta} without the SHA code envelope (SHA_PC kms_library.js); keep meta for pagination.
+    if (request.operation.startsWith('knowledge.') && raw && typeof raw === 'object' && !Array.isArray(raw) && !('code' in raw)) { ensure(Object.hasOwn(raw, 'data')); return raw; }
+    return envelope(raw);
   }
   async bootstrap(operation: 'identity.current' | 'accounts.tree', bearer: string, signal?: AbortSignal) {
     ensure(operation === 'identity.current' || operation === 'accounts.tree', 'FORBIDDEN_SCOPE');

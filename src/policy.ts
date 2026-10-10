@@ -45,7 +45,8 @@ export class Policy {
     if (Array.isArray(value)) { for (const x of value) this.checkResponse(x, accountNos, broker); return; }
     if (!value || typeof value !== 'object') return;
     const row = value as Json;
-    for (const key of ['accountNo', 'accountNumber']) if (row[key] != null) {
+    // acntNo is the account key of portfolio rows (SHA_PC docs); acctNo is a loan id and is not an account.
+    for (const key of ['accountNo', 'accountNumber', 'acntNo']) if (row[key] != null) {
       ensure(this.entitlements.accounts.some(a => a.accountNumber === row[key] && (!broker || this.subtree(broker).includes(a.brokerCode))), 'FORBIDDEN_SCOPE');
       ensure(!accountNos?.length || accountNos.includes(row[key]), 'FORBIDDEN_SCOPE');
     }

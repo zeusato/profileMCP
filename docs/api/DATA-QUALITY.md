@@ -48,6 +48,25 @@ Input strict; output chỉ mapping field allowlist, có thể chấp nhận unkn
 
 `0` là số đã có bằng chứng, `null` là giá trị nguồn chưa biết/không áp dụng, missing là field không được trả, empty array là danh sách rỗng theo contract đã xác minh. Không collapse bốn trường hợp thành một. Null-only evidence giữ operation disabled.
 
+## Quy tắc release 10/10/2026 (Đại ca chọn)
+
+- Số liệu chưa xác minh đơn vị vẫn bật: trả giá trị nguồn dạng chuỗi decimal chính xác, meta.units status unverified, cảnh báo UNIT_UNVERIFIED; không quy đổi kVND/VND/%.
+- Số JSON có phần lẻ nhận dạng biểu diễn ngắn nhất (0.07 → "0.07"); số nguyên vượt 2^53 bị từ chối; chuỗi số vi-VN parse theo fieldMap.
+- data null từ nguồn trả data null, status partial, cảnh báo SOURCE_NULL; không thành 0 hay danh sách rỗng.
+- PII khách hàng (tên, số tài khoản đầy đủ, CMND/CCCD và ngày/nơi cấp, ngày sinh, giới tính, điện thoại, email, địa chỉ, mã số thuế, SIDC/PCOD, số hợp đồng, htsId, tài khoản chuyển, nội dung giao dịch) chỉ có với profile.pii. Tên nhân viên môi giới không phải PII khách hàng.
+- Mảng lồng chưa rõ shape (children của brokerAssets, list trong brokerAssets.portfolio, danh sách người nhận khuyến nghị) bị bỏ, ghi trong rawResponse của catalog.
+- fieldMap sinh bằng scripts/gen-fieldmaps.mjs từ config/live-shapes-20261010.json (chỉ tên field/kiểu); operation có mẫu live rỗng dùng field theo doc SHA_PC @7261a8d, evidenceStatus doc-only.
+
+## Quan sát live 10/10/2026
+
+- Khoảng ngày nghiệp vụ không được vắt qua 2026-05-22..24 (SHA đổi core, không có dữ liệu — Đại ca dặn): lỗi PERIOD_SPANS_DATA_GAP; tách ≤21/05 và ≥25/05 rồi ghép. Không áp cho dữ liệu thị trường.
+- loan-info/history: bộ lọc fromLndDate/toLndDate không lọc theo lndDate như doc; dòng ngoài kỳ được giữ và gắn PERIOD_FILTER_UNVERIFIED.
+- Đơn vị khác nhau giữa API: order/histories giá và orderValue nghìn VND; asset/investment-portfolio và market giá VND; số tiền tài sản/khoản vay/nộp rút là đơn vị nguồn (khả năng VND). Không quy đổi chéo.
+- Số điện thoại, giấy tờ, SIDC/PCOD, mã phòng là chuỗi chữ số, giữ nguyên (số 0 đầu).
+- order/list-confirm: pageSize 5 bị từ chối, 30 hợp lệ; giá/khối lượng chuỗi vi-VN ("1.000"), đơn vị đồng — khác order/histories (nghìn đồng).
+- order/balance chỉ tính sức mua cho mã/giá (price chuỗi VND); không tạo lệnh. order/sum-transaction là tổng trong ngày, ngoài giờ trả null toàn bộ → SOURCE_NULL.
+- KMS forward/cms (Strapi): {data, meta.pagination}; Content là văn bản không tin cậy, cắt 4000 ký tự (contentTruncated, CONTENT_TRUNCATED); mã phòng ban kiểm với danh sách live trước khi gọi.
+
 ## Coverage và freshness
 
 Mỗi kết quả ghi requested period, observed source period nếu có, scope và pagination/truncation. fetchedAt là lúc backend nhận dữ liệu; sourceTimestamp là timestamp dữ liệu có bằng chứng. Nguồn không có ngày kỳ rõ thì không nói “hôm nay” chỉ vì vừa fetch.

@@ -1400,10 +1400,21 @@
             "properties": {
               "operation": {
                 "const": "market.catalog"
+              },
+              "search": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 50
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
               }
             },
             "required": [
-              "operation"
+              "operation",
+              "search"
             ]
           },
           {
@@ -1504,6 +1515,65 @@
         "market.price",
         "market.ticks",
         "market.candles"
+      ]
+    },
+    {
+      "name": "get_knowledge_library",
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "knowledge.departments"
+              }
+            },
+            "required": [
+              "operation"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "operation": {
+                "const": "knowledge.documents"
+              },
+              "department": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,40}$"
+              },
+              "keyword": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "cursor": {
+                "type": "string",
+                "maxLength": 2048
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "operation",
+              "department"
+            ]
+          }
+        ]
+      },
+      "operations": [
+        "knowledge.departments",
+        "knowledge.documents"
       ]
     }
   ],

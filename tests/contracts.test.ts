@@ -4,7 +4,7 @@ import { routes, validateInput } from '../src/sha/catalog.js';
 import { buildRequest } from '../src/sha/requests.js';
 import { Vault } from '../src/crypto.js';
 import { Policy } from '../src/policy.js';
-import { decimal, mappedObject, pageCoverage, repeatedTotals, candles } from '../src/dto.js';
+import { decimal, project, pageCoverage, repeatedTotals, candles, type Field } from '../src/dto.js';
 import { syntheticLogin, syntheticEntitlements } from './helpers.js';
 const vault = new Vault({ active: 'k', keys: { k: Buffer.alloc(32, 4).toString('base64url') } }, Buffer.alloc(32, 5).toString('base64url'));
 const session = { ...syntheticLogin(), id: 's', userId: 'u', teamId: 't', generation: 1, clientId: 'c', grantId: 'g', scopes: [], resource: 'r' };
@@ -32,11 +32,28 @@ test('REQ-common: strict schemas reject transport injection, invalid dates and i
 });
 test('DTO: numeric precision, locale, negative, zero/null/missing and PII allowlist', () => {
   assert.equal(decimal('9007199254740993999.1234'), '9007199254740993999.1234'); assert.equal(decimal('-1.234.567,50', 'vi'), '-1234567.5');
-  assert.equal(decimal('0'), '0'); assert.equal(decimal(null), null); assert.throws(() => decimal('1.2.3')); assert.throws(() => decimal(1.23));
-  const r = routes.find(r => r.id === 'assets.cash')!; const out = mappedObject(r, { cashTotal: '0', cashHold: null, secret: 'hidden' }, policy);
-  assert.equal(out.value.cashTotal, '0'); assert.equal(out.value.cashHold, null); assert.equal(out.value.firstCashTotal, undefined); assert.equal(out.value.secret, undefined); assert.ok(out.missing.includes('firstCashTotal'));
-  const profile = mappedObject(routes.find(r => r.id === 'profile.detail')!, { accountNo: 'A001', custNm: 'Synthetic Person', idNo: 'SECRET', email: 'private@example.test' }, policy);
-  assert.equal(profile.value.accountRef, accountRef); assert.equal(profile.value.customerDisplay, 'S***'); assert.equal(profile.value.email, undefined); assert.equal(profile.value.identityDocument, undefined);
+  assert.equal(decimal('0'), '0'); assert.equal(decimal(null), null); assert.throws(() => decimal('1.2.3'));
+  // Live JSON carries fractional numbers (rates, prices): kept as shortest round-trip text; unsafe integers still rejected.
+  assert.equal(decimal(1.23), '1.23'); assert.equal(decimal(0.07), '0.07'); assert.throws(() => decimal(2 ** 53 + 2)); assert.throws(() => decimal(Number.NaN));
+  const fields = (id: string) => routes.find(r => r.id === id)!.fieldMap as Field[];
+  const out = project(fields('assets.cash'), { cashTotal: '0', cashHold: null, rateCash: -1.5, secret: 'hidden' }, policy, false);
+  assert.equal(out.value.cashTotal, '0'); assert.equal(out.value.cashHold, null); assert.equal(out.value.rateCash, '-1.5'); assert.equal(out.value.firstCashTotal, undefined); assert.equal(out.value.secret, undefined); assert.ok(out.missing.includes('firstCashTotal'));
+  assert.throws(() => project(fields('assets.cash'), { cashTotal: 'abc' }, policy, false), /UPSTREAM_SHAPE_CHANGED/);
+  // Customer personal data only with profile.pii; without it neither the value nor a missing marker leaks.
+  const raw = { accountNo: 'A001', custNm: 'Synthetic Person', idNo: '012345678901', email: 'private@example.test', birthDt: '1990-01-02 00:00:00.0', grpTp: 'I', mobile_sms: '0355000000' };
+  const plain = project(fields('profile.detail'), raw, policy, false);
+  assert.deepEqual([plain.value.accountRef, plain.value.displayNumber, plain.value.grpTp], [accountRef, '***001', 'I']); assert.ok(!/Synthetic|012345678901|private@|1990|"A001"/.test(JSON.stringify(plain)));
+  const full = project(fields('profile.detail'), raw, policy, true);
+  assert.deepEqual([full.value.accountNumber, full.value.custNm, full.value.idNo, full.value.email, full.value.birthDt], ['A001', 'Synthetic Person', '012345678901', 'private@example.test', '1990-01-02 00:00:00.0']);
+  // Live 10/10/2026 regression: phone/ID digit strings are identifiers, never decimals (leading zero kept).
+  assert.equal(full.value.mobile_sms, '0355000000');
+});
+test('REQ-common: date ranges never span the 2026-05-22..24 core migration gap', () => {
+  const base = { operation: 'cash.movements', brokerRef: 'b' };
+  for (const [from, to] of [['2026-05-20', '2026-05-26'], ['2026-05-22', '2026-05-22'], ['2026-05-24', '2026-06-01']]) assert.throws(() => validateInput('cash.movements', { ...base, from, to }), /PERIOD_SPANS_DATA_GAP/);
+  for (const [from, to] of [['2026-05-01', '2026-05-21'], ['2026-05-25', '2026-06-10']]) assert.doesNotThrow(() => validateInput('cash.movements', { ...base, from, to }));
+  assert.throws(() => validateInput('loans.repayments', { operation: 'loans.repayments', repayFrom: '2026-05-21', repayTo: '2026-05-25' }), /PERIOD_SPANS_DATA_GAP/);
+  assert.doesNotThrow(() => validateInput('market.candles', { operation: 'market.candles', symbol: 'FPT', resolution: '1D', fromTime: '2026-05-01T00:00:00Z', toTime: '2026-06-01T00:00:00Z' }));
 });
 test('PAGE / DTO-portfolio: no repeated-total double counting or completeness inflation', () => {
   assert.deepEqual(repeatedTotals([{ total: '10' }, { total: '10' }], ['total']), { total: '10' });

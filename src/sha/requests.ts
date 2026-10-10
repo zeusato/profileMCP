@@ -2,9 +2,9 @@ import { route, validateInput } from './catalog.js';
 import { Policy } from '../policy.js';
 import type { Json } from '../store.js';
 import { ensure } from '../errors.js';
-export interface ReadRequest { operation: string; method: string; path: string; query: Json; body?: Json; accountNos: string[]; broker?: string }
+export interface ReadRequest { operation: string; method: string; path: string; query: Json; body?: Json; accountNos: string[]; broker?: string; pathParams?: Record<string, string> }
 export function buildRequest(id: string, raw: unknown, policy: Policy, page = 1): ReadRequest {
-  const r = route(id); const i = validateInput(id, raw); const q: Json = {}; let body: Json | undefined;
+  const r = route(id); const i = validateInput(id, raw); const q: Json = {}; let body: Json | undefined; let pathParams: Record<string, string> | undefined;
   const needsBroker = r.requestBinding.startsWith('B='); const b = needsBroker ? policy.broker(i.brokerRef).brokerCode : undefined;
   const accounts = i.accountRef ? [policy.account(i.accountRef).accountNumber] : policy.accounts(i.accountRefs, b);
   const sub = i.subaccountRef ? policy.subaccount(i.subaccountRef, accounts.length === 1 ? accounts[0] : undefined).subId : undefined;
@@ -22,7 +22,9 @@ export function buildRequest(id: string, raw: unknown, policy: Policy, page = 1)
     case 'brokerAssets.accounts': body = { brokerCode: b, accountNumbers: accounts, page, size }; break;
     case 'brokerAssets.cash': body = { remNo: b, accountNumbers: accounts, searchValue: i.search ?? '', page, size }; break;
     case 'brokerAssets.portfolio': body = { tlId: b, page, size }; break;
-    case 'credit.guarantees': case 'credit.collateral': body = { brokerCode: b, accounts, subId: sub ?? null, page, size }; break;
+    // SHA_PC @7261a8d: broker list = {brokerCode, page}; per sub-account = {brokerCode, accounts:[accountNo], subId}. Empty accounts/null subId returned nothing live.
+    case 'credit.guarantees': case 'credit.collateral':
+      if (accounts.length) { ensure(accounts.length === 1 && sub, 'INVALID_INPUT'); body = { brokerCode: b, accounts, subId: sub }; } else body = { brokerCode: b, page, size }; break;
     case 'loans.current': body = { remNo: b, accounts, loanStatus: i.loanStatus ?? ['0', '1', '2'], lndTp: null, mnId: null, fromLndDate: i.loanFrom ? ymd(i.loanFrom) : null, toLndDate: i.loanTo ? ymd(i.loanTo) : null, page, size }; break;
     case 'loans.history': body = { remNo: b, accounts, fromLndDate: ymd(i.from), toLndDate: ymd(i.to), page, size }; break;
     case 'loans.repayments': body = { remNo: b, accounts, page, size, fromLndDate: i.loanFrom ? ymd(i.loanFrom) : null, toLndDate: i.loanTo ? ymd(i.loanTo) : null,
@@ -30,7 +32,8 @@ export function buildRequest(id: string, raw: unknown, policy: Policy, page = 1)
       fromInitialDebt: null, toInitialDebt: null, fromAdjRepayAmt: null, toAdjRepayAmt: null, mnId: null, lndTp: null }; break;
     case 'orders.history': body = { brokerCodes: [b], accountNumbers: accounts, stockCodes: i.symbols ?? [], page, pageSize: size,
       ...(i.mode === 'today' ? { type: 0, ordStatus: ['0', '2', '1', '4', '3', '5', '6'] } : { fromDateTrades: ymd(i.from), toDateTrades: ymd(i.to), ordType: [], mdmType: [], ordStatus: [] }) }; break;
-    case 'orders.unconfirmed': body = { ...dates, emNo: policy.session.identity.preferredUsername, page, pageSize: size }; break;
+    // list-confirm rejected pageSize 5 and accepted 30 (live 10/10/2026); SHA_PC uses 30.
+    case 'orders.unconfirmed': body = { ...dates, emNo: policy.session.identity.preferredUsername, page, pageSize: 30 }; break;
     case 'orderSummary.confirmations': q.remNo = policy.session.identity.preferredUsername; break;
     case 'orderSummary.transactions': Object.assign(q, { page, size }); body = { brokerCode: [b], accountNumbers: accounts, valueFilterInfo: {} }; break;
     case 'buyingPower.preview': body = { subNo: sub, stkCd: i.symbol, ordPri: i.price }; break;
@@ -43,7 +46,9 @@ export function buildRequest(id: string, raw: unknown, policy: Policy, page = 1)
     case 'market.price': q.securities = i.symbol; break;
     case 'market.ticks': Object.assign(q, { symbol: i.symbol, fetchCount: size }); break;
     case 'market.candles': Object.assign(q, { symbol: i.symbol, resolution: '1D', from: Math.floor(Date.parse(i.fromTime) / 1000), to: Math.floor(Date.parse(i.toTime) / 1000) }); break;
+    case 'knowledge.departments': break;
+    case 'knowledge.documents': pathParams = { department: i.department }; Object.assign(q, { keyword: i.keyword ?? '', pageSize: size, page }); break;
     default: ensure(false, 'CAPABILITY_UNAVAILABLE');
   }
-  return { operation: id, method: r.method, path: r.path, query: q, body, accountNos: accounts, broker: b };
+  return { operation: id, method: r.method, path: r.path, query: q, body, accountNos: accounts, broker: b, ...(pathParams ? { pathParams } : {}) };
 }

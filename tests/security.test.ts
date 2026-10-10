@@ -37,7 +37,13 @@ test('SEC-02 / SEC-03: unreleased catalog and every mutation blocked with zero n
   let network = 0; const sha = new ShaTransport((async () => { network++; throw new Error(); }) as typeof fetch);
   for (const r of routes.filter(r => !isEnabled(r.id))) await assert.rejects(sha.read({ operation: r.id, method: r.method, path: r.path, query: {}, accountNos: [] }, 'fake'), /CAPABILITY_UNAVAILABLE/);
   for (const path of ['/order/buy/create', '/order/sell/create', '/order/modify', '/order/cancel', '/auth/login-v2', 'https://evil.example']) await assert.rejects(sha.read({ operation: path, method: 'POST', path, query: {}, accountNos: [] }, 'fake'));
-  assert.equal(network, 0); assert.deepEqual(toolsForRelease().map(t => t.name), ['list_profile_capabilities', 'get_profile_data_dictionary', 'list_managed_accounts']);
+  assert.equal(network, 0);
+  const released = new Set(routes.filter(r => isEnabled(r.id)).map(r => r.tool));
+  assert.deepEqual(toolsForRelease().map(t => t.name), ['list_profile_capabilities', 'get_profile_data_dictionary', ...released]);
+  // Path placeholders take a single validated token only; traversal or encoded separators are refused before any network.
+  const kms = routes.find(r => r.id === 'knowledge.documents')!;
+  for (const department of ['../x', 'a/b', '%2e%2e', 'a.b']) await assert.rejects((sha as any).checkedRead({ operation: kms.id, method: kms.method, path: kms.path, query: {}, accountNos: [], pathParams: { department } }, 'fake'), /INVALID_INPUT/);
+  assert.equal(network, 0);
   // Released tools expose one object schema (no top-level oneOf/anyOf/allOf) and stay read-only.
   for (const tool of toolsForRelease()) { assert.equal(tool.inputSchema.type, 'object'); assert.ok(!['oneOf', 'anyOf', 'allOf'].some(k => k in tool.inputSchema)); assert.equal(tool.annotations?.readOnlyHint, true); }
 });

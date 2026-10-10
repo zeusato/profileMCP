@@ -25,7 +25,7 @@ for(const f of files.filter(x=>x.endsWith('.md'))){
 const catalog=get('config/sha-read-candidates.json');
 const routes=catalog.routes;
 const count=get('config/document-counts.json');
-check(routes.length===40&&count.readRoutes===40,'Read route count');
+check(routes.length===count.readRoutes&&count.readRoutes===42,'Read route count');
 check(new Set(routes.map(x=>x.id)).size===routes.length,'Unique operation IDs');
 check(new Set(routes.map(x=>x.method+' '+x.path)).size===routes.length,'Unique method/path');
 const denied=get('config/sha-denied-routes.json');
@@ -46,9 +46,9 @@ for(const r of routes){
  check(endpoints.includes('## '+r.id),'Endpoint document '+r.id);
  for(const t of r.tests){check(!tests.has(t)&&testMap.includes(t),'Test-map ID '+t);tests.add(t);}
 }
-check(tests.size===200,'200 planned operation test IDs');
+check(tests.size===routes.length*5,'5 planned test IDs per operation');
 const t=get('config/tool-input-schemas.json');
-check(t.tools.length===17&&t.metadataTools.length===2,'Tool counts');
+check(t.tools.length===count.businessTools&&t.metadataTools.length===2,'Tool counts');
 for(const tool of t.tools){
  check(tool.annotations.readOnlyHint===true&&tool.annotations.destructiveHint===false,'Tool annotations '+tool.name);
  check(tool.operations.length===tool.inputSchema.oneOf.length,'Tool schema coverage '+tool.name);

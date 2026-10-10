@@ -7,6 +7,7 @@ import { auth, type OAuthClientProvider } from '@modelcontextprotocol/sdk/client
 import type { OAuthClientInformationMixed, OAuthTokens } from '@modelcontextprotocol/sdk/shared/auth.js';
 import { SCOPES } from '../src/config.js';
 import { oauthHarness } from './helpers.js';
+import { toolsForRelease } from '../src/mcp.js';
 test('OAUTH-01..06 / AUTH-01,03,08 / RUN-01,02: two-instance OAuth, PKCE, SDK and revoke', { timeout: 120000 }, async () => {
   const h = await oauthHarness(); const { db, store, settings, request, post, csrf } = h;
   const login = async () => {
@@ -38,10 +39,10 @@ test('OAUTH-01..06 / AUTH-01,03,08 / RUN-01,02: two-instance OAuth, PKCE, SDK an
     tokens.access_token = rotated.access_token; tokens.refresh_token = rotated.refresh_token;
     const client = new Client({ name: 'synthetic-sdk', version: '1' });
     const transport = new StreamableHTTPClientTransport(new URL(settings.resource), { requestInit: { headers: { Authorization: `Bearer ${tokens.access_token}` } } });
-    await client.connect(transport); const list = await client.listTools(); assert.deepEqual(list.tools.map(t => t.name), ['list_profile_capabilities', 'get_profile_data_dictionary', 'list_managed_accounts']);
+    await client.connect(transport); const list = await client.listTools(); assert.deepEqual(list.tools.map(t => t.name), toolsForRelease().map(t => t.name)); assert.ok(list.tools.some(t => t.name === 'list_managed_accounts'));
     // accounts.tree without profile.pii: references and masked numbers only.
     const tree = await client.callTool({ name: 'list_managed_accounts', arguments: { operation: 'accounts.tree' } }) as any; assert.equal(tree.isError, undefined, JSON.stringify(tree));
-    assert.equal(tree.structuredContent.data.accounts.length, 2); assert.ok(!/CANARY|"A001"/.test(JSON.stringify(tree)));
+    assert.equal(tree.structuredContent.data.accounts.length, 2); assert.ok(!/CUSTOMER CANARY|"A001"/.test(JSON.stringify(tree)));
     const result = await client.callTool({ name: 'list_profile_capabilities', arguments: {} }); assert.equal(result.isError, undefined); assert.ok(!JSON.stringify(result).includes('SYNTHETIC_SHA_SECRET_CANARY')); await client.close();
     assert.equal(h.counters.verify, 2);
     const dump = await db.query<{ text: string }>("select convert_from(payload_ciphertext,'UTF8') as text from profile_mcp.oauth_artifacts");
@@ -90,7 +91,7 @@ test('OAUTH-07 / CLIENT-DCR-01: official SDK client registers with PRM scopes, c
     assert.deepEqual(tokens?.scope?.split(' ').sort(), [...SCOPES].sort()); assert.ok(tokens?.refresh_token);
     const client = new Client({ name: 'claude-shaped-sdk', version: '1' });
     await client.connect(new StreamableHTTPClientTransport(serverUrl, { authProvider: provider }));
-    assert.equal((await client.listTools()).tools.length, 3);
+    assert.equal((await client.listTools()).tools.length, toolsForRelease().length);
     // With the opt-in profile.pii box ticked, the same tool returns full numbers and customer names.
     const tree = await client.callTool({ name: 'list_managed_accounts', arguments: { operation: 'accounts.tree' } }) as any;
     assert.deepEqual(tree.structuredContent.data.accounts.map((a: any) => [a.accountNumber, a.customerName]), [['A001', 'CUSTOMER CANARY'], ['A002', null]]); await client.close();

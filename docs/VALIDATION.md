@@ -49,6 +49,34 @@ Ngày: 09/10/2026. Đây là sổ kết quả thực; test IDs trong TEST-PLAN/T
 - Từ điển còn sai lệch cần sửa theo từng operation: evidenceStatus cũ ở mọi entry; identity.current thiếu homeOrder/custodyCd; tiền tố DTO lẫn items[]/data[]/content[]/list[]; nhiều unit unverified.
 - accounts.tree + profile.pii (chưa deploy): tests/accounts-tree.test.ts REQ/RAW/DTO/SCOPE/PAGE passed; oauth.test.ts gọi list_managed_accounts qua SDK có/không PII; SEC-02 kiểm tool schema không có oneOf cấp cao nhất. 20/20 tests, typecheck, document validator passed. Mutation bỏ chặn PII làm DTO-accounts.tree fail.
 
+## 10/10/2026 — accounts.tree live qua Claude connector
+
+- Đại ca commit 5ab3f22 (v2), deploy, kết nối lại connector và tick profile.pii. list_profile_capabilities: liveOperations ["accounts.tree"].
+- Em gọi list_managed_accounts {operation: accounts.tree} qua connector lúc 13:27:51Z: status ok, 8/8 tài khoản, 6 broker (1 gốc của người dùng + 5 con), coverage complete, nonpaged-full-tree, missing [], có accountNumber/customerName/brokerName vì có profile.pii. Không ghi giá trị vào repo.
+- Phiên Claude Code chỉ thấy 1 tool của SHA MCP (tool_count 1) sau khi bật lại connector; 2 tool metadata không còn trong danh sách phía client dù code release trả 3 tool. Chưa rõ nguyên nhân phía client/cấu hình connector; cần kiểm.
+
+## 10/10/2026 — probe live hàng loạt và release lần 2
+
+- Probe chỉ-đọc từ máy local sau một lần login/OTP của Đại ca: 36/38 candidate HTTP 200 code 200; assets.loanDetail (GET loan-info) 405; orders.unconfirmed 400 "Invalid parameter". Cấu trúc lưu config/live-shapes-20261010.json; grep số tài khoản/tên/UUID trong file = 0.
+- Release lần 2 (chưa deploy): 34 operation; typecheck; 53/53 tests (gồm 33 bộ REQ/RAW/DTO/SCOPE/PAGE sinh từ fieldMap); document validator 753 assertions.
+- Chưa: gọi live từng operation qua connector sau deploy; đối chiếu đơn vị với màn hình SHA; profile.authorized/orderSummary.top/transactions chưa có mẫu không rỗng.
+
+## 10/10/2026 — gọi live release lần 2 qua connector
+
+- 27/34 operation gọi được qua Claude Code connector sau deploy; chi tiết và 7 lỗi sửa trong HANDOFF. Không ghi giá trị khách hàng vào repo.
+- Sau sửa: typecheck, 55/55 tests (thêm REQ-common data gap 22–24/05/2026 và regressions subNo/credit body/requestedPeriod/list coverage/PERIOD_FILTER_UNVERIFIED), document validator 753 assertions, build, ESM smoke. Chưa deploy bản sửa.
+
+## 10/10/2026 — phủ toàn bộ API đọc
+
+- Connector sau deploy: 33/34 operation gọi được; subNo, credit body, số 0 đầu đúng; portfolio.account lệch doc (6 key doc không có) → map theo field live.
+- Probe --extra (structure-only, appended vào live-shapes): list-confirm 400 fieldName pageSize (5) / 200 với 30; balance 200; sum-transaction 200 toàn null; summary []; authorized null ×8; KMS departments 6, documents 3 và 5 bài.
+- Release: 39/42 route bật; typecheck, 60/60 tests (table REQ/RAW/DTO/SCOPE/PAGE cho 38 operation projection + regressions KMS/list-confirm/sum-transaction/path traversal), document validator, build, ESM smoke. Chưa deploy.
+
+## 10/10/2026 — nghiệm thu live release 3 qua connector
+
+- 39/39 operation bật đã gọi live ít nhất một lần qua Claude Code connector trong ngày (các vòng 14:00–14:35Z), trừ market.candles/ticks gọi từ vòng trước cùng ngày. Không ghi giá trị khách hàng vào repo.
+- Sửa cuối: KMS HTML→text, mô tả list-confirm; 60/60 tests, document validator, build, ESM smoke. Đã deploy; knowledge.documents live trả văn bản thuần (contentFormat text-from-html).
+
 ## Chưa thực hiện / chưa đạt
 
 Live SHA login/OTP/read probes và đơn vị dữ liệu, G1/G2/G4 đầy đủ, refresh SHA (disabled), account switch browser CSP, complete cross-role/cross-user application matrix, 20-user load, cleanup scheduler, rollback/revoke drill và toàn bộ dev-audit remediation. 0 business operations enabled. Local có thay đổi nhỏ sau production chưa redeploy; xem [HANDOFF](HANDOFF.md).

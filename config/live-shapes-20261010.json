@@ -1,0 +1,1775 @@
+{
+ "capturedAt": "2026-10-10",
+ "source": "scripts/trace-sha-login.ts --live --probe from local machine; one broker-role account, one sample account, symbol FPT",
+ "privacy": "structure only: key names and value kinds, no values",
+ "results": {
+  "accounts.subaccounts": "ok",
+  "accounts.search": "ok",
+  "profile.detail": "ok",
+  "profile.information": "ok",
+  "profile.authorized": "ok",
+  "customers.overview": "ok",
+  "assets.cash": "ok",
+  "assets.stockValue": "ok",
+  "assets.margin": "ok",
+  "assets.loanSummary": "ok",
+  "assets.loanDetail": "UPSTREAM_REJECTED",
+  "portfolio.account": "ok",
+  "orderSummary.account": "ok",
+  "brokerAssets.summary": "ok",
+  "brokerAssets.accounts": "ok",
+  "brokerAssets.cash": "ok",
+  "brokerAssets.portfolio": "ok",
+  "credit.guarantees": "ok",
+  "credit.collateral": "ok",
+  "loans.current": "ok",
+  "loans.history": "ok",
+  "loans.repayments": "ok",
+  "orders.history": "ok",
+  "orders.unconfirmed": "UPSTREAM_REJECTED",
+  "orderSummary.confirmations": "ok",
+  "orderSummary.top": "ok",
+  "orderSummary.transactions": "ok",
+  "cash.movements": "ok",
+  "newAccounts.report": "ok",
+  "research.summary": "ok",
+  "research.list": "ok",
+  "groups.list": "ok",
+  "market.catalog": "ok",
+  "market.quote": "ok",
+  "market.price": "ok",
+  "market.ticks": "ok",
+  "market.candles": "ok",
+  "buyingPower.preview": "SKIPPED_SIDE_EFFECT_UNVERIFIED"
+ },
+ "shapes": [
+  {
+   "operation": "auth.login-v2",
+   "method": "POST",
+   "step": "login-v2",
+   "httpStatus": 200,
+   "envelope": [
+    "timestamp",
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "username": "string",
+    "sessionKey": "string",
+    "trustDevice": "null",
+    "otpType": {
+     "items": 2,
+     "of": "string:int"
+    }
+   }
+  },
+  {
+   "operation": "auth.generate-matrix",
+   "method": "POST",
+   "step": "generate-matrix",
+   "httpStatus": 200,
+   "envelope": [
+    "timestamp",
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "username": "string",
+    "otpIndex": "string:int",
+    "transactionId": "string",
+    "note": "string",
+    "remainSeconds": "number:int"
+   }
+  },
+  {
+   "operation": "auth.verify-sotp",
+   "method": "POST",
+   "step": "verify-sotp",
+   "httpStatus": 200,
+   "envelope": [
+    "timestamp",
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "access_token": "string",
+    "refresh_token": "null",
+    "token_type": "string",
+    "expires_in": "number:int",
+    "refresh_expires_in": "number:int"
+   }
+  },
+  {
+   "operation": "identity.current",
+   "method": "GET",
+   "step": "get-user-login",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "items": 1,
+    "of": {
+     "branchCode": "string:int",
+     "brokerCode": "string:int",
+     "brokerName": "string",
+     "preferredUsername": "string",
+     "saleGroupName": "string",
+     "saleGroupNo": "string:int",
+     "positionLevel": "string",
+     "homeOrder": "string",
+     "custodyCd": "string"
+    }
+   }
+  },
+  {
+   "operation": "accounts.tree",
+   "method": "GET",
+   "step": "account-no-and-rem",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "accounts": {
+     "items": 8,
+     "of": {
+      "accountNumber": "string",
+      "customerName": "string",
+      "brokerCode": "string:int",
+      "remNo": "string"
+     }
+    },
+    "brokers": {
+     "items": 1,
+     "of": {
+      "brokerCode": "string:int",
+      "brokerName": "string",
+      "level": "number:int",
+      "remNo": "string",
+      "remMng": "null",
+      "children": {
+       "items": 5,
+       "of": "object"
+      },
+      "accounts": {
+       "items": 0,
+       "of": null
+      }
+     }
+    }
+   }
+  },
+  {
+   "operation": "accounts.subaccounts",
+   "method": "GET",
+   "step": "list-sub-no",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "items": 1,
+    "of": {
+     "accountNo": "string",
+     "subAccounts": {
+      "items": 2,
+      "of": {
+       "subNo": "string:int",
+       "subId": "string:int",
+       "subTp": "string:int",
+       "subName": "string"
+      }
+     }
+    }
+   }
+  },
+  {
+   "operation": "accounts.search",
+   "method": "POST",
+   "step": "list-by-rem-no",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "page": "number:int",
+    "size": "number:int",
+    "totalElements": "number:int",
+    "totalPages": "number:int",
+    "data": {
+     "items": 5,
+     "of": {
+      "identifierNumber": "string:int",
+      "customerGradeCode": "string",
+      "customerGradeName": "string",
+      "registrationDate": "null",
+      "accountType": "string",
+      "identity": "string:int",
+      "identityDate": "string:datetime",
+      "expiredDateId": "string:datetime",
+      "identityIssuer": "string",
+      "nationalityId": "string",
+      "idNumberType": "string",
+      "birthday": "string:datetime",
+      "sexId": "string",
+      "telephone": "string:int",
+      "accountStatus": "string",
+      "registrationNo": "null",
+      "registrationRep": "null",
+      "accountNumber": "string",
+      "customerName": "string",
+      "email": "string",
+      "address": "string"
+     }
+    }
+   }
+  },
+  {
+   "operation": "profile.detail",
+   "method": "GET",
+   "step": "detail",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "accountNo": "string",
+    "custNm": "string",
+    "grpTp": "string",
+    "acntTp": "string",
+    "sexTp": "string",
+    "idNo": "string:int",
+    "idNoTp": "string",
+    "issDt": "string:datetime",
+    "issPlace": "string",
+    "issExpired": "string:datetime",
+    "birthDt": "string:datetime",
+    "ctryCd": "string:int",
+    "ctryNm": "string",
+    "address": "string",
+    "etcAddress": "string",
+    "email": "string",
+    "etcEmail": "null",
+    "taxCd": "string:int",
+    "smsYn": "string",
+    "frgnTp": "string",
+    "telTp": "null",
+    "mobile_sms": "string:int",
+    "mobile": "null",
+    "etc_mobile": "null",
+    "frmNm": "null",
+    "frmMobile": "null",
+    "frmIdNo": "null",
+    "frmIdNoTp": "string",
+    "frmEmail": "null",
+    "frmIssDt": "null",
+    "frmIssPlace": "null",
+    "sidc": "string:int",
+    "pcod": "string:int"
+   }
+  },
+  {
+   "operation": "profile.information",
+   "method": "GET",
+   "step": "information",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "accountNo": "string",
+    "ctrNo": "string",
+    "acntStat": "string",
+    "openPth": "string",
+    "openBnh": "null",
+    "agncBrch": "null",
+    "mngBnh": "string",
+    "custCvcb": "string",
+    "openDt": "string:datetime",
+    "clsDt": "null",
+    "activatedDt": "string:datetime",
+    "ekycYn": "string",
+    "htsId": "string",
+    "custGrd": "string",
+    "acptYn": "string",
+    "remNo": "string",
+    "remNm": "string",
+    "saleGrpNo": "null",
+    "saleGrpNm": "null"
+   }
+  },
+  {
+   "operation": "profile.authorized",
+   "method": "GET",
+   "step": "authorized",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": "null"
+  },
+  {
+   "operation": "customers.overview",
+   "method": "GET",
+   "step": "customers-overview",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "customersCnt": "number:int",
+    "individualCnt": "number:int",
+    "institutionalCnt": "number:int",
+    "ratio1": "number:int",
+    "ratio2": "number:int",
+    "activeCnt": "number:int",
+    "closedCnt": "number:int",
+    "newAccounts": "number:int",
+    "newActivedAcc": "number:int",
+    "newClosedAcc": "number:int",
+    "ratio3": "number:int",
+    "ratio4": "number:int",
+    "nativeCnt": "number:int",
+    "foreignerCnt": "number:int"
+   }
+  },
+  {
+   "operation": "assets.cash",
+   "method": "GET",
+   "step": "money-information",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "accountNo": "string",
+    "subNo": "string:int",
+    "subId": "string:int",
+    "cashTotal": "string:int",
+    "firstCashTotal": "string:int",
+    "changeCash": "string:int",
+    "rateCash": "string:int",
+    "cashNotHold": "string:int",
+    "cashHold": "string:int",
+    "lndAblAmt": "string:int",
+    "rgtCash": "string:int",
+    "gstDpo": "string:int",
+    "useVd": "string:int",
+    "penWithdrawApr": "string:int",
+    "d0TotDpo": "string:int",
+    "d1TotDpo": "string:int",
+    "d2TotDpo": "string:int",
+    "valueSubRight": "string:int",
+    "depFee": "string:int",
+    "smsFee": "string:int"
+   }
+  },
+  {
+   "operation": "assets.stockValue",
+   "method": "GET",
+   "step": "stock-value",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "accountNo": "string",
+    "afAccountNo": "string:int",
+    "customerId": "string:int",
+    "subNo": "string:int",
+    "firstAssetTotal": "number:int",
+    "firstNav": "number:int",
+    "allValue": "number:int",
+    "firstAllValue": "number:int",
+    "changeAllValue": "number:int",
+    "rateAllValue": "number:int",
+    "ablSecurValue": "number:int",
+    "blockValue": "number:int",
+    "buyWaitingValue": "number:int",
+    "pendingSubRights": "number:int",
+    "delayValue": "number:int",
+    "tdSellOrdValue": "number:int",
+    "buyT0Value": "number:int",
+    "buyT1Value": "number:int",
+    "buyT2Value": "number:int",
+    "subRight": "number:int"
+   }
+  },
+  {
+   "operation": "assets.margin",
+   "method": "GET",
+   "step": "margin-info",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "accountNo": "string",
+    "afAccountNo": "string:int",
+    "subNo": "string:int",
+    "ta": "number:int",
+    "initialMarginRate": "number:int",
+    "warningMarginRate": "number:int",
+    "safetyMarginRate": "number:int",
+    "maintenanceMarginRate": "number:int",
+    "liquidationMarginRate": "number:int",
+    "cashBalance": "number:int",
+    "securitiesValue": "number:int",
+    "payableAmount": "number:int",
+    "netAssetValue": "number:int",
+    "convertedDebt": "number:int",
+    "withdrawableAmount": "number:int",
+    "todayBuyValue": "number:int",
+    "subAccountStatus": "string",
+    "marginRatio": "number:int",
+    "baseBuyingPower": "number:int",
+    "expectedDisbursement": "number:int",
+    "requiredDepositToExitCall": "number:int",
+    "requiredDeposit": "number:int",
+    "maxLoanLimit": "number:int",
+    "remainingLoanLimit": "number:int",
+    "dailyGuaranteeLimit": "number:int",
+    "usedGuaranteeLimit": "number:int"
+   }
+  },
+  {
+   "operation": "assets.loanSummary",
+   "method": "GET",
+   "step": "loan-information",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "accountNo": "string",
+    "subNo": "string:int",
+    "loanTotal": "string:int",
+    "mgnLoanAmt": "string:int",
+    "colLoanAmt": "string:int",
+    "mnyLoanNowrm": "string:int",
+    "buyLoanAmt": "string:int",
+    "allPrfNet": "string:int",
+    "notYetMthAmt": "string:int",
+    "loanInt": "string:int",
+    "marginRatio": "string:int",
+    "mainMargin": "string:int",
+    "marginCall": "string:int",
+    "marginForce": "string:int",
+    "subId": "string:int"
+   }
+  },
+  {
+   "operation": "assets.loanDetail",
+   "method": "GET",
+   "step": "loan-info",
+   "httpStatus": 405,
+   "envelope": [
+    "timestamp",
+    "code",
+    "message",
+    "data"
+   ],
+   "data": "null"
+  },
+  {
+   "operation": "portfolio.account",
+   "method": "GET",
+   "step": "portfolio-investment-stock",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "items": 0,
+    "of": null
+   }
+  },
+  {
+   "operation": "orderSummary.account",
+   "method": "GET",
+   "step": "order-account-summary",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": "null"
+  },
+  {
+   "operation": "brokerAssets.summary",
+   "method": "GET",
+   "step": "summary",
+   "httpStatus": 200,
+   "envelope": [
+    "timestamp",
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "sumAssets": "number:int",
+    "sumBgnSsnNav": "number:int",
+    "sumNav": "number:int",
+    "change": "number:int",
+    "rate": "number:decimal",
+    "sumLndAmt": "number:int",
+    "sumCashTotal": "number:int",
+    "sumStkAmtTotal": "number:int",
+    "data": {
+     "items": 4,
+     "of": {
+      "subNo": "string:int",
+      "totalAsset": "number:int",
+      "nav": "number:int",
+      "cashTotal": "number:int",
+      "stkAmtTotal": "number:int",
+      "lndAmt": "number:int",
+      "percentage": "number:decimal"
+     }
+    }
+   }
+  },
+  {
+   "operation": "brokerAssets.accounts",
+   "method": "POST",
+   "step": "information",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "page": "number:int",
+    "size": "number:int",
+    "totalElements": "number:int",
+    "totalPages": "number:int",
+    "sumAccountNumber": "number:int",
+    "sumNav": "number:int",
+    "sumStock": "number:int",
+    "sumCash": "number:int",
+    "sumDebt": "number:int",
+    "sumAssets": "number:int",
+    "list": {
+     "items": 5,
+     "of": {
+      "accountNumber": "string",
+      "customerName": "string",
+      "firstNav": "number:int",
+      "nav": "number:int",
+      "marginNav": {
+       "numberMargin": "number:int",
+       "percentMargin": "number:int"
+      },
+      "firstStock": "number:int",
+      "stock": "number:int",
+      "marginStock": {
+       "numberMargin": "number:int",
+       "percentMargin": "number:int"
+      },
+      "cash": "number:int",
+      "debt": "number:int",
+      "marginRate": "null",
+      "assets": "number:int",
+      "children": {
+       "items": 2,
+       "of": "object"
+      }
+     }
+    }
+   }
+  },
+  {
+   "operation": "brokerAssets.cash",
+   "method": "POST",
+   "step": "cash-information",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "page": "number:int",
+    "size": "number:int",
+    "totalElements": "number:int",
+    "totalPages": "number:int",
+    "sumAccountNumber": "number:int",
+    "sumCash": "number:int",
+    "sumCashBalance": "number:int",
+    "sumAwaitingAdvance": "number:int",
+    "sumAwaitingDividends": "number:int",
+    "sumBlockedCash": "number:int",
+    "sumNotMatched": "number:int",
+    "sumUnpaid": "number:int",
+    "list": {
+     "items": 5,
+     "of": {
+      "accountNumber": "string",
+      "customerName": "string",
+      "firstCash": "number:int",
+      "cash": "number:int",
+      "marginCash": {
+       "numberMargin": "number:int",
+       "percentMargin": "number:int"
+      },
+      "cashBalance": "number:int",
+      "awaitingDividends": "number:int",
+      "blockedCash": "number:int",
+      "notMatched": "number:int",
+      "unpaid": "number:int",
+      "awaitingAdvance": "number:int",
+      "children": {
+       "items": 2,
+       "of": "object"
+      }
+     }
+    }
+   }
+  },
+  {
+   "operation": "brokerAssets.portfolio",
+   "method": "POST",
+   "step": "investment-portfolio",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "page": "number:int",
+    "size": "number:int",
+    "totalElements": "number:int",
+    "totalPages": "number:int",
+    "sumAllAcc": "number:int",
+    "data": {
+     "items": 5,
+     "of": {
+      "stkCd": "string",
+      "acntQty": "number:int",
+      "evalAmtSum": "number:int",
+      "bookAmtPlSum": "number:decimal",
+      "evalPrf": "number:decimal",
+      "evalPer": "number:decimal",
+      "sellAbleQtySum": "number:int",
+      "ownQtySum": "number:int",
+      "tdBuyMthQty": "number:int",
+      "pdBuyMthQty": "number:int",
+      "ppdBuyMthQty": "number:int",
+      "costPri": "number:decimal",
+      "curPri": "number:int",
+      "porWgt": "number:int",
+      "capstt": "number:int",
+      "list": {
+       "items": 1,
+       "of": "object"
+      }
+     }
+    }
+   }
+  },
+  {
+   "operation": "credit.guarantees",
+   "method": "POST",
+   "step": "guarantee-information-list",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "page": "number:int",
+    "size": "number:int",
+    "totalElements": "number:int",
+    "totalPages": "number:int",
+    "data": {
+     "items": 0,
+     "of": null
+    }
+   }
+  },
+  {
+   "operation": "credit.collateral",
+   "method": "POST",
+   "step": "additional-collateral-releases-list",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "page": "number:int",
+    "size": "number:int",
+    "totalElements": "number:int",
+    "totalPages": "number:int",
+    "data": {
+     "items": 0,
+     "of": null
+    }
+   }
+  },
+  {
+   "operation": "loans.current",
+   "method": "POST",
+   "step": "loan-info",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "page": "number:int",
+    "size": "number:int",
+    "totalElements": "number:int",
+    "totalPages": "number:int",
+    "data": {
+     "items": 3,
+     "of": {
+      "accountNo": "string",
+      "customerName": "string",
+      "subNo": "string:int",
+      "acctNo": "string:int",
+      "trfAcctNo": "string:int",
+      "lndTp": "string",
+      "bankCdNm": "string",
+      "lndDate": "string:datetime",
+      "expDate": "string:datetime",
+      "validDays": "string:int",
+      "overdueDays": "string:int",
+      "initialDebt": "string:int",
+      "paidDebt": "string:int",
+      "remainingDebt": "string:int",
+      "lndInt": "string:int",
+      "dlyInt": "string:int",
+      "lndCmsn": "string:int",
+      "dlyCmsn": "string:int",
+      "sumInt": "string:int",
+      "totalDueAmount": "string:int",
+      "crm": "string:decimal-dot",
+      "loanStatus": "string:int",
+      "mnId": "string",
+      "mnName": "string",
+      "brokerDpm": "string:int",
+      "brokerDpmName": "string"
+     }
+    }
+   }
+  },
+  {
+   "operation": "loans.history",
+   "method": "POST",
+   "step": "history",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "page": "number:int",
+    "size": "number:int",
+    "totalElements": "number:int",
+    "totalPages": "number:int",
+    "data": {
+     "items": 5,
+     "of": {
+      "accountNo": "string",
+      "customerName": "string",
+      "subNo": "string:int",
+      "acctNo": "string:int",
+      "trfAcctNo": "string:int",
+      "lndTp": "string",
+      "bankCdNm": "string",
+      "lndDate": "string:datetime",
+      "expDate": "string:datetime",
+      "validDays": "string:int",
+      "overdueDays": "string:int",
+      "initialDebt": "string:int",
+      "paidDebt": "string:int",
+      "remainingDebt": "string:int",
+      "intRt1": "string:decimal-dot",
+      "intRt2": "string:decimal-dot",
+      "overDueIntRt": "string:decimal-dot",
+      "feeRt1": "string:int",
+      "feeRt2": "string:int",
+      "overDueFeeRt": "string:int",
+      "lndInt": "string:int",
+      "dlyInt": "string:int",
+      "lndCmsn": "string:int",
+      "dlyCmsn": "string:int",
+      "sumInt": "string:int",
+      "mnId": "string",
+      "mnName": "string",
+      "brokerDpm": "string:int",
+      "brokerDpmName": "string"
+     }
+    }
+   }
+  },
+  {
+   "operation": "loans.repayments",
+   "method": "POST",
+   "step": "history",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "page": "number:int",
+    "size": "number:int",
+    "totalElements": "number:int",
+    "totalPages": "number:int",
+    "data": {
+     "items": 3,
+     "of": {
+      "accountNo": "string",
+      "custNm": "string",
+      "subNo": "string:int",
+      "acctNo": "string:int",
+      "trfAcctNo": "string:int",
+      "lndTp": "string",
+      "bankCdNm": "string",
+      "lndDate": "string:datetime",
+      "expDate": "string:datetime",
+      "validDays": "string:int",
+      "overdueDays": "string:int",
+      "repayDate": "string:datetime",
+      "initialDebt": "string:int",
+      "repayAmt": "string:int",
+      "remainingDebt": "string:int",
+      "intRt1": "string:decimal-dot",
+      "intRt2": "string:decimal-dot",
+      "overDueIntRt": "string:decimal-dot",
+      "feeRt1": "string:int",
+      "feeRt2": "string:int",
+      "overDueFeeRt": "string:int",
+      "lndInt": "string:int",
+      "dlyInt": "string:int",
+      "lndCmsn": "string:int",
+      "dlyCmsn": "string:int",
+      "adjRepayAmt": "string:int",
+      "mnId": "string",
+      "mnName": "string",
+      "brokerDpm": "string:int",
+      "brokerDpmName": "string"
+     }
+    }
+   }
+  },
+  {
+   "operation": "orders.history",
+   "method": "POST",
+   "step": "histories",
+   "httpStatus": 200,
+   "envelope": [
+    "timestamp",
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "pageNo": "number:int",
+    "pageSize": "number:int",
+    "totalCount": "number:int",
+    "totalPage": "number:int",
+    "content": {
+     "items": 5,
+     "of": {
+      "ordNo": "string:int",
+      "accountNumber": "string",
+      "customerName": "string",
+      "activateDate": "string:dd/mm/yyyy",
+      "activationPrice": "null",
+      "bnhCd": "string:int",
+      "orgOrdNo": "null",
+      "typeTrades": "string",
+      "code": "string",
+      "createDt": "string:datetime",
+      "dateTrades": "string:dd/mm/yyyy",
+      "fcmcmsn": "number:int",
+      "fstNo": "null",
+      "matchedPrice": "number:int",
+      "matchedVolume": "number:int",
+      "mthAmt": "number:int",
+      "netTransactionFee": "number:int",
+      "nmthQty": "number:int",
+      "orderChannel": "string",
+      "orderPrice": "number:decimal",
+      "orderVolume": "number:int",
+      "orgOrdQty": "number:int",
+      "preOrderSession": "null",
+      "revenueFee": "number:int",
+      "sbFee": "number:int",
+      "sbTax": "number:int",
+      "stockExFee": "number:int",
+      "sellBuyType": "string",
+      "stockCode": "string",
+      "subAccount": "string:int",
+      "timeTrades": "string",
+      "tradeStatus": "string:int",
+      "trader": "string",
+      "remNm": "string",
+      "saleGroup": "null",
+      "remBrch": "string",
+      "subNo": "string:int",
+      "orderValue": "number:decimal"
+     }
+    }
+   }
+  },
+  {
+   "operation": "orders.history",
+   "method": "POST",
+   "step": "histories",
+   "httpStatus": 200,
+   "envelope": [
+    "timestamp",
+    "code",
+    "message",
+    "data"
+   ],
+   "data": "null"
+  },
+  {
+   "operation": "orders.unconfirmed",
+   "method": "POST",
+   "step": "list-confirm",
+   "httpStatus": 400,
+   "envelope": [
+    "timestamp",
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "items": 1,
+    "of": {
+     "fieldName": "string",
+     "fieldValue": "number:int",
+     "message": "string"
+    }
+   }
+  },
+  {
+   "operation": "orderSummary.confirmations",
+   "method": "GET",
+   "step": "order-confirm-summary",
+   "httpStatus": 200,
+   "envelope": [
+    "timestamp",
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "unCfmOrders": "number:int",
+    "cfmOrders": "number:int",
+    "buyOrders": "number:int",
+    "sellOrders": "number:int",
+    "ratio1": "number:decimal",
+    "ratio2": "number:decimal",
+    "sumCustomers": "number:int"
+   }
+  },
+  {
+   "operation": "orderSummary.top",
+   "method": "GET",
+   "step": "summary",
+   "httpStatus": 200,
+   "envelope": [
+    "timestamp",
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "items": 0,
+    "of": null
+   }
+  },
+  {
+   "operation": "orderSummary.transactions",
+   "method": "POST",
+   "step": "sum-transaction",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "page": "number:int",
+    "size": "number:int",
+    "totalElements": "null",
+    "totalPages": "null",
+    "sumAccounts": "null",
+    "sumTranValue": "null",
+    "sumBuyValue": "null",
+    "sumSellValue": "null",
+    "sumRevenueFee": "null",
+    "sumFcmCmsn": "null",
+    "sumSbTax": "null",
+    "sumNetFee": "null",
+    "sumSbFee": "null",
+    "data": {
+     "items": 0,
+     "of": null
+    }
+   }
+  },
+  {
+   "operation": "cash.movements",
+   "method": "POST",
+   "step": "deposit-withdrawal-info",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "page": "number:int",
+    "size": "number:int",
+    "totalElements": "number:int",
+    "totalPages": "number:int",
+    "dpsAccCnt": "number:int",
+    "wthDrwAccCnt": "number:int",
+    "dpsAmtTotal": "number:int",
+    "wthDrwAmtTotal": "number:int",
+    "data": {
+     "items": 1,
+     "of": {
+      "accountNo": "string",
+      "subNo": "string:int",
+      "customerName": "string",
+      "transDate": "string:datetime",
+      "transTime": "string",
+      "transTp": "string:int",
+      "amount": "number:int",
+      "status": "string:int",
+      "cnte": "string"
+     }
+    }
+   }
+  },
+  {
+   "operation": "newAccounts.report",
+   "method": "POST",
+   "step": "open-new-account",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "page": "number:int",
+    "size": "number:int",
+    "totalElements": "number:int",
+    "totalPages": "number:int",
+    "sumAcc": "number:int",
+    "activeAccCnt": "number:int",
+    "inactiveAccCnt": "number:int",
+    "data": {
+     "items": 0,
+     "of": null
+    }
+   }
+  },
+  {
+   "operation": "research.summary",
+   "method": "POST",
+   "step": "info-advice",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "totalAmount": "number:int",
+    "totalAmountOpen": "number:int",
+    "totalAmountClose": "number:int",
+    "totalAmountFollowing": "number:int"
+   }
+  },
+  {
+   "operation": "research.list",
+   "method": "POST",
+   "step": "get-all",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "items": 15,
+    "of": {
+     "id": "string",
+     "recommendDate": "string:datetime",
+     "status": "string",
+     "stockCode": "string",
+     "marketCode": "string",
+     "recommendPrice": {
+      "to": "number:int"
+     },
+     "openPrice": "number:int",
+     "targetPrice": {
+      "from": "number:int",
+      "to": "number:int"
+     },
+     "lossPrice": "number:int",
+     "potential": "number:decimal",
+     "brokerCode": "string:int",
+     "holdingPeriod": "number:int",
+     "recommendToGroup": {
+      "items": 0,
+      "of": null
+     },
+     "recommendToPersonal": {
+      "items": 8,
+      "of": "string"
+     }
+    }
+   }
+  },
+  {
+   "operation": "groups.list",
+   "method": "POST",
+   "step": "get-all-group-customer",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "items": 4,
+    "of": {
+     "id": "string",
+     "name": "string",
+     "brokerCode": "string:int",
+     "isActive": "boolean",
+     "groupCode": "string",
+     "members": {
+      "items": 8,
+      "of": {
+       "id": "string",
+       "name": "string",
+       "accountNo": "string",
+       "isActive": "boolean"
+      }
+     }
+    }
+   }
+  },
+  {
+   "operation": "market.catalog",
+   "method": "GET",
+   "step": "get-stock-codes",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "items": 12218,
+    "of": {
+     "id": "string",
+     "shortName": "string",
+     "name": "string",
+     "stock": "string"
+    }
+   }
+  },
+  {
+   "operation": "market.quote",
+   "method": "POST",
+   "step": "code",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "items": 1,
+    "of": {
+     "code": "string",
+     "time": "null",
+     "ceiling": "string:int",
+     "floor": "string:int",
+     "open": "string:int",
+     "high": "string:decimal-dot",
+     "low": "string:decimal-dot",
+     "last": "string:int",
+     "change": "string:decimal-dot",
+     "volume": "string:int",
+     "amount": "string:int",
+     "market_name": "string",
+     "ref_price": "string:int",
+     "avg_price": "string:int",
+     "change_rate": "string:decimal-dot",
+     "bid_offer_list": {
+      "items": 3,
+      "of": {
+       "bid": "string:int",
+       "offer": "string:int",
+       "bid_status": "string:int",
+       "bid_size": "string:int",
+       "offer_status": "string:int",
+       "offer_size": "string:int"
+      }
+     }
+    }
+   }
+  },
+  {
+   "operation": "market.price",
+   "method": "GET",
+   "step": "securities-price",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "items": 1,
+    "of": {
+     "code": "string",
+     "market_name": "null",
+     "last": "string:int",
+     "status": "null",
+     "change": "string:decimal-dot",
+     "change_rate": "string:decimal-dot",
+     "ref_price": "string:int",
+     "avg_price": "string:int",
+     "avg_price_status": "null",
+     "ceiling": "string:int",
+     "ceiling_status": "null",
+     "floor": "string:int",
+     "floor_status": "null",
+     "open": "string:int",
+     "open_status": "null",
+     "high": "string:decimal-dot",
+     "high_status": "null",
+     "high_time": "null",
+     "low": "string:decimal-dot",
+     "low_status": "null",
+     "low_time": "null",
+     "project_open": "null",
+     "project_open_status": "null",
+     "control_code": "null"
+    }
+   }
+  },
+  {
+   "operation": "market.ticks",
+   "method": "GET",
+   "step": "stock-quote-list",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "lastIndex": "number:int",
+    "lastSize": "number:int",
+    "data": {
+     "items": 5,
+     "of": {
+      "o": "string:int",
+      "ti": "string:datetime",
+      "c": "string:int",
+      "ch": "string:int",
+      "h": "string:int",
+      "l": "string:int",
+      "mb": "string",
+      "mv": "string:int",
+      "r": "string:decimal-dot",
+      "va": "string:int",
+      "vo": "string:int"
+     }
+    }
+   }
+  },
+  {
+   "operation": "market.candles",
+   "method": "GET",
+   "step": "history",
+   "httpStatus": 200,
+   "envelope": null,
+   "data": {
+    "t": {
+     "items": 62,
+     "of": "number:int"
+    },
+    "o": {
+     "items": 62,
+     "of": "number:decimal"
+    },
+    "h": {
+     "items": 62,
+     "of": "number:decimal"
+    },
+    "l": {
+     "items": 62,
+     "of": "number:decimal"
+    },
+    "c": {
+     "items": 62,
+     "of": "number:decimal"
+    },
+    "v": {
+     "items": 62,
+     "of": "number:int"
+    },
+    "s": "string",
+    "nextTime": "null"
+   }
+  },
+  {
+   "operation": "orders.unconfirmed",
+   "method": "POST",
+   "step": "list-confirm",
+   "httpStatus": 400,
+   "envelope": [
+    "timestamp",
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "items": 1,
+    "of": {
+     "fieldName": "string",
+     "fieldValue": "number:int",
+     "message": "string"
+    }
+   },
+   "capturedAt": "2026-10-10 probe --extra"
+  },
+  {
+   "operation": "orders.unconfirmed",
+   "method": "POST",
+   "step": "list-confirm",
+   "httpStatus": 200,
+   "envelope": [
+    "timestamp",
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "pageNo": "number:int",
+    "pageSize": "number:int",
+    "totalCount": "number:int",
+    "totalPage": "number:int",
+    "content": {
+     "items": 30,
+     "of": {
+      "dateTrades": "string:dd/mm/yyyy",
+      "timeTrades": "string",
+      "accountNumber": "string",
+      "customerName": "string",
+      "subAccount": "string:int",
+      "status": "string",
+      "ordNo": "string:int",
+      "typeTrades": "string",
+      "code": "string",
+      "orderPrice": "string:int",
+      "matchedPrice": "string:int",
+      "matchedVolume": "string:int",
+      "orderVolume": "string:int",
+      "tradeStatus": "string",
+      "trader": "string",
+      "orderChannel": "string",
+      "subNo": "string:int"
+     }
+    }
+   },
+   "capturedAt": "2026-10-10 probe --extra"
+  },
+  {
+   "operation": "buyingPower.preview",
+   "method": "POST",
+   "step": "balance",
+   "httpStatus": 200,
+   "envelope": [
+    "timestamp",
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "ppo": "number:int",
+    "rtt": "number:int",
+    "buy_abl_qty": "number:int",
+    "buying_power": "number:int",
+    "room_qty": "number:int",
+    "sell_able_qty": "number:int",
+    "loan_total": "number:int",
+    "gst_dpo": "number:int"
+   },
+   "capturedAt": "2026-10-10 probe --extra"
+  },
+  {
+   "operation": "orderSummary.top",
+   "method": "GET",
+   "step": "summary",
+   "httpStatus": 200,
+   "envelope": [
+    "timestamp",
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "items": 0,
+    "of": null
+   },
+   "capturedAt": "2026-10-10 probe --extra"
+  },
+  {
+   "operation": "orderSummary.transactions",
+   "method": "POST",
+   "step": "sum-transaction",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": {
+    "page": "number:int",
+    "size": "number:int",
+    "totalElements": "null",
+    "totalPages": "null",
+    "sumAccounts": "null",
+    "sumTranValue": "null",
+    "sumBuyValue": "null",
+    "sumSellValue": "null",
+    "sumRevenueFee": "null",
+    "sumFcmCmsn": "null",
+    "sumSbTax": "null",
+    "sumNetFee": "null",
+    "sumSbFee": "null",
+    "data": {
+     "items": 0,
+     "of": null
+    }
+   },
+   "capturedAt": "2026-10-10 probe --extra"
+  },
+  {
+   "operation": "profile.authorized",
+   "method": "GET",
+   "step": "authorized",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": "null",
+   "capturedAt": "2026-10-10 probe --extra"
+  },
+  {
+   "operation": "profile.authorized",
+   "method": "GET",
+   "step": "authorized",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": "null",
+   "capturedAt": "2026-10-10 probe --extra"
+  },
+  {
+   "operation": "profile.authorized",
+   "method": "GET",
+   "step": "authorized",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": "null",
+   "capturedAt": "2026-10-10 probe --extra"
+  },
+  {
+   "operation": "profile.authorized",
+   "method": "GET",
+   "step": "authorized",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": "null",
+   "capturedAt": "2026-10-10 probe --extra"
+  },
+  {
+   "operation": "profile.authorized",
+   "method": "GET",
+   "step": "authorized",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": "null",
+   "capturedAt": "2026-10-10 probe --extra"
+  },
+  {
+   "operation": "profile.authorized",
+   "method": "GET",
+   "step": "authorized",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": "null",
+   "capturedAt": "2026-10-10 probe --extra"
+  },
+  {
+   "operation": "profile.authorized",
+   "method": "GET",
+   "step": "authorized",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": "null",
+   "capturedAt": "2026-10-10 probe --extra"
+  },
+  {
+   "operation": "profile.authorized",
+   "method": "GET",
+   "step": "authorized",
+   "httpStatus": 200,
+   "envelope": [
+    "code",
+    "message",
+    "data"
+   ],
+   "data": "null",
+   "capturedAt": "2026-10-10 probe --extra"
+  },
+  {
+   "operation": "knowledge.departments",
+   "method": "GET",
+   "step": "departments",
+   "httpStatus": 200,
+   "envelope": null,
+   "data": {
+    "data": {
+     "items": 6,
+     "of": {
+      "id": "number:int",
+      "documentId": "string",
+      "Name": "string",
+      "Code": "string:int",
+      "Order": "number:int",
+      "createdAt": "string:datetime",
+      "updatedAt": "string:datetime",
+      "publishedAt": "string:datetime"
+     }
+    },
+    "meta": {
+     "pagination": {
+      "page": "number:int",
+      "pageSize": "number:int",
+      "pageCount": "number:int",
+      "total": "number:int"
+     }
+    }
+   },
+   "capturedAt": "2026-10-10 probe --extra"
+  },
+  {
+   "operation": "knowledge.documents",
+   "method": "GET",
+   "step": "01",
+   "httpStatus": 200,
+   "envelope": null,
+   "data": {
+    "data": {
+     "items": 3,
+     "of": {
+      "id": "number:int",
+      "documentId": "string",
+      "Title": "string",
+      "Content": "string",
+      "Slug": "string",
+      "PublishedDate": "string:datetime",
+      "departmentCode": "string:int",
+      "IsFeature": "null",
+      "FeatureOrder": "null",
+      "createdAt": "string:datetime",
+      "updatedAt": "string:datetime",
+      "publishedAt": "string:datetime",
+      "Photo": {
+       "id": "number:int",
+       "documentId": "string",
+       "name": "string",
+       "alternativeText": "null",
+       "caption": "null",
+       "width": "number:int",
+       "height": "number:int",
+       "hash": "string",
+       "ext": "string",
+       "mime": "string",
+       "size": "number:decimal",
+       "url": "string",
+       "previewUrl": "null",
+       "provider": "string",
+       "provider_metadata": "null",
+       "createdAt": "string:datetime",
+       "updatedAt": "string:datetime",
+       "publishedAt": "string:datetime",
+       "formats": "object"
+      },
+      "departmentName": "string"
+     }
+    },
+    "meta": {
+     "pagination": {
+      "page": "number:int",
+      "pageSize": "number:int",
+      "pageCount": "number:int",
+      "total": "number:int"
+     }
+    }
+   },
+   "capturedAt": "2026-10-10 probe --extra"
+  },
+  {
+   "operation": "knowledge.documents",
+   "method": "GET",
+   "step": "02",
+   "httpStatus": 200,
+   "envelope": null,
+   "data": {
+    "data": {
+     "items": 5,
+     "of": {
+      "id": "number:int",
+      "documentId": "string",
+      "Title": "string",
+      "Content": "string",
+      "Slug": "string",
+      "PublishedDate": "string:datetime",
+      "departmentCode": "string:int",
+      "IsFeature": "null",
+      "FeatureOrder": "null",
+      "createdAt": "string:datetime",
+      "updatedAt": "string:datetime",
+      "publishedAt": "string:datetime",
+      "Photo": {
+       "id": "number:int",
+       "documentId": "string",
+       "name": "string",
+       "alternativeText": "null",
+       "caption": "null",
+       "width": "number:int",
+       "height": "number:int",
+       "hash": "string",
+       "ext": "string",
+       "mime": "string",
+       "size": "number:decimal",
+       "url": "string",
+       "previewUrl": "null",
+       "provider": "string",
+       "provider_metadata": "null",
+       "createdAt": "string:datetime",
+       "updatedAt": "string:datetime",
+       "publishedAt": "string:datetime",
+       "formats": "object"
+      },
+      "departmentName": "string"
+     }
+    },
+    "meta": {
+     "pagination": {
+      "page": "number:int",
+      "pageSize": "number:int",
+      "pageCount": "number:int",
+      "total": "number:int"
+     }
+    }
+   },
+   "capturedAt": "2026-10-10 probe --extra"
+  }
+ ],
+ "extraResults": {
+  "accounts.subaccounts": "ok",
+  "orders.unconfirmed": "ok",
+  "orders.unconfirmed:29d/5": "UPSTREAM_REJECTED",
+  "orders.unconfirmed:7d/30": "ok",
+  "buyingPower.preview": "ok",
+  "orderSummary.top": "ok",
+  "orderSummary.transactions": "ok",
+  "profile.authorized": "ok",
+  "profile.authorized:0": "ok",
+  "profile.authorized:1": "ok",
+  "profile.authorized:2": "ok",
+  "profile.authorized:3": "ok",
+  "profile.authorized:4": "ok",
+  "profile.authorized:5": "ok",
+  "profile.authorized:6": "ok",
+  "profile.authorized:7": "ok",
+  "knowledge.departments": "ok",
+  "knowledge.documents": "ok"
+ }
+}

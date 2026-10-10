@@ -69,7 +69,36 @@ Trace cuối 10/10/2026: login-v2 → generate-matrix → verify-sotp → get-us
 - runtime-release.json bật accounts.tree; catalog status released, fieldMap theo shape live; check-docs đối chiếu catalog với release.
 - tests/accounts-tree.test.ts 5 suite REQ/RAW/DTO/SCOPE/PAGE + E2E SDK có/không PII trong oauth.test.ts; 20/20 tests; mutation bỏ chặn PII làm DTO test fail.
 
-Bước tiếp: Đại ca deploy, rồi **ngắt và kết nối lại connector** trên Claude (token cũ chỉ có 8 scopes), tick ô profile.pii ở trang consent, rồi hỏi danh sách khách hàng.
+Đại ca commit 5ab3f22, deploy và kết nối lại có profile.pii. list_managed_accounts trả đủ 8/8 tài khoản và cây 6 broker qua Claude connector (13:27Z 10/10/2026). Còn mở: phiên Claude Code chỉ thấy 1/3 tool của SHA MCP sau khi bật lại connector.
+
+### Release lần 2 — 34 operation (chưa deploy)
+
+Đại ca muốn trợ lý trả lời đủ thông tin, chọn (AskUserQuestion 10/10/2026): bật số liệu chưa xác minh đơn vị kèm nhãn unverified; profile.pii gồm toàn bộ PII khách hàng; làm cả 4 nhóm. Đã làm:
+
+- scripts/trace-sha-login.ts --live --probe: một lần login/OTP, gọi chỉ-đọc 38 candidate cho 1 tài khoản mẫu + broker gốc + mã FPT; lưu cấu trúc (tên field/kiểu, không giá trị) ở config/live-shapes-20261010.json. 36 ok; assets.loanDetail 405, orders.unconfirmed 400; buyingPower.preview không gọi.
+- scripts/gen-fieldmaps.mjs sinh fieldMap 32 operation từ shape live (+ doc SHA_PC cho mẫu rỗng); src/dto.ts project() chiếu theo fieldMap (mảng lồng, PII theo scope, ref, decimal); service phát hiện phân trang theo shape, SOURCE_NULL, market.catalog lọc theo search; mô tả cho 17 tool; schema tool bỏ combinator cấp cao nhất.
+- Tắt: profile.authorized, assets.loanDetail, orders.unconfirmed, orderSummary.top, orderSummary.transactions, buyingPower.preview (lý do trong ENDPOINTS).
+- Tên nhân viên môi giới không còn sau profile.pii (cả accounts.tree).
+- tests/released-operations.test.ts: REQ/RAW/DTO/SCOPE/PAGE cho 33 operation; 53/53 tests.
+
+Đại ca deploy release lần 2. Em gọi live lần lượt 27/34 operation qua connector (13-14:05Z 10/10/2026); 7 operation cần subaccountRef chưa gọi được vì client Claude Code gỡ list_managed_accounts sau khi bật lại connector (client chỉ giữ tool mới; tool_count lệch so với tools/list server).
+
+Lỗi phát hiện và đã sửa local (chưa deploy):
+1. mobile_sms/sidc/pcod/telephone/identity/identifierNumber/brokerDpm bị coi là số → mất số 0 đầu. PII và mã luôn là chuỗi.
+2. credit.guarantees/collateral gửi accounts:[]/subId:null nên rỗng; theo SHA_PC: cấp môi giới {brokerCode, page, size}, theo tiểu khoản {brokerCode, accounts:[acct], subId}. Không gửi trang thì không áp kiểm trang chặt.
+3. loans.history trả món vay có lndDate ngoài from/to → cảnh báo PERIOD_FILTER_UNVERIFIED, mô tả tool sửa.
+4. Nhãn đơn vị quan sát: orders.history orderPrice/orderValue nghìn VND (29.2×1, 1.86×30=55.8); brokerAssets.portfolio và giá thị trường VND (875×20150). Vẫn status unverified.
+5. requestedPeriod ghi đúng cặp ngày (repayFrom, loanFrom, fromTime...); coverage của object có danh sách (market.ticks) đếm đúng dòng.
+6. Tiểu khoản: nhận subNo ("00", "01"...) thay subaccountRef cho assets/portfolio/orderSummary.account/credit; server tự phân giải trong tài khoản đó.
+7. Đại ca dặn: không tra khoảng ngày vắt qua 22–24/05/2026 (đổi core, không có dữ liệu) → server trả PERIOD_SPANS_DATA_GAP, mô tả tool hướng dẫn tách hai lần (≤21/05 và ≥25/05) rồi ghép. Không áp cho market.*.
+
+Kết quả đúng đã thấy: identity, brokerAssets.summary/accounts/cash/portfolio (cursor trang 2 ok), profile.detail/information (ngày sinh một khách hàng), loans.current/history/repayments, orders.history (history; today SOURCE_NULL đúng), cash.movements, customers.overview, orderSummary.confirmations, newAccounts.report, research.summary/list, groups.list, market.catalog/quote/price/ticks/candles. 55/55 tests sau sửa.
+
+Sau deploy: gọi lại qua connector 33/34 (accounts.search không gọi được vì client gỡ list_managed_accounts); subNo, số 0 đầu, credit body đúng; portfolio.account map theo field live (doc keys acntNo/subNo/ownQty… không có; totals chỉ trong data.totals).
+
+Đại ca yêu cầu MCP đáp ứng mọi thông tin API cung cấp: rà doc SHA_PC (46 endpoint: 3 auth, 4 lệnh ghi cấm, 39 đọc — đều đã trong catalog) và code SHA_PC (thêm forward/cms KMS). Probe --extra (một lần login): list-confirm pageSize 30 ok; order/balance ok (tính sức mua); sum-transaction null ngoài giờ; KMS 6 phòng ban + bài viết; authorized null ×8; order/summary []. Bật thêm 5: orders.unconfirmed, buyingPower.preview, orderSummary.transactions, knowledge.departments, knowledge.documents (tool get_knowledge_library). Còn tắt 3: profile.authorized, assets.loanDetail (405), orderSummary.top. 42 route, 39 bật, 18 tool nghiệp vụ. 60/60 tests.
+
+Đại ca deploy và kết nối lại (14:33Z): list_profile_capabilities 39 live; gọi live đúng accounts.tree/search/subaccounts, buyingPower.preview (FPT 57900, mua tối đa 3), orders.unconfirmed (50 lệnh, 30/trang, cursor), orderSummary.transactions (SOURCE_NULL ngoài giờ), knowledge.departments (6) và documents. Sửa sau vòng này (đã deploy, xác nhận live 14:37Z bài KMS ra văn bản thuần đầy đủ): KMS Content HTML → văn bản thuần trước khi cắt 4000 ký tự (contentFormat text-from-html); mô tả orders.unconfirmed: danh sách gồm tradeStatus N (chưa xác nhận) và Y (đã xác nhận).
 
 Nguồn tham khảo cho các operation tiếp theo: Đại ca chỉ D:DevSHA_PCSHA_PC_code (docs/api). Kiểm 10/10/2026: HEAD 7261a8d, working tree có file sửa chưa commit, khác commit 8363a1a trong SOURCE-MAP. Chỉ đọc docs; không đọc logs/output/tmp, không chạy script; ghi commit/hash khi dùng làm bằng chứng.
 
@@ -105,7 +134,7 @@ Sau deployment đã thêm truyền AbortSignal chung tới bootstrap identity/tr
 
 ## Các việc còn thiếu
 
-1. Deploy accounts.tree + profile.pii, reconnect Claude và nghiệm thu danh sách khách hàng; G1 đã chạy trên production; Đại ca tự nhập SHA/password/OTP tại hosted form để chốt G1. Header auth, otpType/matrix/identity/tree hiện theo doc lịch sử, chưa live evidence.
+1. Deploy release lần 2 (34 operation) và gọi thử live từng nhóm; kiểm vì sao client từng chỉ thấy 1/3 tool; sửa orders.unconfirmed; Đại ca tự nhập SHA/password/OTP tại hosted form để chốt G1. Header auth, otpType/matrix/identity/tree hiện theo doc lịch sử, chưa live evidence.
 2. Account switch: thư viện dùng auto-submit form; CSP hiện không có script-src explicit nên hash helper không thêm hash. Cần test và sửa bằng CSP hash/nonce chuẩn, không unsafe-inline script.
 3. CLI Supabase đúng account để kiểm/cài cleanup. profile_mcp.cleanup_expired() có nhưng **chưa scheduler**; app vẫn kiểm TTL mỗi lần đọc. Query kiểm pg_cron bị 403. Không cấp cleanup EXECUTE cho runtime.
 4. G2: thiếu verified shapes/units/role coverage, nested DTO/output schemas và đủ 5 suites/operation. Giữ 40 disabled; generic builder/test không là acceptance.

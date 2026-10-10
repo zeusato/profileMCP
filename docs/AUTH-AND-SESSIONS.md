@@ -109,7 +109,7 @@ Cache quyền gợi ý tối đa 60 giây, gắn session và version; thời h�
 
 ## 7. Dữ liệu tối thiểu
 
-Scope đề xuất: `profile.read`, `accounts.read`, `assets.read`, `orders.read`, `credit.read`, `reports.read`, `research.read`, `market.read`; `profile.pii` tách riêng và mặc định không cấp: trang consent hiện ô chọn riêng, không tick sẵn, chỉ khi client xin scope này; bỏ trống thì grant ghi profile.pii là rejected (tránh lặp consent) và token không có scope đó. Scope `openid` chỉ dùng nếu OAuth library thực triển khai OIDC, không tự thêm vì tên thư viện.
+Scope đề xuất: `profile.read`, `accounts.read`, `assets.read`, `orders.read`, `credit.read`, `reports.read`, `research.read`, `market.read`; `profile.pii` tách riêng và mặc định không cấp (từ 10/10/2026 gồm mọi PII khách hàng: tên, số TK, giấy tờ, ngày sinh, liên hệ, địa chỉ — Đại ca chọn): trang consent hiện ô chọn riêng, không tick sẵn, chỉ khi client xin scope này; bỏ trống thì grant ghi profile.pii là rejected (tránh lặp consent) và token không có scope đó. Scope `openid` chỉ dùng nếu OAuth library thực triển khai OIDC, không tự thêm vì tên thư viện.
 
 Runtime: 8 read scopes được khai báo cả ở AS (`scopes`, để DCR có `scope` của MCP client hợp lệ) và resource server; consent grant cùng tập ở hai phía. `openid` do oidc-provider luôn công bố nhưng không được cấp: authorization xin scope ngoài 8 read scopes nhận `invalid_scope` trước login SHA.
 

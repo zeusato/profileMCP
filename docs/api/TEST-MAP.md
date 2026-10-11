@@ -1,5 +1,7 @@
 # Ma trận kiểm thử operation
 
+MCP-TEXT-01 (11/10/2026), thêm assertions vào hai test SDK/OAuth hiện có trong `tests/oauth.test.ts`: client chỉ đọc text vẫn parse được metadata capabilities (39 operation và 3 candidate), dictionary, identity, accounts.tree và lỗi có requestId; JSON từ text bằng structuredContent. Kiểm tài khoản/tên khách có và không có profile.pii, null được giữ và bearer canary không lộ. Không cộng thành test suite mới vào tổng 63.
+
 Regression cookie 11/10/2026, `tests/interactions.test.ts`: AUTH-FLOW-01 kiểm hai interaction chung browser, login/OTP/consent độc lập qua hai instance; AUTH-FLOW-02 kiểm cookie thiếu, provider cookie thiếu, flow hết hạn/sai UID, CSRF sai, double submit/replay chỉ gọi SHA begin một lần và log không chứa canary; AUTH-FLOW-03 kiểm cookie cũ chuyển sang cookie riêng. Đây là synthetic, không thay thế AUTH-09 về chính sách nhiều phiên SHA thật hoặc nghiệm thu Claude Android.
 
 Kiểm thủ công GPT ngày 10/10/2026: `GPT-CONNECT-01` (DCR → login/OTP/consent → callback), `GPT-META-01` (list_profile_capabilities, get_profile_data_dictionary cho identity.current) và `GPT-PII-01` (accounts.tree qua kết nối xin profile.pii, người dùng tick consent; 8/8 accountNumber/customerName, brokerName riêng) đạt trên ChatGPT Work; OIDC tắt ở client. Đây là 3 ca manual, không cộng vào 60 synthetic tests, không đại diện toàn bộ nghiệp vụ/PII/vòng đời phiên. Chi tiết trong [VALIDATION](../VALIDATION.md).

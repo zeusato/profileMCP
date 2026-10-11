@@ -39,6 +39,7 @@ Fixture synthetic dùng tên/mã giả; không copy payload tài khoản thật.
 | OAUTH-05 | Refresh rotation/reuse detection và atomic adapter consume nhiều instance |
 | OAUTH-06 | Consent mới theo client; không token passthrough |
 | OAUTH-07 | DCR theo MCP SDK với PRM scopes, một lần consent; scope ngoài read set bị invalid_scope; diagnostic /reg không chứa giá trị |
+| MCP-TEXT-01 | Client chỉ đọc TextContent nhận đủ DTO/metadata/lỗi giống structuredContent; PII đúng scope, null/meta giữ nguyên và không lộ bearer |
 | SEC-01 | Fuzz URL/path/header/query injection không thoát host/method allowlist |
 | SEC-02 | Mọi route mua/bán/sửa/hủy/xác nhận/chuyển tiền/settings bị block ở network dispatcher |
 | SEC-03 | Login POST không xuất hiện trong tools/list; không register raw HTTP tool |

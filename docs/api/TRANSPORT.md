@@ -1,5 +1,11 @@
 # SHA transport và giới hạn truy vấn
 
+## Phản hồi tool MCP
+
+Mọi tool trả cùng dữ liệu ở `structuredContent` và `content: [{ type: "text", text: JSON.stringify(data) }]`, theo [MCP structured content](https://modelcontextprotocol.io/specification/2025-11-25/server/tools#structured-content). Client chỉ chuyển phần text cho model vẫn đọc được toàn bộ kết quả. Áp dụng cho 2 tool metadata và toàn bộ tool nghiệp vụ; capabilities phải có danh sách operation, không chỉ số lượng.
+
+Chỉ serialize DTO sau kiểm quyền, lọc PII và session fence; giữ null, chuỗi decimal, refs, meta/warnings/coverage/pagination. Không serialize raw upstream hoặc token. Lỗi cũng có JSON ở cả hai phần, giữ `isError: true`, chỉ chứa mã lỗi an toàn và requestId. Không thay đổi scopes, schema input hay phiên OAuth.
+
 ## Allowlist
 
 Chỉ `https://api.shs.com.vn`, cổng HTTPS mặc định, method/path chính xác từ config. Tách HTTP client auth control plane và read client. Read client không được import auth write builder hoặc order mutation builder. Tắt redirect tự động; response redirect tới host/path khác là lỗi, không forward bearer. Không nhận URL, headers hoặc raw body từ model.

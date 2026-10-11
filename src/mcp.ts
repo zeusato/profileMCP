@@ -68,8 +68,13 @@ export async function handleMcp(req: Request, res: Response, service: ReadServic
         data = await service.call(r.id, args, session, scopes, requestId);
       }
       await service.store.fence(session);
-      return { content: [{ type: 'text', text: params.name === 'list_profile_capabilities' ? `${(data.liveOperations as unknown[]).length} operations enabled.` : 'Read result available in structuredContent.' }], structuredContent: data };
-    } catch (error) { const safe = publicError(error); resultCode = safe.code; return { isError: true, content: [{ type: 'text', text: safe.code }], structuredContent: { error: { code: safe.code, requestId } } }; }
+      // Some clients expose only TextContent to the model. Mirror the authorized
+      // DTO (including metadata/coverage), never the raw upstream response.
+      return { content: [{ type: 'text', text: JSON.stringify(data) }], structuredContent: data };
+    } catch (error) {
+      const safe = publicError(error); resultCode = safe.code; const data = { error: { code: safe.code, requestId } };
+      return { isError: true, content: [{ type: 'text', text: JSON.stringify(data) }], structuredContent: data };
+    }
     finally { await service.store.audit(session, requestId, toolsForRelease().some(t => t.name === params.name) ? params.name : 'unknown', resultCode, Date.now() - started); }
   });
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });

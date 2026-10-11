@@ -117,7 +117,16 @@ ChatGPT acceptance cho nghiệp vụ/PII/vòng đời phiên (kết nối và me
 - Đã chạy Node 24.21.0: **63/63 synthetic pass, 0 fail/skip**, typecheck, build và native ESM smoke passed. Synthetic dùng fake SHA/PGlite + loopback được cấp quyền; không login hay gửi OTP thật. Không cần migration/env/dependency mới.
 - **Chưa deploy hoặc nghiệm thu lại Claude Android.** Lỗi cookie đã được chứng minh và sửa; chưa xác nhận đó là nguyên nhân thực tế của lần lỗi trên điện thoại. AUTH-09 về nhiều phiên SHA thật vẫn còn mở.
 
-## Giới hạn của kiểm tra tài liệu (phạm vi validator)
+## 11/10/2026 — Claude Android xác thực thành công; sửa MCP text output
+
+- Đại ca xác nhận login và cấp quyền thành công sau Git deploy 6eef218 (bao gồm cookie fix 77037e5), Vercel READY và health/ready 200. Trước lần thành công: verify-sotp HTTP401/code014, sau 160 giây gửi lại cùng interaction gặp flow_expired; phiên bị hủy sau lần từ chối nên lần hai chưa gọi SHA. Không kết luận ý nghĩa mã 014 khi chưa có tài liệu mapping.
+- Claude báo tool chạy được nhưng chỉ nhận placeholder trong content; capabilities chỉ có số lượng. Code src/mcp.ts xác nhận dữ liệu chỉ nằm trong structuredContent. Đây là lỗi tương thích output, tách biệt với OAuth hoặc contract SHA.
+- Thêm MCP-TEXT-01 vào hai SDK integration test hiện có. Trước sửa cả hai fail vì text "Read result available in structuredContent." không phải JSON. Sau sửa text là JSON của cùng DTO đã lọc quyền/PII, kể cả capabilities/dictionary, dữ liệu và lỗi (isError giữ nguyên). Không expose raw SHA/token hoặc nới scope.
+- Assertions kiểm client chỉ đọc text: 39 operation bật/3 candidate, dictionary có fields, identity.current có dữ liệu/meta, accounts.tree có/không profile.pii, null giữ nguyên, lỗi có code/requestId, text khớp structuredContent và không chứa bearer canary. Node 24.21.0: **63/63 synthetic pass, 0 fail/skip**; đây là tăng assertions trong suite cũ, không tăng số test.
+- Sau push, kiểm Git deployment READY/commit khớp và health/ready. Đại ca cần gọi lại tool trên Claude Android để nghiệm thu dữ liệu thực; phiên hiện có dùng tiếp nếu còn hạn. Không đổi DB, env, dependencies hoặc schema input.
+- Tham chiếu: [MCP 2025-11-25 — Structured Content](https://modelcontextprotocol.io/specification/2025-11-25/server/tools#structured-content), đối chiếu 11/10/2026.
+
+## Giới hạn của kiểm tra tài liệu
 
 Validator kiểm file links nội bộ, JSON parse, uniqueness, count, disabled state, method/host allowlist, traceability/test IDs, input schema structure, schema SQL RLS coverage và dependency-free source metadata. Không xác nhận API còn hoạt động, mapping đơn vị đúng live, dependency compatibility, SQL function semantics chưa viết hoặc quyền runtime chưa cấp.
 

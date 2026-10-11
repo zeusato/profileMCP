@@ -8,6 +8,14 @@ import type { OAuthClientInformationMixed, OAuthTokens } from '@modelcontextprot
 import { SCOPES } from '../src/config.js';
 import { oauthHarness } from './helpers.js';
 import { toolsForRelease } from '../src/mcp.js';
+// MCP-TEXT-01: simulate a client that exposes only TextContent to its model.
+function textData(result: any) {
+  assert.equal(result.content.length, 1);
+  assert.equal(result.content[0].type, 'text');
+  const data = JSON.parse(result.content[0].text);
+  assert.deepEqual(data, result.structuredContent);
+  return data;
+}
 test('OAUTH-01..06 / AUTH-01,03,08 / RUN-01,02: two-instance OAuth, PKCE, SDK and revoke', { timeout: 120000 }, async () => {
   const h = await oauthHarness(); const { db, store, settings, request, post, csrf } = h;
   const login = async () => {
@@ -43,7 +51,16 @@ test('OAUTH-01..06 / AUTH-01,03,08 / RUN-01,02: two-instance OAuth, PKCE, SDK an
     // accounts.tree without profile.pii: references and masked numbers only.
     const tree = await client.callTool({ name: 'list_managed_accounts', arguments: { operation: 'accounts.tree' } }) as any; assert.equal(tree.isError, undefined, JSON.stringify(tree));
     assert.equal(tree.structuredContent.data.accounts.length, 2); assert.ok(!/CUSTOMER CANARY|"A001"/.test(JSON.stringify(tree)));
-    const result = await client.callTool({ name: 'list_profile_capabilities', arguments: {} }); assert.equal(result.isError, undefined); assert.ok(!JSON.stringify(result).includes('SYNTHETIC_SHA_SECRET_CANARY')); await client.close();
+    assert.equal(textData(tree).data.accounts.length, 2);
+    const result = await client.callTool({ name: 'list_profile_capabilities', arguments: {} }); assert.equal(result.isError, undefined); assert.ok(!JSON.stringify(result).includes('SYNTHETIC_SHA_SECRET_CANARY'));
+    const capabilities = textData(result); assert.equal(capabilities.liveOperations.length, 39); assert.ok(capabilities.liveOperations.includes('accounts.search')); assert.equal(capabilities.candidates.length, 3);
+    const dictionary = textData(await client.callTool({ name: 'get_profile_data_dictionary', arguments: { operation: 'identity.current' } }));
+    assert.equal(dictionary.operation, 'identity.current'); assert.ok(dictionary.fields.length > 0);
+    const identity = textData(await client.callTool({ name: 'get_profile_identity', arguments: { operation: 'identity.current' } }));
+    assert.equal(identity.data.items[0].preferredUsername, 'SYNTHETIC'); assert.ok(identity.meta);
+    const rejected = await client.callTool({ name: 'get_account_profile', arguments: { operation: 'profile.authorized' } });
+    assert.equal(rejected.isError, true); assert.equal(textData(rejected).error.code, 'CAPABILITY_UNAVAILABLE'); assert.match(textData(rejected).error.requestId, /^[a-f0-9-]{36}$/);
+    await client.close();
     assert.equal(h.counters.verify, 2);
     const dump = await db.query<{ text: string }>("select convert_from(payload_ciphertext,'UTF8') as text from profile_mcp.oauth_artifacts");
     assert.ok(!JSON.stringify(dump.rows).includes('FAKE_PASSWORD_CANARY')); assert.ok(!JSON.stringify(dump.rows).includes('FAKE_OTP_CANARY'));
@@ -94,7 +111,9 @@ test('OAUTH-07 / CLIENT-DCR-01: official SDK client registers with PRM scopes, c
     assert.equal((await client.listTools()).tools.length, toolsForRelease().length);
     // With the opt-in profile.pii box ticked, the same tool returns full numbers and customer names.
     const tree = await client.callTool({ name: 'list_managed_accounts', arguments: { operation: 'accounts.tree' } }) as any;
-    assert.deepEqual(tree.structuredContent.data.accounts.map((a: any) => [a.accountNumber, a.customerName]), [['A001', 'CUSTOMER CANARY'], ['A002', null]]); await client.close();
+    assert.deepEqual(tree.structuredContent.data.accounts.map((a: any) => [a.accountNumber, a.customerName]), [['A001', 'CUSTOMER CANARY'], ['A002', null]]);
+    assert.deepEqual(textData(tree).data.accounts.map((a: any) => [a.accountNumber, a.customerName]), [['A001', 'CUSTOMER CANARY'], ['A002', null]]);
+    assert.ok(!JSON.stringify(tree).includes('SYNTHETIC_SHA_SECRET_CANARY')); await client.close();
     assert.equal(h.counters.verify, 1); assert.deepEqual(h.protocolErrors, []);
   } finally { await h.close(); }
 });

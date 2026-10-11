@@ -124,6 +124,23 @@ for (const r of released) {
   });
 }
 
+test('DICT-04: read results carry dictionary without replacing codes, null or missing', async () => {
+  const h = await harness();
+  try {
+    const rows = [{ tradeStatus: 5 }, { tradeStatus: '05' }, { tradeStatus: 'UNKNOWN' }, { tradeStatus: null }, {}];
+    h.fixtures.set('POST /prod/v2/sha-service/e/order/histories', () => h.json({ code: 200, message: 'ok', data: { pageNo: 1, pageSize: 5, totalCount: 5, totalPage: 1, content: rows } }));
+    const result = (await h.call('orders.history', SCOPES.filter(s => s !== PII_SCOPE))).result;
+    assert.deepEqual(result.data.items.map((r: any) => r.tradeStatus), ['5', '05', 'UNKNOWN', null, undefined]);
+    assert.ok(!Object.hasOwn(result.data.items[4], 'tradeStatus'));
+    assert.ok(result.meta.fieldAvailability.missing.includes('items[].tradeStatus'));
+    const codes = result.meta.codeDictionary.fields.find((f: any) => f.field === 'items[].tradeStatus').values;
+    assert.deepEqual(codes.find((v: any) => v.code === '5'), { code: '5', label: 'Chờ duyệt', evidenceStatus: 'source-ui-unverified' });
+    assert.ok(!codes.some((v: any) => ['05', 'UNKNOWN'].includes(v.code)));
+    assert.equal(result.meta.coverage.returned, 5);
+    assert.ok(!/CUSTOMER CANARY|"A001"/.test(JSON.stringify(result)));
+  } finally { await h.close(); }
+});
+
 test('live 10/10/2026 regressions: subNo, credit bodies, periods, list coverage, loan period flag', async () => {
   const h = await harness(); const ok = (data: unknown) => () => h.json({ code: 200, message: 'ok', data });
   try {

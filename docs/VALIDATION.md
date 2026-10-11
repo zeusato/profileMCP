@@ -126,7 +126,16 @@ ChatGPT acceptance cho nghiệp vụ/PII/vòng đời phiên (kết nối và me
 - Sau push, kiểm Git deployment READY/commit khớp và health/ready. Đại ca cần gọi lại tool trên Claude Android để nghiệm thu dữ liệu thực; phiên hiện có dùng tiếp nếu còn hạn. Không đổi DB, env, dependencies hoặc schema input.
 - Tham chiếu: [MCP 2025-11-25 — Structured Content](https://modelcontextprotocol.io/specification/2025-11-25/server/tools#structured-content), đối chiếu 11/10/2026.
 
-## Giới hạn của kiểm tra tài liệu
+## 11/10/2026 — từ điển status số/chữ từ SHA PC
+
+- Đại ca xác nhận Claude đã đọc đủ 8/8 tài khoản sau fix MCP text a96b34c. Không lưu dữ liệu khách hàng vào repo. sourceTimestamp vẫn null vì không có bằng chứng thời điểm chốt nguồn.
+- Rà source @7261a8d chỉ đọc: bổ sung 29 trường, 30 nhãn cho 12 trường; 17 trường chưa có bảng mã. Tách source-documented, source-ui-unverified và source-inferred. Đặc biệt history tradeStatus 4/5 chỉ là nhãn của AI chat SHA PC; tài liệu API ghi chưa gặp mẫu. Không nâng thành enum đã nghiệm thu.
+- Dictionary metadata tool và meta.codeDictionary trong kết quả nghiệp vụ dùng cùng bảng tĩnh; data/code gốc không đổi, không gọi thêm SHA. Loại bỏ khẳng định Y=đã xác nhận khỏi mô tả orders.unconfirmed vì chưa thấy bằng chứng. Bảng mã nằm riêng fieldMap để không mất khi regenerate.
+- Node 24.21.0: **67/67 synthetic pass, 0 fail/skip**; typecheck, build, native ESM smoke passed. DICT-01..04/DICT-SDK kiểm operation-specific labels, mức bằng chứng, unknown/leading-zero/null/missing, coverage/PII, provenance và client chỉ đọc text. Chi tiết TEST-MAP. Không login hoặc gửi OTP thật, không xác nhận ngữ nghĩa mới bằng test synthetic.
+- 6 hash SHA256 nguồn được kiểm lại khớp sau khi sửa; Git source HEAD vẫn 7261a8d và 6 file không có thay đổi. Document consistency được kiểm bằng scripts/check-docs.mjs; báo cáo JSON riêng không chạy manifest nguồn cũ, nên sourceHashChecks ở báo cáo vẫn not-requested.
+- Push main để Vercel Git integration tự triển khai theo chỉ dẫn Đại ca; không đổi DB/env/dependency. Cần đối chiếu thêm UI SHA thật nếu muốn nâng các mã chưa chắc chắn thành verified.
+
+## Giới hạn của kiểm tra tài liệu (phạm vi)
 
 Validator kiểm file links nội bộ, JSON parse, uniqueness, count, disabled state, method/host allowlist, traceability/test IDs, input schema structure, schema SQL RLS coverage và dependency-free source metadata. Không xác nhận API còn hoạt động, mapping đơn vị đúng live, dependency compatibility, SQL function semantics chưa viết hoặc quyền runtime chưa cấp.
 

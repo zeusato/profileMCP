@@ -6,6 +6,7 @@ import { ShaTransport } from './sha/transport.js';
 import { buildRequest } from './sha/requests.js';
 import { candles, htmlToText, pageCoverage, project, repeatedTotals, type Field } from './dto.js';
 import { PII_SCOPE } from './config.js';
+import { codeDictionaryFor } from './dictionary.js';
 const TREE_MAX_ACCOUNTS = 400;
 const CONTENT_MAX = 4000;
 // The row list of a wrapper response is the first array segment of the fieldMap (data[] / list[] / content[]).
@@ -124,8 +125,9 @@ export class ReadService {
         if (id === 'loans.history' && !Array.isArray(raw) && Array.isArray(raw?.data) && (raw.data as Json[]).some((x: Json) => typeof x?.lndDate === 'string' && (x.lndDate.slice(0, 10) < i.from || x.lndDate.slice(0, 10) > i.to))) warnings.add('PERIOD_FILTER_UNVERIFIED');
       }
       if (missing.length) warnings.add('FIELDS_UNAVAILABLE');
+      const codeDictionary = codeDictionaryFor(id);
       const result = { schemaVersion: '1', operation: id, status: coverage.complete ? 'ok' : 'partial', data, meta: { provider: 'SHA', sourceOperation: id, fetchedAt,
-        sourceTimestamp: null, businessDate: null, scope: { accountRef: i.accountRef, subaccountRef: i.subaccountRef, brokerRef: i.brokerRef }, requestedPeriod: period(i),
+        sourceTimestamp: null, businessDate: null, ...(codeDictionary ? { codeDictionary } : {}), scope: { accountRef: i.accountRef, subaccountRef: i.subaccountRef, brokerRef: i.brokerRef }, requestedPeriod: period(i),
         units: Object.fromEntries((r.fieldMap as Field[]).filter(f => (f.type ? /decimal/.test(f.type) : f.unit !== 'restricted') && (f.scope !== PII_SCOPE || pii)).map(f => [f.dto, { unit: f.unit, status: 'unverified' }])), coverage, fieldAvailability: { missing }, warnings: [...warnings], requestId } };
       ensure(Buffer.byteLength(JSON.stringify(result)) <= 128 * 1024, 'UPSTREAM_SHAPE_CHANGED');
       await this.store.fence(session); return result;

@@ -62,3 +62,20 @@ Kiểm lại ngày 10/10/2026 khi hoàn tất tài liệu: `git rev-parse HEAD` 
 | src/preload/trade_pro_agent.js | a69374eb18afb262bc1babda8853ffff2dda816c16084a62290c9125763bcb38 | Body theo tiểu khoản {brokerCode, accounts, subId} của guarantee |
 
 Bằng chứng live (không giá trị, chỉ tên field/kiểu): [live-shapes-20261010.json](../config/live-shapes-20261010.json) từ scripts/trace-sha-login.ts --live --probe [--extra] với tài khoản của Đại ca; DevTools web gốc sha.shs.com.vn do Đại ca chụp (Authorization: Bearer null, Session-Key) cho contract đăng nhập.
+
+## Từ điển mã trạng thái 11/10/2026
+
+Rà nguồn SHA_PC @7261a8dbf4ab9ba4cb086b869909b59579e8b417, chỉ đọc tài liệu/mã hiển thị. Không chạy source, không lấy logs, credentials hoặc dữ liệu tài khoản. Các file dưới không nằm trong danh sách sửa của source checkout khi bắt đầu rà; hash SHA256 khóa nội dung đã đọc.
+
+| Nguồn | SHA256 |
+|---|---|
+| docs/api/api-documentation.md | a3eec0f16b1a4ac8959e0573dc201fa08009402075e6dbc5ac723c9bbe7ac618 |
+| docs/api/sha-order-api-gotchas.md | 544c5afc9717fd5c6b07f61fe668a1e2c7c4c573b70dd0c07ac5c0513a435ca1 |
+| src/preload/ai_chat.js | 7f7fad4b674ccd3b723ebd71a644e63704ce7ec768d5d4ae7fd03c35db988fce |
+| src/preload/trade_pro.js | f0550aff6a49944005a04c779a5fb680d125cf9561b2f4c7eae8f07ca9fc333f |
+| src/preload/dashboard_notice.js | 80641fdad1e9da8bfd80734ce7905300accf72000dda54d901ff084ddb73c0fb |
+| src/shared/order_slip_model.js | bfe376737c431a4c6675ed4d628d9f6a1f3781b7943d01d205836c90b1bd22da |
+
+Mapping chi tiết tới dòng nguồn nằm trong [sha-code-dictionary.json](../config/sha-code-dictionary.json): orders.history (API 602, AI chat 820), orders.unconfirmed (API 627), cash.movements (API 1181–1189), profile (AI chat 863–865, trade_pro 4019–4041), collateral (API 491, dashboard_notice 11–12), research (API 891/896, AI chat 127/143). Runtime [dictionary.ts](../src/dictionary.ts) dùng các mã chính xác theo operation/DTO field; [mcp.ts](../src/mcp.ts) xuất qua metadata tool, [service.ts](../src/service.ts) kèm meta.codeDictionary. DICT-01..04 và DICT-SDK kiểm mapping, mức bằng chứng, mã chưa biết, DTO không đổi và text/structuredContent.
+
+Đây là provenance nguồn, không là nghiệm thu live enum của Profile MCP. Không nhận mapping sBoard/SHSmart/Fialda hoặc status nội bộ do dashboard tính. Riêng UDF candles.s là cờ giao thức do parser tiêu thụ (RAW-market.candles), không phải data.status được xuất cho model.

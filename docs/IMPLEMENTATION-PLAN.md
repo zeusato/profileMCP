@@ -87,3 +87,5 @@ Phạm vi production phải do yêu cầu triển khai của Đại ca xác lậ
 | Q09 | Source Swagger 69 path chưa cùng Gateway | Giữ inventory hold; thêm ADR/contract riêng nếu mở rộng | Không nằm trong MVP |
 
 Không cần gửi mật khẩu/OTP vào chat để làm các bước trên. Khi implementation cần môi trường, người dùng nhập trên form hoặc cấu hình secret trong môi trường của mình.
+
+Bổ sung 11/10/2026: từ điển enum/status từ SHA PC đã có runtime (metadata tool và meta.codeDictionary), 67 synthetic tests passed. Đây không đóng gate xác minh từng mã/đơn vị: source-ui-unverified và source-inferred phải giữ caveat; mã chưa có nghĩa giữ raw. Provenance ở SOURCE-MAP và coverage ở api/TEST-MAP.

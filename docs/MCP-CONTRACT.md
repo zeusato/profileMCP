@@ -27,6 +27,8 @@
 | list_profile_capabilities | Operation thực sự đã bật cho user, giới hạn và gate |
 | get_profile_data_dictionary | Đơn vị, nguồn, enum, null và định nghĩa chỉ tiêu |
 
+Từ 11/10/2026: operation có bảng mã trả thêm `codeDictionary` gồm version, unknownPolicy, evidenceLevels, fields (DTO path, values code/label/evidenceStatus, note, sourceRefs) và provenance (SHA_PC commit/hash). Các kết quả nghiệp vụ liên quan kèm cùng bảng tại `meta.codeDictionary`, kể cả data null; đây là tham khảo tĩnh, không là danh sách mã đã quan sát trong response. Mapping rỗng/mã chưa liệt kê vẫn chưa biết nghĩa. Không thay raw code/null/missing. `source-ui-unverified` và `source-inferred` luôn cần caveat khi diễn giải. Chi tiết [DATA-QUALITY](api/DATA-QUALITY.md).
+
 Một tool chỉ đăng ký những nhánh schema đã được bật; nếu chưa có operation nào thì không đưa tool đó vào tools/list. Các operation đã bật của một tool được gộp thành một object schema (operation là enum), không dùng oneOf/anyOf/allOf ở cấp cao nhất vì tool input_schema của Claude không nhận; server vẫn validate đúng schema riêng từng operation.
 
 Release 10/10/2026 (lần 3): 39/42 operation thuộc 18 tool; tắt profile.authorized, assets.loanDetail, orderSummary.top. Tiểu khoản nhận subaccountRef hoặc subNo. Mỗi tool có mô tả operation và quy tắc dữ liệu cho Claude. Lần 1 chỉ có `list_managed_accounts`/`accounts.tree`. Số tài khoản đầy đủ và tên khách hàng chỉ trả khi connection có scope `profile.pii` (Đại ca chọn ngày 10/10/2026); không có scope này thì dùng accountRef, số che `***123`, brokerRef/brokerCode. Tên nhân viên môi giới vẫn được trả trong scope đọc. `readOnlyHint:true`, `destructiveHint:false`, `openWorldHint:true` là metadata; quyền và an toàn do runtime allowlist/policy thực thi.

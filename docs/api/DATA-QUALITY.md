@@ -67,7 +67,27 @@ Input strict; output chỉ mapping field allowlist, có thể chấp nhận unkn
 - order/balance chỉ tính sức mua cho mã/giá (price chuỗi VND); không tạo lệnh. order/sum-transaction là tổng trong ngày, ngoài giờ trả null toàn bộ → SOURCE_NULL.
 - KMS forward/cms (Strapi): {data, meta.pagination}; Content là văn bản không tin cậy, cắt 4000 ký tự (contentTruncated, CONTENT_TRUNCATED); mã phòng ban kiểm với danh sách live trước khi gọi.
 
-## Coverage và freshness
+## Từ điển mã trạng thái và phân loại (11/10/2026)
+
+[sha-code-dictionary.json](../../config/sha-code-dictionary.json) tách khỏi fieldMap sinh tự động: 29 trường đã rà, 30 nhãn cho 12 trường; 17 trường còn lại chưa tìm được bảng mã. Tra theo operation + DTO field + mã chính xác, cả số và chữ. `get_profile_data_dictionary` trả `codeDictionary`; mỗi kết quả nghiệp vụ liên quan kèm cùng bảng ở `meta.codeDictionary` (cả text JSON và structuredContent). Đây là bảng tham khảo tĩnh, không ngụ ý những mã trong bảng xuất hiện trong kết quả. Không thay mã gốc, không suy null/missing thành trạng thái nào, không chuẩn hóa số 0 đầu hoặc chữ hoa/thường.
+
+| Trường theo operation | Mã và diễn giải | Bằng chứng |
+|---|---|---|
+| orders.history.tradeStatus | 0 Chờ khớp; 2 Đã khớp; 3 Đã hủy; 6 Đã sửa | source-documented |
+| orders.history.tradeStatus | 1 Khớp một phần | source-inferred |
+| orders.history.tradeStatus | 4 Từ chối; 5 Chờ duyệt | source-ui-unverified; AI chat SHA PC có nhãn nhưng API doc nói chưa gặp mẫu |
+| orders.history.sellBuyType | NB Mua; NS Bán | source-documented |
+| orders.unconfirmed.tradeStatus | N Chưa xác nhận | source-documented; Y chưa có bằng chứng, không map |
+| cash.movements.status / transTp | status 1 Thành công; transTp 1 Nộp, 2 Rút | source-documented |
+| profile.information.acntStat | A Đang hoạt động; C Đã đóng; S Tạm ngưng; P Chờ kích hoạt | source-ui-unverified |
+| profile.information.ekycYn / openPth | Y Có, N Không; E eKYC, C Tại quầy, O Online | source-ui-unverified |
+| profile.detail.grpTp | I Cá nhân; C/O Tổ chức | source-ui-unverified |
+| credit.collateral.violationType / treatmentType | R Vi phạm tỷ lệ, A Nợ quá hạn; E Giải chấp | R/A source-inferred; E source-documented; S best-guess bị loại |
+| research.list.status | OPEN Đã mở; CLOSED Đã đóng | source-inferred từ tag và nhãn màn hình; ALL là filter |
+
+`source-documented` chỉ là tài liệu nguồn ghi nhận, không phải kiểm live mới của Profile MCP. Hai mức `source-ui-unverified` và `source-inferred` phải được trình bày kèm hạn chế. Mọi mã ngoài bảng hoặc bảng values rỗng đều chưa biết nghĩa. `loanStatus` có 0/1/2 nhưng chưa map; không dùng ACTIVE/OVERDUE/CLOSED do dashboard tự tính. accountStatus/accStatus/subAccountStatus, smsYn/acptYn và các mã market vẫn chưa map; không mượn bảng của API khác. Profile có thể trả chuỗi `mã - nhãn`: giữ nguyên nhãn nguồn, không cắt/đổi dữ liệu. Hash/dòng nguồn tại [SOURCE-MAP](../SOURCE-MAP.md).
+
+## Coverage và freshness (runtime)
 
 Mỗi kết quả ghi requested period, observed source period nếu có, scope và pagination/truncation. fetchedAt là lúc backend nhận dữ liệu; sourceTimestamp là timestamp dữ liệu có bằng chứng. Nguồn không có ngày kỳ rõ thì không nói “hôm nay” chỉ vì vừa fetch.
 

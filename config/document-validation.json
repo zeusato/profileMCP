@@ -1,9 +1,9 @@
 {
-  "checkedAt": "2026-10-11T05:04:22.984Z",
+  "checkedAt": "2026-10-11T05:24:48.147Z",
   "scope": "document-consistency-only; not runtime/API acceptance",
   "status": "passed",
-  "assertions": 795,
-  "files": 92,
+  "assertions": 807,
+  "files": 95,
   "readRoutes": 42,
   "businessTools": 18,
   "metadataTools": 2,

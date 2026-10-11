@@ -56,6 +56,11 @@ test('OAUTH-01..06 / AUTH-01,03,08 / RUN-01,02: two-instance OAuth, PKCE, SDK an
     const capabilities = textData(result); assert.equal(capabilities.liveOperations.length, 39); assert.ok(capabilities.liveOperations.includes('accounts.search')); assert.equal(capabilities.candidates.length, 3);
     const dictionary = textData(await client.callTool({ name: 'get_profile_data_dictionary', arguments: { operation: 'identity.current' } }));
     assert.equal(dictionary.operation, 'identity.current'); assert.ok(dictionary.fields.length > 0);
+    // DICT-SDK: clients exposing only text receive labels and provenance too.
+    const orderDictionary = textData(await client.callTool({ name: 'get_profile_data_dictionary', arguments: { operation: 'orders.history' } }));
+    const tradeCodes = orderDictionary.codeDictionary.fields.find((f: any) => f.field === 'items[].tradeStatus');
+    assert.deepEqual(tradeCodes.values.find((v: any) => v.code === '5'), { code: '5', label: 'Chờ duyệt', evidenceStatus: 'source-ui-unverified' });
+    assert.match(orderDictionary.codeDictionary.provenance.sources.ai.sha256, /^[a-f0-9]{64}$/);
     const identity = textData(await client.callTool({ name: 'get_profile_identity', arguments: { operation: 'identity.current' } }));
     assert.equal(identity.data.items[0].preferredUsername, 'SYNTHETIC'); assert.ok(identity.meta);
     const rejected = await client.callTool({ name: 'get_account_profile', arguments: { operation: 'profile.authorized' } });

@@ -20,6 +20,8 @@ Tests dùng synthetic SHA/PGlite, mặc định không gọi cloud/SHA. Bằng c
 
 ## Tài liệu
 
+Từ điển trạng thái/mã số và chữ: [sha-code-dictionary.json](config/sha-code-dictionary.json), kèm nguồn và mức xác minh. Tra bằng get_profile_data_dictionary; kết quả nghiệp vụ liên quan cũng có meta.codeDictionary. Nhãn chưa xác minh không được coi là enum chắc chắn; xem [quy tắc dữ liệu](docs/api/DATA-QUALITY.md).
+
 1. [Hướng dẫn sử dụng](docs/USER-GUIDE.md), [checkpoint](docs/HANDOFF.md), [triển khai và CLI](docs/DEPLOYMENT.md), [kết quả thực](docs/VALIDATION.md), [vận hành](docs/OPERATIONS.md).
 2. [Implementation gates](docs/IMPLEMENTATION-PLAN.md), [kiến trúc](docs/ARCHITECTURE.md), [auth/session](docs/AUTH-AND-SESSIONS.md), [store](docs/SUPABASE.md).
 3. [MCP contract](docs/MCP-CONTRACT.md), [transport](docs/api/TRANSPORT.md), [42 operation contracts](docs/api/ENDPOINTS.md), [data quality](docs/api/DATA-QUALITY.md).

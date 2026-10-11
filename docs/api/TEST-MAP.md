@@ -1,5 +1,7 @@
 # Ma trận kiểm thử operation
 
+DICT-01..03 (`tests/dictionary.test.ts`): tách nghĩa theo operation, mã số/chữ, bằng chứng 4/5 chưa xác minh, unknown/leading-zero, nhãn nguồn, giới hạn kích thước metadata, path/provenance và độ phủ các trường status công khai. DICT-04 (`tests/released-operations.test.ts`): qua ReadService với upstream giả lập, mã 5/05/UNKNOWN/null/missing giữ nguyên, metadata có nhãn và mức bằng chứng, coverage/PII không đổi. DICT-SDK bổ sung vào test OAuth hiện có: client chỉ đọc text cũng nhận được bảng mã/dòng nguồn/hash qua metadata tool. Không dùng test synthetic để xác nhận nghĩa enum live.
+
 MCP-TEXT-01 (11/10/2026), thêm assertions vào hai test SDK/OAuth hiện có trong `tests/oauth.test.ts`: client chỉ đọc text vẫn parse được metadata capabilities (39 operation và 3 candidate), dictionary, identity, accounts.tree và lỗi có requestId; JSON từ text bằng structuredContent. Kiểm tài khoản/tên khách có và không có profile.pii, null được giữ và bearer canary không lộ. Không cộng thành test suite mới vào tổng 63.
 
 Regression cookie 11/10/2026, `tests/interactions.test.ts`: AUTH-FLOW-01 kiểm hai interaction chung browser, login/OTP/consent độc lập qua hai instance; AUTH-FLOW-02 kiểm cookie thiếu, provider cookie thiếu, flow hết hạn/sai UID, CSRF sai, double submit/replay chỉ gọi SHA begin một lần và log không chứa canary; AUTH-FLOW-03 kiểm cookie cũ chuyển sang cookie riêng. Đây là synthetic, không thay thế AUTH-09 về chính sách nhiều phiên SHA thật hoặc nghiệm thu Claude Android.

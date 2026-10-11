@@ -57,6 +57,8 @@ Một upstream session gắn một user và một OAuth grant/connection. Nhiề
 
 ## 5. Quyết định kỹ thuật và giới hạn kiểm chứng
 
+Từ 11/10/2026, src/dictionary.ts nạp config/sha-code-dictionary.json (độc lập catalog sinh tự động), lọc bảng mã theo operation. MCP metadata tool và ReadService xuất cùng bảng tham khảo tĩnh ở codeDictionary/meta.codeDictionary, gồm DTO field, mã, nhãn, evidence level và provenance. Không suy nhãn từ dữ liệu khách hàng, không thay mã nguồn hoặc nới quyền; giới hạn output 128 KiB vẫn áp dụng.
+
 Đã chọn Express/Vercel Node handler, official MCP TypeScript SDK 1.32.1 và `oidc-provider` 9.12.2 với adapter Postgres. OAuth/PKCE/resource indicators đã chạy synthetic qua hai instance và production với Claude; ChatGPT còn chưa nghiệm thu. [Nguồn thư viện](https://github.com/panva/node-oidc-provider).
 
 Registry và engine/exports đã kiểm khi implementation; phiên bản pin trong package.json/package-lock.json, native ESM smoke chạy bằng Node 24. Không mang `better-sqlite3`, Electron, Windows safeStorage hoặc SQLCipher của SHA PC lên Vercel. Store/keys preview riêng còn chưa cấu hình.

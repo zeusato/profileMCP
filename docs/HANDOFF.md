@@ -4,7 +4,7 @@ Luôn xưng em, gọi người dùng là Đại ca. Không cần lịch sử cha
 
 ## Trạng thái hiện tại
 
-- **Bản sửa login mobile đang ở local, chưa deploy:** Đại ca báo Claude app Android lỗi REAUTH_REQUIRED ngay sau ID/password, trước OTP; GPT mobile chưa thử. Tái hiện synthetic: hai interaction dùng chung cookie ShaFlow làm lần thứ hai ghi đè lần đầu. Đã tách cookie theo HMAC(uid), thêm reason/requestId an toàn và sửa thông báo OTP. Chưa đủ log để kết luận đây là nguyên nhân chính xác trên điện thoại; cần deploy bản sửa và Đại ca thử lại. Không cần migration hoặc đổi env, không thay đổi contract SHA.
+- **Bản sửa login mobile, commit 77037e5:** Đại ca báo Claude app Android lỗi REAUTH_REQUIRED ngay sau ID/password, trước OTP; GPT mobile chưa thử. Tái hiện synthetic: hai interaction dùng chung cookie ShaFlow làm lần thứ hai ghi đè lần đầu. Đã tách cookie theo HMAC(uid), thêm reason/requestId an toàn và sửa thông báo OTP. Đại ca đã cho phép push để Git tự deploy ngày 11/10; cần kiểm tra deployment READY và Đại ca thử lại trên điện thoại trước nghiệm thu. Chưa đủ log để kết luận đây là nguyên nhân chính xác trên điện thoại. Không cần migration hoặc đổi env, không thay đổi contract SHA.
 
 - **Production chạy và đã nghiệm thu với Claude:** https://profile-mcp.vercel.app, MCP URL **https://profile-mcp.vercel.app/api/mcp**, issuer https://profile-mcp.vercel.app. Deployment mới nhất dpl_EzduSGpCgutYVxdMe32Wzhppa9wr (21:36 10/10/2026), đã kiểm metadata READY/production. Checkpoint code trong Git là 77c6bf0; metadata kiểm lần này không trả commit SHA của artifact.
 - **Đăng nhập SHA thật** (ID/mật khẩu → matrix OTP → identity → cây tài khoản) chạy từ Vercel syd1; phiên SHA ~8 giờ, refresh SHA không có (refresh_token null) nên hết hạn thì kết nối lại.
@@ -24,7 +24,7 @@ Luôn xưng em, gọi người dùng là Đại ca. Không cần lịch sử cha
 
 ## Cách làm việc đã chốt
 
-- Deploy: Đại ca tự chạy `vc deploy --prod` (lệnh deploy production bị chặn trong chế độ auto của Claude Code). Commit trước khi deploy để production khớp Git.
+- Deploy (Đại ca chốt 11/10): Git đã kết nối Vercel; push lên main để tự deploy, sau đó kiểm tra deployment/production. Không chạy thêm `vc deploy --prod` khi Git đang triển khai. Chỉ dẫn cũ để Đại ca tự chạy CLI đã được thay thế.
 - Kết nối lại connector khi schema/mô tả tool đổi. Claude Code desktop sau khi bật lại connector có lúc chỉ giữ tool mới; claude.ai web luôn thấy đủ.
 - Bằng chứng live mới: `scripts/trace-sha-login.ts --live --probe [--extra]` (Đại ca tự login/OTP trên trang 127.0.0.1; chỉ in cấu trúc) → `config/live-shapes-20261010.json` → `node scripts/gen-fieldmaps.mjs` → tests → deploy. Nguồn tham khảo chỉ đọc: D:\Dev\SHA_PC\SHA_PC_code @7261a8d (xem [SOURCE-MAP](SOURCE-MAP.md)).
 - Log production đã khử nhạy cảm: `node scripts/read-safe-logs.mjs` (2 giờ gần nhất, status theo route, event oauth.registration_rejected / oauth.interaction_failed; không body/token). Script báo rõ khi không có log trả về; không xem đó là bằng chứng không có lỗi.

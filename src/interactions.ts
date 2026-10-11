@@ -1,33 +1,53 @@
 import type { Express, Request, Response } from 'express';
 import express from 'express';
 import type Provider from 'oidc-provider';
+import { errors as oauthErrors } from 'oidc-provider';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { Settings } from './config.js';
 import { SCOPES, PII_SCOPE } from './config.js';
 import { Store, type Json } from './store.js';
 import type { AuthGateway } from './sha/auth.js';
-import { AppError, ensure } from './errors.js';
+import { AppError, ensure, InteractionError, requireInteraction } from './errors.js';
 import { page, escapeHtml as e, hidden, contentSecurityPolicy } from './web.js';
 function cookie(req: Request, name: string) { return req.headers.cookie?.split(';').map(x => x.trim()).find(x => x.startsWith(`${name}=`))?.slice(name.length + 1); }
 export function interactions(app: Express, provider: Provider, settings: Settings, store: Store, sha: AuthGateway) {
   const secure = settings.environment !== 'local';
   const name = secure ? '__Host-profile_flow' : 'profile_flow'; const management = secure ? '__Host-profile_manage' : 'profile_manage';
+  // Each provider interaction already has its own cookie path. Give the SHA flow
+  // the same isolation while preserving __Host- (Secure, Path=/, no Domain).
+  const flowName = (uid: string) => `${name}_${store.vault.digest(`flow-cookie:${uid}`)}`;
   const options = { httpOnly: true, secure, sameSite: 'lax' as const, path: '/', maxAge: 600000 };
   const form = express.urlencoded({ extended: false, limit: '8kb', parameterLimit: 12 });
   const checkOrigin = (req: Request) => ensure(req.headers.origin === settings.origin, 'FORBIDDEN_SCOPE');
+  async function details(req: Request, res: Response) {
+    try {
+      const detail = await provider.interactionDetails(req, res);
+      requireInteraction(detail.uid === String(req.params.uid), 'interaction_mismatch');
+      return detail;
+    } catch (error) {
+      if (error instanceof oauthErrors.SessionNotFound) throw new InteractionError('provider_session_missing');
+      throw error;
+    }
+  }
   async function load(req: Request, uid: string) {
-    const handle = cookie(req, name); ensure(handle && /^[A-Za-z0-9_-]{43}$/.test(handle), 'REAUTH_REQUIRED');
-    const flow = await store.get('ShaFlow', handle); ensure(flow && !flow.consumed && flow.uid === uid, 'REAUTH_REQUIRED');
+    // Accept an in-flight pre-upgrade cookie only with the same UID binding below.
+    const handle = cookie(req, flowName(uid)) ?? cookie(req, name);
+    requireInteraction(handle, 'flow_cookie_missing');
+    requireInteraction(/^[A-Za-z0-9_-]{43}$/.test(handle), 'flow_cookie_invalid');
+    const flow = await store.get('ShaFlow', handle);
+    requireInteraction(flow, 'flow_expired');
+    requireInteraction(flow.uid === uid, 'flow_mismatch');
+    requireInteraction(!flow.consumed, 'flow_consumed');
     return { flow, handle };
   }
   async function save(res: Response, flow: Json, old?: string) {
     const handle = store.vault.nonce(); await store.put('ShaFlow', handle, flow, 600);
-    if (old) await store.destroy('ShaFlow', old); res.cookie(name, handle, options); return handle;
+    if (old) await store.destroy('ShaFlow', old); res.cookie(flowName(flow.uid), handle, options); return handle;
   }
   const fields = (f: Json) => hidden('csrf', f.csrf);
   app.get('/interaction/:uid', async (req, res) => {
-    const detail = await provider.interactionDetails(req, res); const uid = String(req.params.uid); ensure(detail.uid === uid, 'REAUTH_REQUIRED');
+    const detail = await details(req, res); const uid = String(req.params.uid);
     // Only the read scopes can be consented; anything else (e.g. openid) would re-prompt forever, so return invalid_scope before any SHA login.
     const requested = String(detail.params.scope ?? '').split(' ').filter(Boolean);
     if (!requested.length || requested.some(s => !SCOPES.includes(s))) { await provider.interactionFinished(req, res, { error: 'invalid_scope', error_description: 'Requested scope is not supported' }, { mergeWithLastSubmission: false }); return; }
@@ -52,47 +72,48 @@ export function interactions(app: Express, provider: Provider, settings: Setting
     } else throw new AppError('REAUTH_REQUIRED');
   });
   app.post('/interaction/:uid/:step', form, async (req, res) => {
-    checkOrigin(req); const detail = await provider.interactionDetails(req, res); const uid = String(req.params.uid); ensure(detail.uid === uid, 'REAUTH_REQUIRED');
-    const { flow, handle } = await load(req, uid); ensure(typeof req.body.csrf === 'string' && store.vault.equal(flow.csrf, req.body.csrf), 'FORBIDDEN_SCOPE');
-    ensure(flow.clientId === detail.params.client_id && JSON.stringify(flow.params) === JSON.stringify(detail.params), 'FORBIDDEN_SCOPE');
-    ensure(await store.consume('ShaFlow', handle), 'REAUTH_REQUIRED');
     try {
-      await store.quota(`login:${uid}`, 8, 600);
-      if (req.params.step === 'login' && flow.stage === 'login') {
-        const input = z.object({ csrf: z.string(), username: z.string().regex(/^[A-Za-z0-9_.-]{1,100}$/), password: z.string().min(1).max(256) }).strict().parse(req.body);
-        const userId = await store.member(input.username); await store.quota(`login-user:${userId}`, 5, 600);
-        const challenge = await sha.begin(input.username, input.password);
-        await save(res, { ...flow, csrf: store.vault.nonce(), stage: 'otp', challenge, userId }, handle);
-        res.redirect(303, `/interaction/${encodeURIComponent(uid)}`);
-      } else if (req.params.step === 'verify' && flow.stage === 'otp') {
-        const input = z.object({ csrf: z.string(), otp: z.string().min(1).max(32) }).strict().parse(req.body);
-        ensure(flow.challenge.expiresAt > Date.now(), 'REAUTH_REQUIRED');
-        const login = await sha.verify(flow.challenge, input.otp); const userId = await store.member(login.identity.preferredUsername);
-        ensure(userId === flow.userId, 'FORBIDDEN_SCOPE');
-        await save(res, { uid, params: flow.params, clientId: flow.clientId, stage: 'consent', csrf: store.vault.nonce(), login, userId }, handle);
-        res.redirect(303, `/interaction/${encodeURIComponent(uid)}`);
-      } else if (req.params.step === 'consent' && flow.stage === 'consent') {
-        const input = z.object({ csrf: z.string(), decision: z.enum(['allow', 'deny']), pii: z.literal('1').optional() }).strict().parse(req.body);
-        await store.destroy('ShaFlow', handle); res.clearCookie(name, options);
-        if (input.decision === 'deny') { await provider.interactionFinished(req, res, { error: 'access_denied' }, { mergeWithLastSubmission: false }); return; }
-        const requested = String(detail.params.scope ?? '').split(' ').filter(s => SCOPES.includes(s));
-        const scopes = requested.filter(s => s !== PII_SCOPE || input.pii === '1'); ensure(scopes.some(s => s !== PII_SCOPE), 'FORBIDDEN_SCOPE');
-        ensure(flow.login.expiresAt > Date.now(), 'REAUTH_REQUIRED');
-        const sessionId = randomUUID(); const grant = new provider.Grant({ accountId: flow.userId, clientId: flow.clientId });
-        // Read scopes are both AS-listed (OIDC side, consent prompt) and resource scopes (access token audience/scope).
-        grant.addOIDCScope(scopes.join(' ')); grant.addResourceScope(settings.resource, scopes.join(' '));
-        // A declined profile.pii is recorded as rejected so the consent prompt does not re-ask in a loop.
-        if (requested.includes(PII_SCOPE) && !scopes.includes(PII_SCOPE)) { grant.rejectOIDCScope(PII_SCOPE); grant.rejectResourceScope(settings.resource, PII_SCOPE); }
-        const grantId = await grant.save();
-        try {
-          const session = await store.createSession({ ...flow.login, userId: flow.userId, clientId: flow.clientId, grantId, scopes, resource: settings.resource }, sessionId);
-          const manageHandle = store.vault.nonce(); await store.put('Management', manageHandle, { sessionId: session.id, csrf: store.vault.nonce() }, Math.min(28800, Math.floor((session.expiresAt - Date.now()) / 1000)));
-          res.cookie(management, manageHandle, { ...options, maxAge: Math.min(28800000, session.expiresAt - Date.now()) });
-          await provider.interactionFinished(req, res, { login: { accountId: flow.userId }, consent: { grantId } }, { mergeWithLastSubmission: false });
-        } catch (error) { await store.revokeGrant(grantId); throw error; }
-      } else throw new AppError('INVALID_INPUT');
-    } catch (error) { await store.destroy('ShaFlow', handle); throw error; }
-    finally { if (req.body) { delete req.body.password; delete req.body.otp; } }
+      checkOrigin(req); const detail = await details(req, res); const uid = String(req.params.uid);
+      const { flow, handle } = await load(req, uid); ensure(typeof req.body.csrf === 'string' && store.vault.equal(flow.csrf, req.body.csrf), 'FORBIDDEN_SCOPE');
+      ensure(flow.clientId === detail.params.client_id && JSON.stringify(flow.params) === JSON.stringify(detail.params), 'FORBIDDEN_SCOPE');
+      requireInteraction(await store.consume('ShaFlow', handle), 'flow_consumed');
+      try {
+        await store.quota(`login:${uid}`, 8, 600);
+        if (req.params.step === 'login' && flow.stage === 'login') {
+          const input = z.object({ csrf: z.string(), username: z.string().regex(/^[A-Za-z0-9_.-]{1,100}$/), password: z.string().min(1).max(256) }).strict().parse(req.body);
+          const userId = await store.member(input.username); await store.quota(`login-user:${userId}`, 5, 600);
+          const challenge = await sha.begin(input.username, input.password);
+          await save(res, { ...flow, csrf: store.vault.nonce(), stage: 'otp', challenge, userId }, handle);
+          res.redirect(303, `/interaction/${encodeURIComponent(uid)}`);
+        } else if (req.params.step === 'verify' && flow.stage === 'otp') {
+          const input = z.object({ csrf: z.string(), otp: z.string().min(1).max(32) }).strict().parse(req.body);
+          requireInteraction(flow.challenge.expiresAt > Date.now(), 'challenge_expired');
+          const login = await sha.verify(flow.challenge, input.otp); const userId = await store.member(login.identity.preferredUsername);
+          ensure(userId === flow.userId, 'FORBIDDEN_SCOPE');
+          await save(res, { uid, params: flow.params, clientId: flow.clientId, stage: 'consent', csrf: store.vault.nonce(), login, userId }, handle);
+          res.redirect(303, `/interaction/${encodeURIComponent(uid)}`);
+        } else if (req.params.step === 'consent' && flow.stage === 'consent') {
+          const input = z.object({ csrf: z.string(), decision: z.enum(['allow', 'deny']), pii: z.literal('1').optional() }).strict().parse(req.body);
+          await store.destroy('ShaFlow', handle); res.clearCookie(flowName(uid), options);
+          if (input.decision === 'deny') { await provider.interactionFinished(req, res, { error: 'access_denied' }, { mergeWithLastSubmission: false }); return; }
+          const requested = String(detail.params.scope ?? '').split(' ').filter(s => SCOPES.includes(s));
+          const scopes = requested.filter(s => s !== PII_SCOPE || input.pii === '1'); ensure(scopes.some(s => s !== PII_SCOPE), 'FORBIDDEN_SCOPE');
+          requireInteraction(flow.login.expiresAt > Date.now(), 'login_expired');
+          const sessionId = randomUUID(); const grant = new provider.Grant({ accountId: flow.userId, clientId: flow.clientId });
+          // Read scopes are both AS-listed (OIDC side, consent prompt) and resource scopes (access token audience/scope).
+          grant.addOIDCScope(scopes.join(' ')); grant.addResourceScope(settings.resource, scopes.join(' '));
+          // A declined profile.pii is recorded as rejected so the consent prompt does not re-ask in a loop.
+          if (requested.includes(PII_SCOPE) && !scopes.includes(PII_SCOPE)) { grant.rejectOIDCScope(PII_SCOPE); grant.rejectResourceScope(settings.resource, PII_SCOPE); }
+          const grantId = await grant.save();
+          try {
+            const session = await store.createSession({ ...flow.login, userId: flow.userId, clientId: flow.clientId, grantId, scopes, resource: settings.resource }, sessionId);
+            const manageHandle = store.vault.nonce(); await store.put('Management', manageHandle, { sessionId: session.id, csrf: store.vault.nonce() }, Math.min(28800, Math.floor((session.expiresAt - Date.now()) / 1000)));
+            res.cookie(management, manageHandle, { ...options, maxAge: Math.min(28800000, session.expiresAt - Date.now()) });
+            await provider.interactionFinished(req, res, { login: { accountId: flow.userId }, consent: { grantId } }, { mergeWithLastSubmission: false });
+          } catch (error) { await store.revokeGrant(grantId); throw error; }
+        } else throw new AppError('INVALID_INPUT');
+      } catch (error) { await store.destroy('ShaFlow', handle); throw error; }
+    } finally { if (req.body) { delete req.body.password; delete req.body.otp; } }
   });
   app.get('/connections', async (req, res) => {
     const h = cookie(req, management); const m = h && await store.get('Management', h); ensure(m, 'REAUTH_REQUIRED'); const s = await store.session(m.sessionId);

@@ -107,7 +107,17 @@ ChatGPT acceptance cho nghiệp vụ/PII/vòng đời phiên (kết nối và me
 - Kết nối cũ còn thiếu scope không thể tự hiện PII; chọn kết nối đầy đủ khi hỏi. PII ở các operation khác và vòng đời phiên vẫn chưa nghiệm thu qua GPT.
 - Đã đổi tên app cũ thành "SHA MCP cũ - che thông tin" để tránh chọn nhầm. Trang /connections xác nhận phiên mới có profile.pii; bằng chứng local output/pdf/chatgpt-full-scope-verified.png không chứa dữ liệu khách hàng.
 
-## Giới hạn của kiểm tra tài liệu
+## 11/10/2026 — lỗi trước OTP trên Claude Android; sửa cookie ở local
+
+- Đại ca báo app Claude trên điện thoại Android trả REAUTH_REQUIRED sau ID/password, chưa tới OTP; GPT mobile chưa thử. Không có bằng chứng thiếu tham số thiết bị/trình duyệt: adapter SHA gửi cùng contract từ backend. Truy vấn log production trong 2 giờ gần nhất không trả bản ghi; không suy ra yêu cầu đã/không tới SHA từ sự vắng mặt này.
+- Tái hiện bằng AUTH-FLOW-01 trước sửa: mở hai OAuth interaction chung browser, POST login của luồng đầu nhận 400/REAUTH_REQUIRED với đúng thông báo cũ trong ảnh. Cookie ShaFlow chung bị luồng thứ hai ghi đè. Harness được sửa để giữ cookie theo tên + Path giống routing cookie của provider; bản cũ chỉ giữ theo tên nên không kiểm được nhiều interaction.
+- Sau sửa: cookie SHA riêng theo HMAC(uid), vẫn giữ HttpOnly/Secure/SameSite=Lax/Path=/ và TTL 10 phút. Hai luồng qua login, OTP, consent độc lập trên hai instance. Cookie cũ chuyển tiếp có kiểm UID. Không sửa headers/body contract SHA, không thêm device/browser spoofing hay bỏ CSRF/Origin/atomic consume.
+- AUTH-FLOW-02 kiểm cookie thiếu/provider cookie thiếu, flow hết hạn/sai UID (kể cả legacy), CSRF sai, concurrent double-submit/replay chỉ gọi SHA begin một lần; flow OTP thắng vẫn dùng được. Diagnostic chỉ có event/requestId/step/error/reason, không có cookie, OAuth UID, CSRF, ID/password/OTP canary. AUTH-FLOW-03 kiểm chuyển cookie trước nâng cấp. Password/OTP được xóa khỏi req.body cả khi lỗi xảy ra trước consume.
+- Trang lỗi login không còn nói OTP đã gửi; có mã hỗ trợ để đối chiếu event oauth.interaction_failed. SessionNotFound của provider được phân loại REAUTH_REQUIRED thay vì lỗi store. read-safe-logs có timeout, lọc event mới và báo rõ khi không có log.
+- Đã chạy Node 24.21.0: **63/63 synthetic pass, 0 fail/skip**, typecheck, build và native ESM smoke passed. Synthetic dùng fake SHA/PGlite + loopback được cấp quyền; không login hay gửi OTP thật. Không cần migration/env/dependency mới.
+- **Chưa deploy hoặc nghiệm thu lại Claude Android.** Lỗi cookie đã được chứng minh và sửa; chưa xác nhận đó là nguyên nhân thực tế của lần lỗi trên điện thoại. AUTH-09 về nhiều phiên SHA thật vẫn còn mở.
+
+## Giới hạn của kiểm tra tài liệu (phạm vi validator)
 
 Validator kiểm file links nội bộ, JSON parse, uniqueness, count, disabled state, method/host allowlist, traceability/test IDs, input schema structure, schema SQL RLS coverage và dependency-free source metadata. Không xác nhận API còn hoạt động, mapping đơn vị đúng live, dependency compatibility, SQL function semantics chưa viết hoặc quyền runtime chưa cấp.
 

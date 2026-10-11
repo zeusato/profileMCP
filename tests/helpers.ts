@@ -36,12 +36,12 @@ export const syntheticEntitlements = { accounts: [{ accountNumber: 'A001', broke
 export function syntheticLogin() { return { bearer: 'SYNTHETIC_SHA_SECRET_CANARY', expiresAt: Date.now() + 3600000, identity: syntheticIdentity, entitlements: syntheticEntitlements }; }
 // Round-robin HTTP over several app instances sharing one store; fake SHA, browser cookie jar and form helpers.
 export async function oauthHarness(instances = 2) {
-  const { db, store, settings } = await testStore(); let requests = 0; const counters = { verify: 0 };
+  const { db, store, settings } = await testStore(); let requests = 0; const counters = { begin: 0, verify: 0 };
   let handlers: ReturnType<typeof createApp>[] = [];
   const server = createServer((req, res) => handlers[requests++ % handlers.length]!.app(req, res));
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   const port = (server.address() as { port: number }).port; settings.origin = settings.issuer = `http://127.0.0.1:${port}`; settings.resource = `${settings.origin}/api/mcp`;
-  const fakeSha = { async begin(username: string) { return { username, sessionKey: 'fake-session-key', trustDevice: false, otpType: 2 as const, transactionId: 'fake-transaction', otpIndex: 'A1', expiresAt: Date.now() + 60000 }; }, async verify() { counters.verify++; return syntheticLogin(); } };
+  const fakeSha = { async begin(username: string) { counters.begin++; return { username, sessionKey: 'fake-session-key', trustDevice: false, otpType: 2 as const, transactionId: 'fake-transaction', otpIndex: 'A1', expiresAt: Date.now() + 60000 }; }, async verify() { counters.verify++; return syntheticLogin(); } };
   // Fake SHA read gateway for released operations (identity + account tree); never reaches the network.
   const shaJson = (data: unknown) => new Response(JSON.stringify({ code: 200, message: 'ok', data }), { headers: { 'Content-Type': 'application/json' } });
   const reads = new ShaTransport((async (url: unknown) => String(url).endsWith('get-user-login') ? shaJson([{ preferredUsername: 'SYNTHETIC', brokerCode: 'B001', branchCode: 'BR1' }])
@@ -49,10 +49,23 @@ export async function oauthHarness(instances = 2) {
   handlers = Array.from({ length: instances }, () => createApp(settings, store, fakeSha, reads));
   const protocolErrors: string[] = [];
   for (const handler of handlers) handler.provider.on('server_error', (_ctx, error) => protocolErrors.push(String(error?.stack ?? error)));
-  const cookies = new Map<string, string>();
+  // oidc-provider uses the same cookie name at different interaction paths.
+  // A name-only jar overwrites those cookies and cannot reproduce multiple browser tabs.
+  const cookies = new Map<string, { name: string; value: string; path: string }>();
+  const cookiesFor = (path: string | URL) => {
+    const url = new URL(path, settings.origin);
+    return [...cookies.values()].filter(c => url.pathname === c.path || url.pathname.startsWith(c.path.endsWith('/') ? c.path : `${c.path}/`))
+      .sort((a, b) => b.path.length - a.path.length).map(c => `${c.name}=${c.value}`).join('; ');
+  };
   const request = async (path: string | URL, init: RequestInit = {}) => {
-    const response = await fetch(new URL(path, settings.origin), { ...init, redirect: 'manual', headers: { Cookie: [...cookies].map(([k, v]) => `${k}=${v}`).join('; '), ...init.headers } });
-    for (const header of response.headers.getSetCookie()) { const pair = header.split(';')[0]!; const at = pair.indexOf('='); cookies.set(pair.slice(0, at), pair.slice(at + 1)); }
+    const url = new URL(path, settings.origin);
+    const response = await fetch(url, { ...init, redirect: 'manual', headers: { Cookie: cookiesFor(url), ...init.headers } });
+    for (const header of response.headers.getSetCookie()) {
+      const pair = header.split(';')[0]!; const at = pair.indexOf('='); const name = pair.slice(0, at);
+      const cookiePath = /;\s*path=([^;]+)/i.exec(header)?.[1] ?? '/'; const key = `${name}:${cookiePath}`;
+      if (/;\s*max-age=0(?:;|$)/i.test(header) || /;\s*expires=Thu, 01 Jan 1970/i.test(header)) cookies.delete(key);
+      else cookies.set(key, { name, value: pair.slice(at + 1), path: cookiePath });
+    }
     return response;
   };
   const post = (path: string, values: Record<string, string>) => request(path, { method: 'POST', headers: { Origin: settings.origin, 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(values) });
@@ -80,5 +93,5 @@ export async function oauthHarness(instances = 2) {
     const callback = new URL(response.headers.get('location')!); assert.equal(callback.origin, redirectOrigin); return callback;
   };
   const close = async () => { server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); await db.close(); };
-  return { db, store, settings, handlers, protocolErrors, counters, request, post, csrf, approve, close };
+  return { db, store, settings, handlers, protocolErrors, counters, request, post, csrf, approve, close, cookiesFor };
 }

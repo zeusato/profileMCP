@@ -1,6 +1,6 @@
 # Kế hoạch kiểm thử và nghiệm thu
 
-Tài liệu này là mục tiêu coverage, không phải danh sách đã passed. Runtime hiện có 60 tests synthetic (tests/*.test.ts, gồm bảng REQ/RAW/DTO/SCOPE/PAGE trong released-operations.test.ts); coverage thực và những phần còn thiếu ghi tại [VALIDATION](VALIDATION.md), checkpoint tại [HANDOFF](HANDOFF.md). 210 operation test IDs chưa được nghiệm thu toàn bộ.
+Tài liệu này là mục tiêu coverage, không phải danh sách đã passed. Runtime hiện có 63 tests synthetic (tests/*.test.ts, gồm bảng REQ/RAW/DTO/SCOPE/PAGE trong released-operations.test.ts và 3 regression cookie trong interactions.test.ts); coverage thực và những phần còn thiếu ghi tại [VALIDATION](VALIDATION.md), checkpoint tại [HANDOFF](HANDOFF.md). 210 operation test IDs chưa được nghiệm thu toàn bộ.
 
 ## Theo từng operation
 
@@ -29,6 +29,9 @@ Fixture synthetic dùng tên/mã giả; không copy payload tài khoản thật.
 | AUTH-07 | SHA expires/401 → reauth_required; MCP refresh không kéo dài SHA |
 | AUTH-08 | Logout/account switch chặn response đang bay bằng generation fence |
 | AUTH-09 | Nhiều client/session SHA; kiểm single-session policy upstream |
+| AUTH-FLOW-01 | Hai OAuth interaction cùng browser giữ độc lập login/OTP/consent qua hai instance (synthetic) |
+| AUTH-FLOW-02 | Thiếu cookie, flow hết hạn/sai UID, CSRF, double submit/replay và log không lộ bí mật (synthetic) |
+| AUTH-FLOW-03 | Cookie trước nâng cấp chuyển sang cookie riêng, vẫn kiểm UID (synthetic) |
 | OAUTH-01 | Discovery, protected-resource metadata, PKCE S256, resource/audience |
 | OAUTH-02 | Code reuse, bad verifier, wrong redirect/client/resource bị từ chối |
 | OAUTH-03 | State/CSRF/session fixation, malicious redirect/client metadata |

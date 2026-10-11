@@ -1,7 +1,7 @@
 // Print only transport facts and explicitly allowlisted diagnostic fields.
 import { execFileSync } from 'node:child_process';
 let raw;
-try { raw=execFileSync(process.execPath,['node_modules/vercel/dist/vc.js','logs','--environment','production','--since','30m','--limit','100','--json'],{encoding:'utf8',stdio:['ignore','pipe','pipe']}); }
+try { raw=execFileSync(process.execPath,['node_modules/vercel/dist/vc.js','logs','--environment','production','--since','2h','--limit','100','--json'],{encoding:'utf8',stdio:['ignore','pipe','pipe'],timeout:30000}); }
 catch { throw new Error('Log retrieval failed; raw output withheld'); }
 let first=true;
 for(const line of raw.split('\n')) {
@@ -17,6 +17,12 @@ for(const line of raw.split('\n')) {
     const word=v=>typeof v==='string'&&/^[A-Za-z0-9 _.-]{1,80}$/.test(v)?v:'unclassified';
     console.log(JSON.stringify({event:event.event,error:word(event.error),reason:word(event.reason),fields:Array.isArray(event.fields)?event.fields.filter(f=>/^[a-z_]{1,64}$/.test(f)).slice(0,40):[]}));
   }
+  if(event?.event==='oauth.interaction_failed'){
+    const reasons=['provider_session_missing','interaction_mismatch','flow_cookie_missing','flow_cookie_invalid','flow_expired','flow_consumed','flow_mismatch','challenge_expired','login_expired'];
+    const codes=['INVALID_INPUT','UNAUTHENTICATED','REAUTH_REQUIRED','FORBIDDEN_SCOPE','CAPABILITY_UNAVAILABLE','UPSTREAM_AUTH_FAILED','UPSTREAM_REJECTED','UPSTREAM_SHAPE_CHANGED','RATE_LIMITED','UPSTREAM_TIMEOUT','STORE_UNAVAILABLE'];
+    console.log(JSON.stringify({event:event.event,requestId:typeof event.requestId==='string'&&/^[a-f0-9-]{36}$/.test(event.requestId)?event.requestId:null,step:['login','verify','consent','page'].includes(event.step)?event.step:'unclassified',error:codes.includes(event.error)?event.error:'unclassified',reason:reasons.includes(event.reason)?event.reason:'unclassified'}));
+  }
   // Key names are non-sensitive, useful across CLI schema revisions.
   if(!path) console.log(JSON.stringify({availableFields:Object.keys(row)}));
 }
+if(first) console.log(JSON.stringify({status:'no_logs_returned',since:'2h',note:'Absence of logs does not prove absence of failed requests.'}));

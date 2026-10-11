@@ -1,8 +1,10 @@
-# Checkpoint Profile MCP — 10/10/2026 (tối)
+# Checkpoint Profile MCP — 11/10/2026
 
 Luôn xưng em, gọi người dùng là Đại ca. Không cần lịch sử chat để tiếp tục từ tài liệu này. Diễn biến chi tiết từng bước (DCR, Origin/CSP, contract đăng nhập SHA, probe live, các vòng sửa) nằm trong [VALIDATION](VALIDATION.md); tài liệu này chỉ giữ trạng thái hiện tại và việc còn lại.
 
 ## Trạng thái hiện tại
+
+- **Bản sửa login mobile đang ở local, chưa deploy:** Đại ca báo Claude app Android lỗi REAUTH_REQUIRED ngay sau ID/password, trước OTP; GPT mobile chưa thử. Tái hiện synthetic: hai interaction dùng chung cookie ShaFlow làm lần thứ hai ghi đè lần đầu. Đã tách cookie theo HMAC(uid), thêm reason/requestId an toàn và sửa thông báo OTP. Chưa đủ log để kết luận đây là nguyên nhân chính xác trên điện thoại; cần deploy bản sửa và Đại ca thử lại. Không cần migration hoặc đổi env, không thay đổi contract SHA.
 
 - **Production chạy và đã nghiệm thu với Claude:** https://profile-mcp.vercel.app, MCP URL **https://profile-mcp.vercel.app/api/mcp**, issuer https://profile-mcp.vercel.app. Deployment mới nhất dpl_EzduSGpCgutYVxdMe32Wzhppa9wr (21:36 10/10/2026), đã kiểm metadata READY/production. Checkpoint code trong Git là 77c6bf0; metadata kiểm lần này không trả commit SHA của artifact.
 - **Đăng nhập SHA thật** (ID/mật khẩu → matrix OTP → identity → cây tài khoản) chạy từ Vercel syd1; phiên SHA ~8 giờ, refresh SHA không có (refresh_token null) nên hết hạn thì kết nối lại.
@@ -10,7 +12,7 @@ Luôn xưng em, gọi người dùng là Đại ca. Không cần lịch sử cha
 - **PII** khách hàng (tên, số TK đầy đủ, giấy tờ, ngày sinh, liên hệ, địa chỉ…) chỉ trả khi connection có scope profile.pii (ô chọn trên trang consent, mặc định không tick). Tên nhân viên môi giới không là PII khách hàng.
 - **Nhu cầu Đại ca chốt 10/10:** cần tên khách và số tài khoản đầy đủ, không dùng kết nối che thông tin. Kết nối GPT thử đầu đã bỏ profile.pii ở client nên consent SHA không hiện checkbox. Đã tạo "SHA MCP đầy đủ" xin profile.pii; Đại ca tự login/OTP/tick consent. GPT accounts.tree trả 8/8 dòng có accountNumber/customerName và nối brokerName riêng bằng brokerRef. Không lưu giá trị khách hàng vào repo. Không nhầm brokerName (môi giới) với customerName (khách hàng).
 - **Số liệu**: giá trị nguồn dạng chuỗi decimal chính xác, meta.units status unverified; đơn vị quan sát ghi trong fieldMap (lịch sử lệnh nghìn VND, list-confirm/market/portfolio VND). Khoảng ngày không được vắt qua 22–24/05/2026 (đổi core) → PERIOD_SPANS_DATA_GAP.
-- **Tests**: 60 synthetic pass (bảng REQ/RAW/DTO/SCOPE/PAGE cho 37 operation projection, accounts.tree riêng, RAW-market.candles, OAuth/SDK E2E, security, regressions). Kết quả document validator tại [document-validation.json](../config/document-validation.json); coverage thực tại [TEST-MAP](api/TEST-MAP.md).
+- **Tests**: 63 synthetic pass ngày 11/10 (60 ca cũ và 3 regression AUTH-FLOW-01..03: cookie nhiều interaction, lỗi/replay/diagnostics và chuyển cookie cũ). Typecheck/build/ESM smoke passed. Kết quả document validator tại [document-validation.json](../config/document-validation.json); coverage thực tại [TEST-MAP](api/TEST-MAP.md).
 - **GPT đã kiểm ngày 10/10/2026:** tạo plugin → DCR → người dùng login/OTP/consent → callback → gọi 2 tool metadata trong Work (39 bật/3 tắt; identity.current 9 trường), sau đó accounts.tree có PII trên kết nối đầy đủ (8/8 dòng). Phải bỏ OIDC enabled trong Advanced OAuth settings để không yêu cầu openid; vẫn giữ OAuth. Chưa kiểm toàn bộ nghiệp vụ/PII ở operation khác/vòng đời phiên. Xem [USER-GUIDE](USER-GUIDE.md) và [VALIDATION](VALIDATION.md).
 
 ## Cloud và tài khoản
@@ -25,7 +27,7 @@ Luôn xưng em, gọi người dùng là Đại ca. Không cần lịch sử cha
 - Deploy: Đại ca tự chạy `vc deploy --prod` (lệnh deploy production bị chặn trong chế độ auto của Claude Code). Commit trước khi deploy để production khớp Git.
 - Kết nối lại connector khi schema/mô tả tool đổi. Claude Code desktop sau khi bật lại connector có lúc chỉ giữ tool mới; claude.ai web luôn thấy đủ.
 - Bằng chứng live mới: `scripts/trace-sha-login.ts --live --probe [--extra]` (Đại ca tự login/OTP trên trang 127.0.0.1; chỉ in cấu trúc) → `config/live-shapes-20261010.json` → `node scripts/gen-fieldmaps.mjs` → tests → deploy. Nguồn tham khảo chỉ đọc: D:\Dev\SHA_PC\SHA_PC_code @7261a8d (xem [SOURCE-MAP](SOURCE-MAP.md)).
-- Log production đã khử nhạy cảm: `node scripts/read-safe-logs.mjs` (status theo route, event sha.upstream / oauth.registration_rejected; không body/token).
+- Log production đã khử nhạy cảm: `node scripts/read-safe-logs.mjs` (2 giờ gần nhất, status theo route, event oauth.registration_rejected / oauth.interaction_failed; không body/token). Script báo rõ khi không có log trả về; không xem đó là bằng chứng không có lỗi.
 
 ## Secrets và máy khác
 

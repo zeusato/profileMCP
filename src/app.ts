@@ -9,7 +9,7 @@ import { createProvider, authenticate } from './oauth.js';
 import { interactions } from './interactions.js';
 import { ReadService } from './service.js';
 import { handleMcp } from './mcp.js';
-import { AppError, ensure, publicError } from './errors.js';
+import { AppError, ensure, publicError, InteractionError } from './errors.js';
 import { page, escapeHtml, contentSecurityPolicy } from './web.js';
 export function createApp(settings: Settings, store: Store, auth: AuthGateway = new ShaAuth(new ShaTransport(), settings.liveAuth), reads = new ShaTransport()) {
   const app = express(); const provider = createProvider(settings, store); const service = new ReadService(store, reads);
@@ -45,7 +45,14 @@ export function createApp(settings: Settings, store: Store, auth: AuthGateway = 
   app.use((error: unknown, req: express.Request, res: express.Response, _next: express.NextFunction) => {
     const safe = error instanceof ZodError ? new AppError('INVALID_INPUT') : publicError(error);
     if (res.headersSent) { res.end(); return; }
-    if (req.path.startsWith('/interaction') || req.path.startsWith('/connections')) res.status(safe.status).type('html').send(page('Chưa hoàn tất kết nối', `<p>${escapeHtml(safe.code)}</p><p>Hãy bắt đầu lại từ client. OTP đã gửi sẽ không được tự động thử lại.</p>`));
+    if (req.path.startsWith('/interaction') || req.path.startsWith('/connections')) {
+      const step = /^\/interaction\/[^/]+\/(login|verify|consent)$/.exec(req.path)?.[1] ?? 'page';
+      console.warn(JSON.stringify({ event: 'oauth.interaction_failed', requestId: res.locals.requestId, step, error: safe.code, reason: error instanceof InteractionError ? error.reason : 'unclassified' }));
+      const guidance = step === 'login'
+        ? 'Chưa chuyển được tới bước OTP. Hãy đóng các trang kết nối cũ và bắt đầu kết nối lại từ ứng dụng, rồi hoàn tất trong cùng cửa sổ trình duyệt.'
+        : 'Hãy bắt đầu kết nối lại từ ứng dụng. Hệ thống không tự gửi lại yêu cầu xác thực.';
+      res.status(safe.status).type('html').send(page('Chưa hoàn tất kết nối', `<p>${escapeHtml(safe.code)}</p><p>${guidance}</p><small>Mã hỗ trợ: ${escapeHtml(res.locals.requestId)}</small>`));
+    }
     else res.status(safe.status).json({ error: safe.code, requestId: res.locals.requestId });
   });
   return { app, provider, service };

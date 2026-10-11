@@ -43,6 +43,10 @@ sequenceDiagram
 
 Consent phải hiển thị đúng client, tài khoản SHA hiện tại và phạm vi đọc. Không tự đồng ý client mới dựa vào đăng nhập sẵn. Browser interaction cookie HttpOnly, Secure, SameSite thích hợp luồng redirect; mọi form POST có CSRF token và kiểm Origin. Redirect URI so khớp chính xác đăng ký, không wildcard tùy ý.
 
+Bản sửa 11/10/2026 (chưa deploy): cookie ShaFlow riêng từng OAuth interaction, tên `__Host-profile_flow_<HMAC(uid)>` ở production, vẫn HttpOnly/Secure/SameSite=Lax/Path=/, TTL 10 phút. Trước đó một cookie chung bị ghi đè khi mở luồng kết nối thứ hai, làm POST login của luồng đầu báo REAUTH_REQUIRED trước khi gọi SHA. Cookie cũ chỉ được nhận khi UID khớp; khi chuyển bước sẽ đổi sang cookie mới. Atomic consume, CSRF, Origin và ràng buộc client/params giữ nguyên. Thiếu cookie không được tự khôi phục trên POST hay tự gửi lại mật khẩu/OTP.
+
+Lỗi interaction ghi event `oauth.interaction_failed`: requestId, bước cố định, mã lỗi và reason thuộc allowlist (cookie thiếu/sai, flow hết hạn/đã dùng/sai UID, provider session thiếu, challenge/login hết hạn). Không ghi cookie, UID, username, form body hoặc OAuth parameters. Trang lỗi có mã hỗ trợ; lỗi bước login không còn khẳng định OTP đã gửi. Đây là sửa lỗi đã tái hiện bằng synthetic; nguyên nhân chính xác trên Claude Android và nghiệm thu sau deploy còn chờ thử lại trên điện thoại.
+
 ## 3. Contract SHA — G1 kiểm local 10/10/2026
 
 Host cố định `https://api.shs.com.vn`; prefix `/prod/v1/author-service/p/auth/`. Schema success vẫn cần check envelope trước khi đọc data.

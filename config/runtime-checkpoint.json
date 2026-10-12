@@ -21,6 +21,12 @@
   "claudeAcceptance": "39/39 enabled operations called live via connector 2026-10-10",
   "gptAcceptance": "2026-10-10: ChatGPT Work DCR/login/OTP/consent/callback, two metadata calls, and accounts.tree with profile.pii verified (8/8 rows have accountNumber/customerName, broker names joined separately); OIDC disabled in client; remaining business/PII/session lifecycle not tested",
   "latestLocalChangesDeployed": false,
+  "localMemberSql": {
+    "date": "2026-10-12",
+    "status": "prepared-for-manual-apply-not-applied",
+    "testId": "ADMIN-MEMBER-SQL-01",
+    "productionMembershipVerified": false
+  },
   "localAuthRecovery": {
     "date": "2026-10-12",
     "status": "synthetic-verified-not-deployed",

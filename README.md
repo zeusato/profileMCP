@@ -30,3 +30,9 @@ Từ điển trạng thái/mã số và chữ: [sha-code-dictionary.json](config
 4. [Test plan](docs/TEST-PLAN.md), [operation test map](docs/api/TEST-MAP.md), [source map](docs/SOURCE-MAP.md).
 
 Release thực ở [runtime-release.json](config/runtime-release.json); catalog ở [sha-read-candidates.json](config/sha-read-candidates.json), fieldMap sinh bằng `scripts/gen-fieldmaps.mjs` từ [live-shapes-20261010.json](config/live-shapes-20261010.json). Không proxy tùy ý, không lệnh/chuyển tiền/sửa hồ sơ; không bearer chung, token passthrough, SHSmart/Fialda/socket/fallback. Refresh SHA không có nên hết phiên (~8 giờ) phải đăng nhập lại.
+
+## Thêm user:
+
+chạy tại terminal dự án: node --import tsx scripts/add-member.ts --sql-only
+-> Sinh ra script chạy trên supabase
+Nếu đã login đúng supabase cli account thì bỏ đuôi --sql-only để thêm trực tiếp

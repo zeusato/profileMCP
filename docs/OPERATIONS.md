@@ -30,6 +30,20 @@ Không log URL có query tài khoản nguyên vẹn. Correlation ID riêng cho r
 | Shape SHA đổi (UPSTREAM_SHAPE_CHANGED tăng) | Probe lại bằng scripts/trace-sha-login.ts --live --probe [--extra] (người dùng tự login), cập nhật live-shapes, chạy node scripts/gen-fieldmaps.mjs, npm test, deploy; operation chưa sửa kịp thì bỏ khỏi runtime-release.json |
 | Thêm thành viên | scripts/add-member.ts trên máy có .runtime (ID lưu chữ thường); không tạo lại keys |
 
+## Tự thêm ID SHA vào allowlist
+
+Quyền dùng Profile MCP nằm ở schema `profile_mcp`: bảng `users` chứa `sha_subject_digest` (HMAC của ID chuẩn hóa chữ thường) và identity ciphertext; bảng `memberships` nối user vào team với role `member`, status `active`. User và team cũng phải active. Không phải `auth.users` của Supabase Auth; không nhập ID thô hay tự dùng SHA256 thay HMAC. Quyền này không thay quyền dữ liệu trong SHA.
+
+Trên máy có bộ keys hiện hành `.runtime/env.production.json`, tạo SQL để tự chạy:
+
+```powershell
+node --import tsx scripts/add-member.ts --sql-only
+```
+
+Nhập ID SHA khi được hỏi, không nhập password/OTP. Script chỉ ghi `.runtime/member.sql`, **chưa cập nhật database**. Mở đúng project **Digital16** (`rcdmgdnxndyjnosxikbu`) trong Supabase → SQL Editor → dán nội dung file và Run. Kết quả `profile_mcp_access_enabled = true` xác nhận user/team/membership đều active. Nếu false, kiểm trạng thái user/team; script không tự nâng thành admin hoặc kích hoạt lại user/team bị khóa. Sau đó người dùng tự login/OTP và consent trên website; không cần deploy lại.
+
+Mỗi lần chạy sinh lại file cho ID mới; file chứa dữ liệu quản trị, bị Git/Vercel ignore, không chia sẻ công khai. Không chạy cloud-bootstrap hoặc tạo keys mới. Khi CLI đã đăng nhập đúng account có Digital16, bỏ `--sql-only` để dùng quy trình apply có sẵn. 12/10/2026 đã kiểm sinh SQL local cho một ID được Đại ca yêu cầu; **chưa apply hoặc xác minh membership production**.
+
 ## Secret rotation
 
 Keyring giữ key cũ chỉ để decrypt trong thời gian chuyển; encrypt mới dùng key mới. Re-encrypt theo batch bounded, optimistic generation check; tránh đổi token mới bằng ciphertext của generation cũ. Chỉ xóa key cũ khi kiểm không còn ciphertext phụ thuộc và backup policy đã giải quyết. HMAC/signing key rotation có thể buộc re-login; chuẩn bị thông báo trên UI khi triển khai.

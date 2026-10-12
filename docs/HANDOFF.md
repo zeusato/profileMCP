@@ -4,6 +4,8 @@ Luôn xưng em, gọi người dùng là Đại ca. Không cần lịch sử cha
 
 ## Trạng thái hiện tại
 
+- **Allowlist 12/10:** Đại ca chọn tự thao tác Supabase. Đã thêm `--sql-only` cho `scripts/add-member.ts`, sinh `.runtime/member.sql` từ keys hiện hành cho ID Đại ca yêu cầu; chỉ kiểm cấu trúc/HMAC/team/role local, **chưa ghi DB hoặc thêm thành viên production**. CLI hiện không liệt kê Digital16 và runtime check-store báo CONNECT_TIMEOUT; đã hủy login CLI khi Đại ca chuyển sang thao tác thủ công. Hướng dẫn tự thêm nằm tại [OPERATIONS](OPERATIONS.md). Không lưu ID thực hoặc SQL vào Git.
+
 - **Bản sửa retry đăng nhập local 12/10, chưa deploy:** sai mật khẩu/lỗi SHA/quyền/OTP chuyển 303 về form login mới (handle + CSRF mới), vẫn cùng interaction OAuth còn hạn. Không lưu/điền lại password hoặc OTP, không tự gọi lại SHA. OTP có nút “Đăng nhập lại / Đổi ID”; form cũ có nút “Quay lại bước kết nối” khi provider còn hợp lệ. Tách reason member_not_allowed/csrf_mismatch/authorization_mismatch; quota giữ 5 lần begin/người/10 phút và 8 POST/interaction/10 phút. GET trong lúc POST đang chạy không tạo flow khác. 72/72 synthetic pass; typecheck/build/ESM và docs xem VALIDATION. Không thay DB/env/dependencies, không push main trong lượt này; cần triển khai khi Đại ca giao và nghiệm thu retry qua client thật.
 - **Sự cố ảnh ngày 12/10:** read-safe-logs đối chiếu đúng mã hỗ trợ thấy POST login `REAUTH_REQUIRED` / `flow_expired`; trước đó các POST login `FORBIDDEN_SCOPE` / unclassified. Code cũ consume rồi xóa ShaFlow sau lỗi, nên form cũ bị chặn trước SHA dù mật khẩu mới đúng. Chưa biết FORBIDDEN_SCOPE ban đầu do allowlist hay form; không kết luận mọi lần lỗi đều do sai mật khẩu. Không lưu raw log hoặc thông tin đăng nhập vào repo.
 

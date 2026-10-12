@@ -8,6 +8,8 @@ Hướng dẫn người dùng Claude/ChatGPT: [USER-GUIDE](USER-GUIDE.md) (Claud
 
 ## Theo dõi
 
+Bản sửa retry local 12/10/2026 (chưa deploy): POST auth thất bại có thể trả **303 rồi GET 200** để đưa người dùng về form mới. Không dùng HTTP 200/303 làm bằng chứng login thành công; xem event `oauth.interaction_failed`. Reason `member_not_allowed` = ID chưa có quyền, `csrf_mismatch` = form/CSRF không khớp, `authorization_mismatch` = client/params không khớp; `flow_expired` = handle đã hết hạn hoặc bị xóa. read-safe-logs cho phép các reason này và step restart; không ghi hoặc in form, username, cookie hay raw logs.
+
 Metrics không PII: request count theo operation/result, latency p50/p95, upstream HTTP/envelope error class, schema mismatch, timeout, 429, DB pool saturation, auth expiry/replay rejected, partial/truncated results. Không ghi account number hoặc raw upstream body vào label.
 
 Không log URL có query tài khoản nguyên vẹn. Correlation ID riêng cho request MCP và từng request SHA; audit không cần nội dung truy vấn để xác định lỗi transport. Cảnh báo khi error/shape tăng có ngưỡng theo baseline đo được, không hardcode những ngưỡng tưởng là SLA SHA.

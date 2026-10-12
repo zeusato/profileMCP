@@ -9,8 +9,8 @@ import { createProvider, authenticate } from './oauth.js';
 import { interactions } from './interactions.js';
 import { ReadService } from './service.js';
 import { handleMcp } from './mcp.js';
-import { AppError, ensure, publicError, InteractionError } from './errors.js';
-import { page, escapeHtml, contentSecurityPolicy } from './web.js';
+import { AppError, ensure, publicError, reportInteractionFailure } from './errors.js';
+import { page, escapeHtml, contentSecurityPolicy, interactionGuidance } from './web.js';
 export function createApp(settings: Settings, store: Store, auth: AuthGateway = new ShaAuth(new ShaTransport(), settings.liveAuth), reads = new ShaTransport()) {
   const app = express(); const provider = createProvider(settings, store); const service = new ReadService(store, reads);
   app.disable('x-powered-by'); app.set('trust proxy', settings.environment !== 'local');
@@ -46,12 +46,10 @@ export function createApp(settings: Settings, store: Store, auth: AuthGateway = 
     const safe = error instanceof ZodError ? new AppError('INVALID_INPUT') : publicError(error);
     if (res.headersSent) { res.end(); return; }
     if (req.path.startsWith('/interaction') || req.path.startsWith('/connections')) {
-      const step = /^\/interaction\/[^/]+\/(login|verify|consent)$/.exec(req.path)?.[1] ?? 'page';
-      console.warn(JSON.stringify({ event: 'oauth.interaction_failed', requestId: res.locals.requestId, step, error: safe.code, reason: error instanceof InteractionError ? error.reason : 'unclassified' }));
-      const guidance = step === 'login'
-        ? 'Chưa chuyển được tới bước OTP. Hãy đóng các trang kết nối cũ và bắt đầu kết nối lại từ ứng dụng, rồi hoàn tất trong cùng cửa sổ trình duyệt.'
-        : 'Hãy bắt đầu kết nối lại từ ứng dụng. Hệ thống không tự gửi lại yêu cầu xác thực.';
-      res.status(safe.status).type('html').send(page('Chưa hoàn tất kết nối', `<p>${escapeHtml(safe.code)}</p><p>${guidance}</p><small>Mã hỗ trợ: ${escapeHtml(res.locals.requestId)}</small>`));
+      const step = /^\/interaction\/[^/]+\/(login|verify|consent|restart)$/.exec(req.path)?.[1] ?? 'page';
+      const notice = reportInteractionFailure(safe, res.locals.requestId, step);
+      const recovery = res.locals.interactionPath ? `<a class="button" href="${escapeHtml(res.locals.interactionPath)}">Quay lại bước kết nối</a>` : '<p>Hãy bắt đầu kết nối mới từ ứng dụng.</p>';
+      res.status(safe.status).type('html').send(page('Chưa hoàn tất kết nối', `<p role="alert">${interactionGuidance(safe.code, step, notice.reason)}</p>${recovery}<small>Mã hỗ trợ: ${escapeHtml(res.locals.requestId)} · ${escapeHtml(safe.code)}</small>`));
     }
     else res.status(safe.status).json({ error: safe.code, requestId: res.locals.requestId });
   });

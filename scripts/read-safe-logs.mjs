@@ -9,7 +9,7 @@ for(const line of raw.split('\n')) {
   if(first){console.log(JSON.stringify({availableFields:Object.keys(row)}));first=false;}
   const path=String(row.requestPath ?? row.path ?? row.request?.path ?? '').split('?')[0];
   const known=['/reg','/token','/api/mcp','/api/ready','/.well-known/oauth-authorization-server'];
-  const safe={time:row.timestamp??row.time,path:known.includes(path)?path:(path.startsWith('/interaction/')?`/interaction/[redacted]${/^\/interaction\/[^/]+\/(login|verify|consent)$/.exec(path)?.[1]?'/'+path.split('/')[3]:''}`:(/^\/auth\/[^/]+$/.test(path)?'/auth/[redacted]':(path==='/auth'?'/auth':'other'))),method:row.requestMethod??row.method,status:row.responseStatusCode??row.statusCode??row.status,duration:row.duration};
+  const safe={time:row.timestamp??row.time,path:known.includes(path)?path:(path.startsWith('/interaction/')?`/interaction/[redacted]${/^\/interaction\/[^/]+\/(login|verify|consent|restart)$/.exec(path)?.[1]?'/'+path.split('/')[3]:''}`:(/^\/auth\/[^/]+$/.test(path)?'/auth/[redacted]':(path==='/auth'?'/auth':'other'))),method:row.requestMethod??row.method,status:row.responseStatusCode??row.statusCode??row.status,duration:row.duration};
   console.log(JSON.stringify(safe));
   // Registration diagnostics (src/oauth.ts) are re-validated here; only code, allowlisted reason and field names pass.
   let event; try{event=JSON.parse(String(row.message ?? ''));}catch{}
@@ -18,9 +18,9 @@ for(const line of raw.split('\n')) {
     console.log(JSON.stringify({event:event.event,error:word(event.error),reason:word(event.reason),fields:Array.isArray(event.fields)?event.fields.filter(f=>/^[a-z_]{1,64}$/.test(f)).slice(0,40):[]}));
   }
   if(event?.event==='oauth.interaction_failed'){
-    const reasons=['provider_session_missing','interaction_mismatch','flow_cookie_missing','flow_cookie_invalid','flow_expired','flow_consumed','flow_mismatch','challenge_expired','login_expired'];
+    const reasons=['provider_session_missing','interaction_mismatch','flow_cookie_missing','flow_cookie_invalid','flow_expired','flow_consumed','flow_mismatch','challenge_expired','login_expired','csrf_mismatch','authorization_mismatch','member_not_allowed'];
     const codes=['INVALID_INPUT','UNAUTHENTICATED','REAUTH_REQUIRED','FORBIDDEN_SCOPE','CAPABILITY_UNAVAILABLE','UPSTREAM_AUTH_FAILED','UPSTREAM_REJECTED','UPSTREAM_SHAPE_CHANGED','RATE_LIMITED','UPSTREAM_TIMEOUT','STORE_UNAVAILABLE'];
-    console.log(JSON.stringify({event:event.event,requestId:typeof event.requestId==='string'&&/^[a-f0-9-]{36}$/.test(event.requestId)?event.requestId:null,step:['login','verify','consent','page'].includes(event.step)?event.step:'unclassified',error:codes.includes(event.error)?event.error:'unclassified',reason:reasons.includes(event.reason)?event.reason:'unclassified'}));
+    console.log(JSON.stringify({event:event.event,requestId:typeof event.requestId==='string'&&/^[a-f0-9-]{36}$/.test(event.requestId)?event.requestId:null,step:['login','verify','consent','restart','page'].includes(event.step)?event.step:'unclassified',error:codes.includes(event.error)?event.error:'unclassified',reason:reasons.includes(event.reason)?event.reason:'unclassified'}));
   }
   // Key names are non-sensitive, useful across CLI schema revisions.
   if(!path) console.log(JSON.stringify({availableFields:Object.keys(row)}));

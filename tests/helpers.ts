@@ -93,5 +93,5 @@ export async function oauthHarness(instances = 2) {
     const callback = new URL(response.headers.get('location')!); assert.equal(callback.origin, redirectOrigin); return callback;
   };
   const close = async () => { server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); await db.close(); };
-  return { db, store, settings, handlers, protocolErrors, counters, request, post, csrf, approve, close, cookiesFor };
+  return { db, store, settings, handlers, protocolErrors, counters, fakeSha, request, post, csrf, approve, close, cookiesFor };
 }

@@ -135,6 +135,14 @@ ChatGPT acceptance cho nghiệp vụ/PII/vòng đời phiên (kết nối và me
 - 6 hash SHA256 nguồn được kiểm lại khớp sau khi sửa; Git source HEAD vẫn 7261a8d và 6 file không có thay đổi. Document consistency được kiểm bằng scripts/check-docs.mjs; báo cáo JSON riêng không chạy manifest nguồn cũ, nên sourceHashChecks ở báo cáo vẫn not-requested.
 - Push main để Vercel Git integration tự triển khai theo chỉ dẫn Đại ca; không đổi DB/env/dependency. Cần đối chiếu thêm UI SHA thật nếu muốn nâng các mã chưa chắc chắn thành verified.
 
+## 12/10/2026 — phục hồi đăng nhập sau lỗi (local, chưa deploy)
+
+- Đối chiếu mã hỗ trợ từ ảnh Đại ca với `node scripts/read-safe-logs.mjs`: lỗi cuối ở POST login là REAUTH_REQUIRED/flow_expired; các lần trước FORBIDDEN_SCOPE/unclassified. Code cũ xóa ShaFlow sau lỗi nhưng không cung cấp đường lấy form mới. Vì vậy submit form cũ bị chặn trước SHA dù đã đổi sang mật khẩu đúng. Chưa đủ log để biết lỗi FORBIDDEN_SCOPE đầu tiên do allowlist hay binding form; không giả nghĩa mã lỗi nguồn, không lưu raw logs.
+- AUTH-FLOW-04 trước sửa fail: password bị SHA giả lập từ chối trả HTTP401 thay vì chuyển về form mới. Sau sửa, chỉ request đã atomic consume được quyền thay lượt lỗi bằng flow login mới và 303 về cùng interaction. Handle/CSRF đổi, credential/challenge/login cũ không giữ, có hướng dẫn lỗi và requestId. ID được trim khoảng trắng; password giữ nguyên.
+- AUTH-FLOW-05..08 kiểm OTP sai/timeout/hết hạn/restart, quota shared 5 lần/người/10 phút không bypass bằng interaction hoặc kiểu chữ, phân biệt allowlist/CSRF/params, provider/store lỗi và GET/double submit trong lúc request đầu đang chạy. AUTH-FLOW-01..03 giữ bảo vệ cookie nhiều interaction/legacy/replay. Chi tiết ở TEST-MAP.
+- Đã chạy `npm test`: **72/72 pass, 0 fail/skip**; nhóm 8 auth tests chạy lại sau khi bổ sung assertion OTP bị từ chối/không lưu password, tất cả pass. `npm run typecheck`, `npm run build`, `npm run smoke:esm` passed; `npm run check:docs` passed **808 assertions** (chỉ tính nhất quán tài liệu). Không gọi SHA thật, không gửi password/OTP thật. Không thay dependency/lockfile, DB hoặc env.
+- **Chưa push/deploy hoặc nghiệm thu lại qua Claude/GPT.** Bản sửa cần deploy khi Đại ca giao và kiểm retry trên client thật; không kết luận bản local đã xử lý xong mọi nguyên nhân của lỗi production.
+
 ## Giới hạn của kiểm tra tài liệu (phạm vi)
 
 Validator kiểm file links nội bộ, JSON parse, uniqueness, count, disabled state, method/host allowlist, traceability/test IDs, input schema structure, schema SQL RLS coverage và dependency-free source metadata. Không xác nhận API còn hoạt động, mapping đơn vị đúng live, dependency compatibility, SQL function semantics chưa viết hoặc quyền runtime chưa cấp.

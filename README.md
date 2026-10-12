@@ -9,6 +9,8 @@ MCP dùng SHA Gateway tại api.shs.com.vn, chỉ tra cứu trong quyền từng
 
 ## Kiểm tra local
 
+Bản sửa local 12/10/2026: đăng nhập thất bại quay về form mới trong cùng OAuth interaction; OTP có nút đăng nhập lại, lỗi phiên cũ có nút phục hồi và thông báo phân biệt quyền/CSRF/quota. 72 synthetic tests passed; **chưa deploy hoặc nghiệm thu retry live**. Chi tiết [HANDOFF](docs/HANDOFF.md).
+
     npm ci
     npm run typecheck
     npm test

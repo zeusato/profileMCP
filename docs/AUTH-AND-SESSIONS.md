@@ -78,6 +78,16 @@ Không coi capture token trong Electron là API đăng nhập server. Các inter
 
 ## 4. State machine và đồng thời
 
+### Phục hồi form (bản local 12/10/2026, chưa deploy)
+
+- Khi POST login/verify/restart đã qua Origin, provider, cookie, CSRF, client/params và atomic consume nhưng thất bại với lỗi nghiệp vụ đã phân loại, hủy ShaFlow cũ và lưu một ShaFlow **login mới**, handle/CSRF mới. Chỉ giữ uid/client/params và thông báo an toàn có requestId; loại bỏ challenge/login/userId cũ. Trả 303 về GET interaction để refresh không gửi lại password/OTP. Store lỗi vẫn fail closed.
+- Lỗi mật khẩu/SHA có form để nhập lại; lỗi ID ngoài allowlist nói rõ cần kiểm tra quyền. OTP bị từ chối, timeout hoặc hết hạn đều quay lại login để tạo challenge mới khi người dùng chủ động gửi. Nút POST restart ở trang OTP cũng phải qua CSRF/Origin/consume; không gọi SHA, không tái dùng OTP cũ.
+- POST stale/thiếu cookie/sai CSRF không tự tạo phiên và không xóa cookie hay flow của request thắng. Trang lỗi chỉ có liên kết GET cùng interaction khi provider còn hợp lệ; provider hết hạn/thiếu cookie yêu cầu bắt đầu từ ứng dụng. GET trong lúc flow đã được claim không tạo flow mới. Retry không kéo dài thời hạn interaction của provider.
+- Quota shared store giữ nguyên: 5 login begin/người/600 giây, 8 form POST/interaction/600 giây. Đổi interaction hoặc kiểu chữ ID không bỏ qua quota người dùng. UI hướng dẫn chờ tối đa 10 phút cho giới hạn local; không suy thời gian khóa SHA, không hứa mở khóa upstream.
+- `oauth.interaction_failed` bổ sung reason `member_not_allowed`, `csrf_mismatch`, `authorization_mismatch` và step `restart`. Không ghi giá trị form/cookie/UID; thông báo không dùng message upstream. AUTH-FLOW-04..08 kiểm retry, OTP, quota, replay, race và store lỗi qua hai instance giả lập. Chưa nghiệm thu live retry.
+
+### Hợp đồng nền tảng
+
 Auth transaction: `created → password_submitted → challenge_ready → verifying → succeeded`, hoặc `failed/expired/cancelled`. Password/OTP không ghi vào transaction; chỉ lưu challenge ciphertext cần cho bước sau.
 
 - Claim bước verify bằng compare-and-swap trạng thái/version hoặc row lock ngắn; không giữ transaction DB suốt thời gian gọi mạng.

@@ -1,8 +1,11 @@
-# Checkpoint Profile MCP — 11/10/2026
+# Checkpoint Profile MCP — 12/10/2026
 
 Luôn xưng em, gọi người dùng là Đại ca. Không cần lịch sử chat để tiếp tục từ tài liệu này. Diễn biến chi tiết từng bước (DCR, Origin/CSP, contract đăng nhập SHA, probe live, các vòng sửa) nằm trong [VALIDATION](VALIDATION.md); tài liệu này chỉ giữ trạng thái hiện tại và việc còn lại.
 
 ## Trạng thái hiện tại
+
+- **Bản sửa retry đăng nhập local 12/10, chưa deploy:** sai mật khẩu/lỗi SHA/quyền/OTP chuyển 303 về form login mới (handle + CSRF mới), vẫn cùng interaction OAuth còn hạn. Không lưu/điền lại password hoặc OTP, không tự gọi lại SHA. OTP có nút “Đăng nhập lại / Đổi ID”; form cũ có nút “Quay lại bước kết nối” khi provider còn hợp lệ. Tách reason member_not_allowed/csrf_mismatch/authorization_mismatch; quota giữ 5 lần begin/người/10 phút và 8 POST/interaction/10 phút. GET trong lúc POST đang chạy không tạo flow khác. 72/72 synthetic pass; typecheck/build/ESM và docs xem VALIDATION. Không thay DB/env/dependencies, không push main trong lượt này; cần triển khai khi Đại ca giao và nghiệm thu retry qua client thật.
+- **Sự cố ảnh ngày 12/10:** read-safe-logs đối chiếu đúng mã hỗ trợ thấy POST login `REAUTH_REQUIRED` / `flow_expired`; trước đó các POST login `FORBIDDEN_SCOPE` / unclassified. Code cũ consume rồi xóa ShaFlow sau lỗi, nên form cũ bị chặn trước SHA dù mật khẩu mới đúng. Chưa biết FORBIDDEN_SCOPE ban đầu do allowlist hay form; không kết luận mọi lần lỗi đều do sai mật khẩu. Không lưu raw log hoặc thông tin đăng nhập vào repo.
 
 - **Claude Android đã login/OTP/cấp quyền thành công theo Đại ca xác nhận 11/10.** Cookie fix 77037e5 đã đi qua Git deploy tại 6eef218, Vercel READY và health/ready 200. Một lần verify-sotp bị SHA từ chối HTTP401/code014; gửi lại form cũ sau 160 giây gặp flow_expired vì phiên đã bị hủy. Kết nối mới đã thành công. GPT mobile chưa thử.
 - **Claude mobile đã đọc đủ dữ liệu sau fix text** (a96b34c): Đại ca xác nhận 8/8 tài khoản có tên/số đầy đủ, coverage complete. Không lưu giá trị khách hàng vào repo. SOURCE_TIMESTAMP_UNAVAILABLE vẫn đúng vì chưa có timestamp nguồn được xác minh.

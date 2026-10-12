@@ -1,6 +1,6 @@
 # Kế hoạch kiểm thử và nghiệm thu
 
-Tài liệu này là mục tiêu coverage, không phải danh sách đã passed. Runtime hiện có 63 tests synthetic (tests/*.test.ts, gồm bảng REQ/RAW/DTO/SCOPE/PAGE trong released-operations.test.ts và 3 regression cookie trong interactions.test.ts); coverage thực và những phần còn thiếu ghi tại [VALIDATION](VALIDATION.md), checkpoint tại [HANDOFF](HANDOFF.md). 210 operation test IDs chưa được nghiệm thu toàn bộ.
+Tài liệu này là mục tiêu coverage, không phải danh sách đã passed. Local 12/10/2026 có 72 tests synthetic (tests/*.test.ts, gồm bảng REQ/RAW/DTO/SCOPE/PAGE, dictionary và 8 regression trong interactions.test.ts); coverage thực và những phần còn thiếu ghi tại [VALIDATION](VALIDATION.md), checkpoint tại [HANDOFF](HANDOFF.md). Bản sửa retry chưa deploy; 210 operation test IDs chưa được nghiệm thu toàn bộ.
 
 ## Theo từng operation
 
@@ -32,6 +32,11 @@ Fixture synthetic dùng tên/mã giả; không copy payload tài khoản thật.
 | AUTH-FLOW-01 | Hai OAuth interaction cùng browser giữ độc lập login/OTP/consent qua hai instance (synthetic) |
 | AUTH-FLOW-02 | Thiếu cookie, flow hết hạn/sai UID, CSRF, double submit/replay và log không lộ bí mật (synthetic) |
 | AUTH-FLOW-03 | Cookie trước nâng cấp chuyển sang cookie riêng, vẫn kiểm UID (synthetic) |
+| AUTH-FLOW-04 | Sai mật khẩu → form mới/cookie/CSRF mới → sửa ID/password → OTP/consent/code cùng interaction; refresh/replay không gọi SHA, không lưu/echo/log credential (synthetic) |
+| AUTH-FLOW-05 | OTP bị từ chối/timeout/hết hạn và restart chủ động bỏ challenge cũ; OTP cũ không replay, GET không tự gọi SHA (synthetic) |
+| AUTH-FLOW-06 | Quota đăng nhập theo người giữ qua retry/interaction mới/ID đổi kiểu chữ; UI hướng dẫn cửa sổ 10 phút (synthetic) |
+| AUTH-FLOW-07 | Phân biệt allowlist/CSRF/client binding; provider thiếu và store lỗi fail closed, không log secret (synthetic) |
+| AUTH-FLOW-08 | POST thất bại đang chạy + GET + double submit chỉ một SHA begin; không ghi đè flow đang claim (synthetic) |
 | OAUTH-01 | Discovery, protected-resource metadata, PKCE S256, resource/audience |
 | OAUTH-02 | Code reuse, bad verifier, wrong redirect/client/resource bị từ chối |
 | OAUTH-03 | State/CSRF/session fixation, malicious redirect/client metadata |

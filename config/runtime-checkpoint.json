@@ -20,7 +20,15 @@
   "liveShaLoginVerified": "production-claude-connect-2026-10-10",
   "claudeAcceptance": "39/39 enabled operations called live via connector 2026-10-10",
   "gptAcceptance": "2026-10-10: ChatGPT Work DCR/login/OTP/consent/callback, two metadata calls, and accounts.tree with profile.pii verified (8/8 rows have accountNumber/customerName, broker names joined separately); OIDC disabled in client; remaining business/PII/session lifecycle not tested",
-  "latestLocalChangesDeployed": true,
+  "latestLocalChangesDeployed": false,
+  "localAuthRecovery": {
+    "date": "2026-10-12",
+    "status": "synthetic-verified-not-deployed",
+    "syntheticTestsPassed": 72,
+    "testIds": ["AUTH-FLOW-04", "AUTH-FLOW-05", "AUTH-FLOW-06", "AUTH-FLOW-07", "AUTH-FLOW-08"],
+    "migrationRequired": false,
+    "liveRetryVerified": false
+  },
   "handoff": "docs/HANDOFF.md",
   "dcrRootCause": "AS scopes_supported lacked resource scopes sent in DCR scope (reproduced on production 2026-10-10)",
   "previousVercelDeploymentId": "dpl_BE7kQpGHx1HJqGswsJnQuuLsJ9WS",

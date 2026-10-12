@@ -101,6 +101,8 @@ Trợ lý tự chọn tool; câu hỏi càng cụ thể (tên/số tài khoản,
 
 ## 7. Lỗi thường gặp
 
+**Luồng thử lại mới (bản sửa local 12/10/2026, chưa lên production):** nếu đăng nhập thất bại, trang hiện lý do và form **Thử đăng nhập lại**. Nhập lại ID/mật khẩu tại đó; không dùng Back để gửi lại form cũ. Ở bước OTP có nút **Đăng nhập lại / Đổi ID**. Nếu gặp form cũ, dùng **Quay lại bước kết nối**; nếu phiên OAuth đã hết hạn thì mở kết nối mới từ client. Giới hạn đăng nhập local là 5 lần/người trong cửa sổ 10 phút, mở tab/kết nối mới không xóa giới hạn. Thông báo “ID chưa được cấp quyền” cần kiểm tra ID/allowlist, đổi mật khẩu không giải quyết lỗi quyền.
+
 | Hiện tượng / mã | Ý nghĩa | Cách xử lý |
 |---|---|---|
 | Không vào được trang đăng nhập, client báo lỗi đăng ký | DCR/OAuth của client lỗi | Thử lại; báo quản trị kèm thời điểm và mã tham chiếu (ví dụ `ofid_…` của Claude) |

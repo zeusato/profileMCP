@@ -143,6 +143,15 @@ ChatGPT acceptance cho nghiệp vụ/PII/vòng đời phiên (kết nối và me
 - Đã chạy `npm test`: **72/72 pass, 0 fail/skip**; nhóm 8 auth tests chạy lại sau khi bổ sung assertion OTP bị từ chối/không lưu password, tất cả pass. `npm run typecheck`, `npm run build`, `npm run smoke:esm` passed; `npm run check:docs` passed **808 assertions** (chỉ tính nhất quán tài liệu). Không gọi SHA thật, không gửi password/OTP thật. Không thay dependency/lockfile, DB hoặc env.
 - **Chưa push/deploy hoặc nghiệm thu lại qua Claude/GPT.** Bản sửa cần deploy khi Đại ca giao và kiểm retry trên client thật; không kết luận bản local đã xử lý xong mọi nguyên nhân của lỗi production.
 
+## 15/10/2026 — KMS giữ nội dung thân bài (local, chưa deploy)
+
+- Tái hiện lỗi cũ bằng hàm runtime: img-only → Content rỗng; anchor chỉ còn nhãn, mất href. Sửa bằng parse5 8.0.1 đã kiểm registry và pin lockfile; text kèm marker và danh sách body media/link, giữ ảnh bìa riêng. Không dùng raw dữ liệu thật làm fixture.
+- Bỏ mốc cắt 4000 ký tự. Nội dung dài được phân phần và phân trang dưới budget 128 KiB; con trỏ chỉ lưu page/offset/digest, ràng buộc phiên/quyền/filter. Khi tải lại mà trang nguồn đã đổi, fail closed, không ghép nhầm bài. Giữ null/missing, URL tương đối, thứ tự ảnh và link.
+- Node 24.21.0: chạy toàn bộ `node_modules/node/bin/node.exe --import tsx --test tests/*.test.ts`: **77/77 pass, 0 fail/skip**. Bao gồm KMS-01..05 và KMS-SDK trong OAuth integration; bài chữ Unicode dài và 250 ảnh, thân bài chỉ ảnh, ảnh responsive/lazy, HTML lỗi, URL nguy hiểm, bảng/pre, cursor cross-session/filter/scope, nguồn đổi và cursor không tồn tại. Client SDK chỉ nhận text vẫn có media refs giống structuredContent.
+- Typecheck, TypeScript build và native ESM smoke passed. Document consistency passed 811 assertions; báo cáo docs ở config/document-validation.json chỉ xác nhận tính nhất quán tài liệu.
+- npm launcher mặc định của máy trỏ tới npm-cli thiếu; dùng Node 24 đã pin + npm-cli tại C:/Program Files/nodejs/node_modules/npm/bin/npm-cli.js. Cài dependency với ignore-scripts; lockfile chỉ thêm parse5/entities, giữ nguyên metadata optional packages cũ.
+- **Chưa push/deploy, chưa kiểm raw bài Reactive thật hoặc nghiệm thu Claude/GPT live.** Không đổi route, input schema, scope, DB/env. Tool trả tham chiếu ảnh, không OCR/tải ảnh tự động; CSS background/nội dung nhúng chưa đọc và URL không hỗ trợ có warnings. Cần làm mới mô tả tool ở client sau triển khai.
+
 ## Giới hạn của kiểm tra tài liệu (phạm vi)
 
 Validator kiểm file links nội bộ, JSON parse, uniqueness, count, disabled state, method/host allowlist, traceability/test IDs, input schema structure, schema SQL RLS coverage và dependency-free source metadata. Không xác nhận API còn hoạt động, mapping đơn vị đúng live, dependency compatibility, SQL function semantics chưa viết hoặc quyền runtime chưa cấp.

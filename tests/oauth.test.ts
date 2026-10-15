@@ -19,7 +19,7 @@ function textData(result: any) {
 test('OAUTH-01..06 / AUTH-01,03,08 / RUN-01,02: two-instance OAuth, PKCE, SDK and revoke', { timeout: 120000 }, async () => {
   const h = await oauthHarness(); const { db, store, settings, request, post, csrf } = h;
   const login = async () => {
-    const verifier = randomBytes(32).toString('base64url'); const params = new URLSearchParams({ client_id: 'synthetic-client', redirect_uri: 'https://client.example/callback', response_type: 'code', scope: 'profile.read accounts.read', resource: settings.resource, state: 'synthetic-state', code_challenge: createHash('sha256').update(verifier).digest('base64url'), code_challenge_method: 'S256' });
+    const verifier = randomBytes(32).toString('base64url'); const params = new URLSearchParams({ client_id: 'synthetic-client', redirect_uri: 'https://client.example/callback', response_type: 'code', scope: 'profile.read accounts.read research.read', resource: settings.resource, state: 'synthetic-state', code_challenge: createHash('sha256').update(verifier).digest('base64url'), code_challenge_method: 'S256' });
     const callback = await h.approve(`/auth?${params}`, 'https://client.example');
     assert.equal(callback.searchParams.get('state'), 'synthetic-state'); assert.equal(callback.searchParams.get('iss'), settings.issuer);
     assert.ok(callback.searchParams.get('code'), callback.toString()); return { code: callback.searchParams.get('code')!, verifier };
@@ -52,6 +52,11 @@ test('OAUTH-01..06 / AUTH-01,03,08 / RUN-01,02: two-instance OAuth, PKCE, SDK an
     const tree = await client.callTool({ name: 'list_managed_accounts', arguments: { operation: 'accounts.tree' } }) as any; assert.equal(tree.isError, undefined, JSON.stringify(tree));
     assert.equal(tree.structuredContent.data.accounts.length, 2); assert.ok(!/CUSTOMER CANARY|"A001"/.test(JSON.stringify(tree)));
     assert.equal(textData(tree).data.accounts.length, 2);
+    // KMS-SDK: a text-only client receives body media and links, separately from the cover.
+    const knowledge = textData(await client.callTool({ name: 'get_knowledge_library', arguments: { operation: 'knowledge.documents', department: 'X1' } }));
+    assert.equal(knowledge.data.items[0].contentImages[0].sources[0].url, 'https://example.com/body.webp');
+    assert.equal(knowledge.data.items[0].contentLinks[0].url, 'https://example.com/rules.pdf');
+    assert.equal(knowledge.data.items[0].Photo.url, 'https://example.com/cover.webp');
     const result = await client.callTool({ name: 'list_profile_capabilities', arguments: {} }); assert.equal(result.isError, undefined); assert.ok(!JSON.stringify(result).includes('SYNTHETIC_SHA_SECRET_CANARY'));
     const capabilities = textData(result); assert.equal(capabilities.liveOperations.length, 39); assert.ok(capabilities.liveOperations.includes('accounts.search')); assert.equal(capabilities.candidates.length, 3);
     const dictionary = textData(await client.callTool({ name: 'get_profile_data_dictionary', arguments: { operation: 'identity.current' } }));

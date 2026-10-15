@@ -61,10 +61,10 @@ test('every released generic operation has a test input and live-shaped fieldMap
 });
 async function harness() {
   const { db, store, userId, settings } = await testStore(); store.quota = async () => {}; // read quotas are covered by DB-02/03
-  const fixtures = new Map<string, () => Response>(); const calls: string[] = []; const bodies = new Map<string, any>(); let resolving = false;
+  const fixtures = new Map<string, () => Response>(); const calls: string[] = []; const bodies = new Map<string, any>(); const queries = new Map<string, URLSearchParams>(); let resolving = false;
   const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
   const fetcher = (async (url: unknown, init?: RequestInit) => {
-    const path = new URL(String(url)).pathname; const key = `${init?.method ?? 'GET'} ${path}`; calls.push(key);
+    const path = new URL(String(url)).pathname; const key = `${init?.method ?? 'GET'} ${path}`; calls.push(key); queries.set(key, new URL(String(url)).searchParams);
     if (init?.body) bodies.set(key, JSON.parse(String(init.body)));
     const custom = !resolving && fixtures.get(key); if (custom) return custom();
     if (path.endsWith('get-user-login')) return json({ code: 200, message: 'ok', data: IDENTITY });
@@ -87,8 +87,55 @@ async function harness() {
   };
   const call = async (op: string, scopes = SCOPES, extra: Record<string, unknown> = {}) => { const f = await fresh(op); calls.length = 0; return { result: await service.call(op, { ...f.input, ...extra }, f.session, scopes, 'r') as any, session: f.session }; };
   const fails = async (op: string, pattern: RegExp, scopes = SCOPES, extra: Record<string, unknown> = {}) => { const f = await fresh(op); await assert.rejects(service.call(op, { ...f.input, ...extra }, f.session, scopes, 'r'), pattern); return f.session; };
-  return { store, service, fixtures, calls, json, call, fails, fresh, bodies, close: async () => { console.warn = warn; await db.close(); } };
+  return { store, service, fixtures, calls, json, call, fails, fresh, bodies, queries, close: async () => { console.warn = warn; await db.close(); } };
 }
+test('KMS-05: authorized continuation, source drift and missing cursors fail closed; all long article parts are recoverable', async () => {
+  const h = await harness();
+  try {
+    const key = 'GET /prod/v2/sha-service/e/forward/cms/knowledge-shares/department/X1';
+    const full = 'Đại ca 😀 '.repeat(18000);
+    let content = `<pre>${full}</pre><img src="https://example.com/end.webp"><a href="https://example.com/end.pdf">End</a>`;
+    h.fixtures.set(key, () => h.json({ data: [{ id: 7, Content: content }], meta: { pagination: { page: 1, pageSize: 5, pageCount: 1, total: 1 } } }));
+    const first = await h.call('knowledge.documents'); const next = first.result.meta.coverage.nextCursor;
+    assert.equal(typeof next, 'string'); assert.equal(first.result.status, 'partial');
+    assert.ok(first.result.meta.warnings.includes('CONTENT_PAGINATED'));
+    const args = { operation: 'knowledge.documents', department: 'X1', limit: 5, cursor: next };
+    const stored = await h.store.get('Cursor', next);
+    assert.ok(stored?.partOffset > 0 && !JSON.stringify(stored).includes('example.com'));
+    const other = await h.fresh('knowledge.documents');
+    await assert.rejects(h.service.call('knowledge.documents', args, other.session, SCOPES, 'r'), /FORBIDDEN_SCOPE/);
+    await assert.rejects(h.service.call('knowledge.documents', { ...args, keyword: 'changed' }, first.session, SCOPES, 'r'), /FORBIDDEN_SCOPE/);
+    await assert.rejects(h.service.call('knowledge.documents', args, first.session, SCOPES.filter(s => s !== 'research.read'), 'r'), /FORBIDDEN_SCOPE/);
+    content += '<p>changed</p>';
+    await assert.rejects(h.service.call('knowledge.documents', args, first.session, SCOPES, 'r'), /UPSTREAM_SHAPE_CHANGED/);
+    content = content.replace('<p>changed</p>', '');
+    const parts = [...first.result.data.items]; let cursor = next; let count = 0;
+    while (cursor) {
+      assert.ok(count++ < 30);
+      const result = await h.service.call('knowledge.documents', { ...args, cursor }, first.session, SCOPES, 'r');
+      assert.equal(h.queries.get(key)?.get('page'), '1');
+      assert.ok(Buffer.byteLength(JSON.stringify(result)) <= 128 * 1024);
+      assert.equal(result.meta.coverage.complete, false); // last segment alone is not the full query
+      parts.push(...result.data!.items); cursor = result.meta.coverage.nextCursor;
+      if (!cursor) assert.equal(result.meta.coverage.hasMore, false);
+    }
+    assert.equal(parts.map(p => p.Content).join(''), full + '\n[Image 1]End [Link 1]');
+    assert.deepEqual(parts.flatMap(p => p.contentImages).map(i => i.sources[0].url), ['https://example.com/end.webp']);
+    assert.deepEqual(parts.flatMap(p => p.contentLinks).map(i => i.url), ['https://example.com/end.pdf']);
+    assert.deepEqual(parts.map(p => p.contentPart.index), parts.map((_, i) => i + 1));
+    await h.store.destroy('Cursor', next);
+    await assert.rejects(h.service.call('knowledge.documents', args, first.session, SCOPES, 'r'), /FORBIDDEN_SCOPE/);
+    // Upstream article paging continues only after the current page's parts have been returned.
+    let pageNo = 1;
+    h.fixtures.set(key, () => h.json({ data: [{ id: pageNo, Content: `page ${pageNo}` }], meta: { pagination: { page: pageNo, pageSize: 1, pageCount: 2, total: 2 } } }));
+    const paged = await h.call('knowledge.documents', SCOPES, { limit: 1 }); pageNo = 2;
+    const tail = await h.service.call('knowledge.documents', { ...args, limit: 1, cursor: paged.result.meta.coverage.nextCursor }, paged.session, SCOPES, 'r');
+    assert.equal(h.queries.get(key)?.get('page'), '2'); assert.equal(tail.data!.items[0].Content, 'page 2');
+    assert.equal(tail.meta.coverage.nextCursor, null); assert.equal(tail.meta.coverage.complete, false);
+    pageNo = 1;
+    await assert.rejects(h.service.call('knowledge.documents', { ...args, limit: 1, cursor: paged.result.meta.coverage.nextCursor }, paged.session, SCOPES, 'r'), /UPSTREAM_SHAPE_CHANGED/);
+  } finally { await h.close(); }
+});
 for (const r of released) {
   const fields = r.fieldMap as Field[]; const key = `${r.method} ${r.path.replace('{department}', 'X1')}`; const pii = fields.some(f => f.scope === PII_SCOPE); const size = SIZE[r.id] ?? 5;
   const accountField = fields.find(f => ACCOUNT.test(f.raw.split('.').pop()!));
@@ -168,14 +215,16 @@ test('live 10/10/2026 regressions: subNo, credit bodies, periods, list coverage,
     // loans.history rows outside from/to are flagged, not silently accepted as in-period.
     h.fixtures.set('POST /prod/v2/sha-service/e/asset/loan-info/history', ok({ page: 1, size: 5, totalElements: 1, totalPages: 1, data: [{ accountNo: 'A001', lndDate: '2026-05-26 00:00:00' }] }));
     assert.ok((await h.call('loans.history')).result.meta.warnings.includes('PERIOD_FILTER_UNVERIFIED'));
-    // KMS: meta.pagination drives the cursor; departments outside the live list are refused; long content is capped and flagged.
+    // KMS: upstream pagination, full text and media extraction, with no 4000-char cutoff.
     const docs = 'GET /prod/v2/sha-service/e/forward/cms/knowledge-shares/department/X1';
-    h.fixtures.set(docs, () => h.json({ data: [{ id: 7, Title: 'T', Content: '<p style="font-family:x !important">' + 'x'.repeat(5000) + '</p>' }, { id: 8, Title: 'U', Content: '<ul><li style="a:b"><b>Nhận định</b> &amp; báo cáo</li></ul><style>p{}</style>' }], meta: { pagination: { page: 1, pageSize: 5, pageCount: 3, total: 11 } } }));
+    h.fixtures.set(docs, () => h.json({ data: [{ id: 7, Title: 'T', Content: '<p style="font-family:x !important">' + 'x'.repeat(5000) + '</p>' }, { id: 8, Title: 'U', Content: '<ul><li style="a:b"><b>Nhận định</b> &amp; báo cáo</li></ul><style>p{}</style>' }, { id: 9, Content: '<img src="https://example.com/body.webp">', Photo: { url: 'https://example.com/cover.webp' } }, { id: 10, Content: null }, { id: 11 }], meta: { pagination: { page: 1, pageSize: 5, pageCount: 3, total: 11 } } }));
     const kms = (await h.call('knowledge.documents')).result;
-    assert.deepEqual([kms.meta.coverage.total, kms.meta.coverage.complete, typeof kms.meta.coverage.nextCursor, kms.data.items[0].Content.length, kms.data.items[0].contentTruncated, kms.data.items[0].id], [11, false, 'string', 4000, true, '7']);
-    assert.ok(kms.meta.warnings.includes('CONTENT_TRUNCATED') && kms.meta.warnings.includes('PARTIAL_PAGE'));
-    // Styled HTML becomes readable text before the cap (styles and tags dropped, entities decoded).
-    assert.deepEqual([kms.data.items[1].Content, kms.data.items[1].contentFormat, kms.data.items[1].contentTruncated], ['- Nhận định & báo cáo', 'text-from-html', undefined]);
+    assert.deepEqual([kms.meta.coverage.total, kms.meta.coverage.complete, typeof kms.meta.coverage.nextCursor, kms.data.items[0].Content.length, kms.data.items[0].contentTruncated, kms.data.items[0].id], [11, false, 'string', 5000, false, '7']);
+    assert.ok(!kms.meta.warnings.includes('CONTENT_TRUNCATED') && kms.meta.warnings.includes('PARTIAL_PAGE'));
+    assert.deepEqual([kms.data.items[1].Content, kms.data.items[1].contentFormat, kms.data.items[1].contentTruncated], ['- Nhận định & báo cáo', 'text-with-media', false]);
+    assert.equal(kms.data.items[2].contentImages[0].sources[0].url, 'https://example.com/body.webp');
+    assert.equal(kms.data.items[2].Photo.url, 'https://example.com/cover.webp');
+    assert.equal(kms.data.items[3].Content, null); assert.equal(Object.hasOwn(kms.data.items[4], 'Content'), false);
     await h.fails('knowledge.documents', /FORBIDDEN_SCOPE/, SCOPES, { department: 'ZZ' });
     // list-confirm always asks 30 rows per page.
     h.fixtures.set('POST /prod/v2/sha-service/e/order/list-confirm', ok({ pageNo: 1, pageSize: 30, totalCount: 0, totalPage: 0, content: [] }));

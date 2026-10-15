@@ -44,7 +44,9 @@ export async function oauthHarness(instances = 2) {
   const fakeSha = { async begin(username: string) { counters.begin++; return { username, sessionKey: 'fake-session-key', trustDevice: false, otpType: 2 as const, transactionId: 'fake-transaction', otpIndex: 'A1', expiresAt: Date.now() + 60000 }; }, async verify() { counters.verify++; return syntheticLogin(); } };
   // Fake SHA read gateway for released operations (identity + account tree); never reaches the network.
   const shaJson = (data: unknown) => new Response(JSON.stringify({ code: 200, message: 'ok', data }), { headers: { 'Content-Type': 'application/json' } });
-  const reads = new ShaTransport((async (url: unknown) => String(url).endsWith('get-user-login') ? shaJson([{ preferredUsername: 'SYNTHETIC', brokerCode: 'B001', branchCode: 'BR1' }])
+  const reads = new ShaTransport((async (url: unknown) => new URL(String(url)).pathname.endsWith('/cms/departments') ? new Response(JSON.stringify({ data: [{ Code: 'X1' }] }), { headers: { 'Content-Type': 'application/json' } })
+    : new URL(String(url)).pathname.endsWith('/knowledge-shares/department/X1') ? new Response(JSON.stringify({ data: [{ id: 1, Content: '<img src="https://example.com/body.webp"><a href="https://example.com/rules.pdf">Rules</a>', Photo: { url: 'https://example.com/cover.webp' } }], meta: { pagination: { page: 1, pageSize: 50, pageCount: 1, total: 1 } } }), { headers: { 'Content-Type': 'application/json' } })
+    : String(url).endsWith('get-user-login') ? shaJson([{ preferredUsername: 'SYNTHETIC', brokerCode: 'B001', branchCode: 'BR1' }])
     : shaJson({ accounts: [{ accountNumber: 'A001', customerName: 'CUSTOMER CANARY', brokerCode: 'B001', remNo: 'B001' }, { accountNumber: 'A002', customerName: null, brokerCode: 'B001', remNo: 'B001' }], brokers: [{ brokerCode: 'B001', brokerName: 'ROOT CANARY', children: [] }] })) as typeof fetch);
   handlers = Array.from({ length: instances }, () => createApp(settings, store, fakeSha, reads));
   const protocolErrors: string[] = [];

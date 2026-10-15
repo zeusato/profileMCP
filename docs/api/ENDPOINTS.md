@@ -1017,7 +1017,30 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## knowledge.documents
 
-- **Release 10/10/2026: bật.** 14 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. KMS; mã phòng phải nằm trong danh sách live; Content là văn bản không tin cậy, cắt 4000 ký tự; phân trang meta.pagination. Đơn vị số liệu gắn status unverified.
+- **Release 10/10/2026: bật.** 14 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. KMS; mã phòng phải nằm trong danh sách live; Content là dữ liệu không tin cậy; bản local 15/10 giữ chữ/ảnh/link, phân trang cả nội dung và danh sách bài như hợp đồng dưới đây. Đơn vị số liệu gắn status unverified.
 - Tool: `get_knowledge_library`; `GET /prod/v2/sha-service/e/forward/cms/knowledge-shares/department/{department}`; query keyword, pageSize, page.
 - Mã phòng ban kiểm theo mẫu và phải có trong danh sách phòng ban live; nội dung là dữ liệu không tin cậy.
+
+### Nội dung KMS — bản local 15/10/2026, chưa deploy
+
+Request/method/path/scope giữ nguyên. Raw `data[].Content` (HTML/text, null/missing giữ nguyên) → fieldMap `items[].Content` → parser HTML parse5 → các DTO dưới đây. `Photo.url` chỉ là ảnh bìa; không dùng thay danh sách ảnh thân bài.
+
+| DTO | Ý nghĩa |
+|---|---|
+| Content | Toàn bộ chữ đọc được, có marker `[Image n]` / `[Link n]` tại vị trí tham chiếu trong bài; không chạy HTML/script |
+| contentImages[] | `position` theo thứ tự trong bài, `tag`, `sources[{url,attribute,descriptor?}]`, `alt?`, `title?`; giữ src/data-src/srcset/data-srcset và picture/source |
+| contentLinks[] | `position`, `url`, `title?`; liên kết nội dung nhúng có thêm `kind`/`attribute`; nhãn link vẫn nằm trong Content |
+| contentFormat | `text-with-media` |
+| contentPart | `index` (từ 1), `total`: một bài dài có thể xuất hiện nhiều lần, cùng id/documentId và metadata |
+| contentTruncated | `false`: không bỏ đuôi nội dung để vừa budget; không cam kết đã OCR ảnh hoặc đọc nội dung nhúng |
+
+Ghép `Content` theo `contentPart.index` không tự chèn/xóa dấu cách, ghép các mảng media theo position. Không dedup các item chỉ theo id vì có thể là phần tiếp theo của cùng bài. Ảnh/link thuộc phần chứa marker của chúng, vị trí đánh số liên tục cho cả bài. Giữ URL tương đối nguyên dạng, không đoán host. URL chỉ được trả như dữ liệu, backend không tải ảnh/OCR/tài liệu hay gửi bearer tới URL đó.
+
+Mỗi phần có tối đa 24 KiB nội dung đã serialize (chưa tính metadata bài); một lượt chứa tối đa 64 KiB items/100 phần và vẫn kiểm tổng DTO ≤128 KiB. Không còn cắt 4000 ký tự. Khi còn phần hoặc trang nguồn, `meta.coverage.nextCursor` chỉ đúng vị trí đọc tiếp. Gọi lại với cùng department/keyword/limit đến khi cursor null. `returned` đếm bài khác nhau trong lượt; `returnedParts` đếm item/phần; `total` vẫn là tổng bài nguồn. `complete` chỉ true khi toàn bộ query nằm trong một lượt, `hasMore` chỉ còn lượt tiếp; lượt cuối của query nhiều lượt không tự nhận complete. `contentComplete` cho biết lượt hiện tại chứa đầy đủ nội dung trang nguồn, không bắt đầu/kết thúc giữa các phần.
+
+Cursor 300 giây ràng buộc user/team/session/generation/operation/filter; chỉ lưu page/offset/total/digest, không lưu HTML hay nội dung bài. Đọc tiếp kiểm lại quyền và tải lại cùng trang; trang đổi hoặc total đổi → UPSTREAM_SHAPE_CHANGED, cần bắt đầu query mới. Phân trang nguồn kiểm page/pageSize/count/total và số dòng, tránh ghép trang sai.
+
+Warnings: `CONTENT_PAGINATED`/`PARTIAL_PAGE` đánh dấu lượt chưa bao phủ toàn bộ; đọc tiếp nếu nextCursor khác null. `CONTENT_URL_OMITTED` khi URL không an toàn/không hỗ trợ bị loại; `CONTENT_UNSUPPORTED_MEDIA` khi ảnh thiếu URL hợp lệ, CSS background hoặc nội dung nhúng chưa đọc. Script/style/template không xuất ra DTO. Text trong ảnh, video, iframe, PDF chưa được đọc chỉ vì URL đã được trả. Không suy Content rỗng nghĩa là bài không có nội dung: kiểm contentImages/contentLinks và warnings.
+
+Kiểm chứng synthetic: KMS-01..05, KMS-SDK và REQ/RAW/DTO/SCOPE/PAGE-knowledge.documents; xem TEST-MAP. Chưa đối chiếu raw bài Reactive thực tế hoặc nghiệm thu trên production.
 

@@ -1,5 +1,11 @@
 # Provenance và phạm vi tái sử dụng
 
+## KMS local 15/10/2026
+
+Không đọc/copy dữ liệu hoặc session từ SHA PC trong lượt sửa này. Dùng contract `Content`/`Photo.url` và source hash đã ghi ở phần 10/10 bên dưới. `src/knowledge.ts` là phép biến đổi DTO mới của Profile MCP: parse HTML, giữ text/media refs và phân phần; đây không phải field upstream mới. Config và generator giữ cùng mô tả trường Content. Kiểm chứng synthetic KMS-01..05/KMS-SDK tại TEST-MAP.
+
+Parser: [parse5 official API](https://parse5.js.org/modules/parse5.html); `npm view parse5 version engines exports --json` ngày 15/10 trả 8.0.1, ESM export `./dist/index.js`. Pin `parse5=8.0.1` và transitive `entities=8.1.0` bằng package-lock (resolved npm registry + sha512 integrity); không chạy lifecycle scripts khi cài. Không suy test parser là nghiệm thu API KMS live.
+
 Rà soát SHA PC tại `D:\Quyetnm\Dev\SHA PC`, commit `8363a1a1bec8b0d11251ff6f6830d6ea4f747306`, working tree sạch lúc kiểm. Manifest file/hash tại [source-manifest.json](../config/source-manifest.json). Các đường dẫn nguồn ghi ở đây là bằng chứng; bộ tài liệu mới tự chứa contract cần thiết, không cần checkout nguồn khi bắt đầu đọc plan.
 
 Không copy file nguồn hoặc raw OpenAPI vào dự án mới. Nội dung catalog do tổng hợp/biên soạn từ request builder và tài liệu, loại bỏ examples chứa tài khoản/credentials. SHA PC không bị sửa và không chạy script từ repo nguồn.

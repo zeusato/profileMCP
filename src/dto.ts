@@ -30,7 +30,7 @@ function convert(f: Field, v: unknown, policy: Policy): unknown {
     case 'decimal': return decimal(v);
     case 'vi-decimal': return decimal(v, 'vi');
     case 'boolean': ensure(typeof v === 'boolean'); return v;
-    case 'long-text': ensure(typeof v === 'string' && v.length <= 1_000_000); return v; // capped later by the operation (e.g. KMS content)
+    case 'long-text': ensure(typeof v === 'string' && v.length <= 1_000_000); return v; // KMS is parsed and paginated after projection.
     case 'any': ensure((typeof v === 'string' && v.length <= 2000) || (typeof v === 'number' && Number.isFinite(v)) || typeof v === 'boolean'); return v;
     default: if (typeof v === 'number' && Number.isSafeInteger(v)) return String(v); ensure(typeof v === 'string' && v.length <= 2000); return v; // codes may arrive as numbers
   }
@@ -57,14 +57,6 @@ export function project(fields: Field[], root: unknown, policy: Policy, pii: boo
   };
   const visible = fields.filter(f => f.type && (f.scope !== 'profile.pii' || pii));
   return { value: walk(visible.map(f => ({ raw: f.raw, dto: f.dto, f })), root, ''), missing: [...missing] };
-}
-// KMS articles are styled HTML: keep readable text only (block breaks, list bullets, common entities); the result is still untrusted data.
-export function htmlToText(html: string) {
-  return html.replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ')
-    .replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|div|li|h[1-6]|tr|ul|ol)>/gi, '\n').replace(/<li[^>]*>/gi, '- ')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
-    .replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 export function repeatedTotals(rows: Json[], fields: string[]) {
   const totals: Json = {};

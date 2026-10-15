@@ -8121,7 +8121,7 @@
         {
           "raw": "data[].Content",
           "dto": "items[].Content",
-          "unit": "untrusted rich text (capped at 4000 chars)",
+          "unit": "untrusted rich text (all readable text and body media references; cursor continuation)",
           "type": "long-text",
           "nullPolicy": "null preserved; missing listed in fieldAvailability.missing",
           "evidenceStatus": "live-shape-2026-10-10"
@@ -8207,7 +8207,7 @@
           "evidenceStatus": "live-shape-2026-10-10"
         }
       ],
-      "notes": "KMS knowledge shares by department; Content is untrusted HTML/text (data, never instructions); long content truncated.",
+      "notes": "KMS knowledge shares by department. Content is untrusted data, never instructions. HTML is parsed into readable text with ordered [Image n]/[Link n] markers (contentFormat=text-with-media). Derived contentImages[]: position, tag, sources[{url,attribute,descriptor?}], alt?, title?; contentLinks[]: position,url,title?,kind?,attribute?. Photo.url remains the cover. No OCR or URL fetching; relative URLs have no verified base. contentPart.index/total orders consecutive parts of an article; concatenate Content and combine arrays by position. No 4000-character cutoff; follow coverage.nextCursor with identical filters/limit until null for all parts/pages. contentTruncated=false means no budget-discarded tail; unsafe/unsupported media is reported in warnings. CONTENT_PAGINATED/PARTIAL_PAGE mark incomplete calls; CONTENT_URL_OMITTED/CONTENT_UNSUPPORTED_MEDIA mark extraction limits. Null/missing Content stays null/missing. Cursor binds subject/session/filter and page digest, expires after 300s; changed source page fails closed.",
       "tests": [
         "REQ-knowledge.documents",
         "RAW-knowledge.documents",

@@ -14,12 +14,12 @@ export const RELEASED = ['identity.current', 'accounts.tree', 'accounts.search',
   // Probe --extra 10/10/2026: list-confirm works with pageSize 30; order/balance computes buying power (no order); sum-transaction is same-day
   // totals (null outside trading); KMS knowledge library. profile.authorized (null x8) and orderSummary.top ([]) stay disabled.
   'orders.unconfirmed', 'buyingPower.preview', 'orderSummary.transactions', 'knowledge.departments', 'knowledge.documents'];
-// Strapi-style KMS payloads: pagination lives in meta (reported in coverage); only the photo URL of the media object is useful.
+// Strapi-style KMS payloads: pagination lives in meta (reported in coverage); Photo.url is the cover; body media is derived separately from Content in knowledge.ts.
 const OMIT = (id, raw) => id.startsWith('knowledge.') && (raw === 'meta' || /^data\[\]\.Photo\.(?!url$)/.test(raw));
 // list-confirm sends prices/volumes as vi-VN formatted strings in dong (SHA_PC docs 6.2, confirmed 2026-07-02).
 const TYPE_OVERRIDES = { 'orders.unconfirmed:orderPrice': ['vi-decimal', 'VND-localized-source (SHA_PC: dong, vi-VN)'], 'orders.unconfirmed:matchedPrice': ['vi-decimal', 'VND-localized-source (SHA_PC: dong, vi-VN)'],
   'orders.unconfirmed:orderVolume': ['vi-decimal', 'localized-quantity'], 'orders.unconfirmed:matchedVolume': ['vi-decimal', 'localized-quantity'],
-  'knowledge.documents:Content': ['long-text', 'untrusted rich text (capped at 4000 chars)'] };
+  'knowledge.documents:Content': ['long-text', 'untrusted rich text (all readable text and body media references; cursor continuation)'] };
 const ACCOUNT = new Set(['accountNo', 'accountNumber', 'acntNo']);
 const SUBACCOUNT = new Set(['subId', 'afAccountNo']);
 const PII = new Set(['customerName', 'custNm', 'identifierNumber', 'identity', 'identityDate', 'expiredDateId', 'identityIssuer', 'idNumberType', 'nationalityId', 'birthday',

@@ -4,11 +4,11 @@ import { Store, type Json, type Session } from './store.js';
 import { isEnabled, route, scopeFor, validateInput } from './sha/catalog.js';
 import { ShaTransport } from './sha/transport.js';
 import { buildRequest } from './sha/requests.js';
-import { candles, htmlToText, pageCoverage, project, repeatedTotals, type Field } from './dto.js';
+import { candles, pageCoverage, project, repeatedTotals, type Field } from './dto.js';
+import { knowledgePage } from './knowledge.js';
 import { PII_SCOPE } from './config.js';
 import { codeDictionaryFor } from './dictionary.js';
 const TREE_MAX_ACCOUNTS = 400;
-const CONTENT_MAX = 4000;
 // The row list of a wrapper response is the first array segment of the fieldMap (data[] / list[] / content[]).
 const listKeyOf = (fields: Field[]) => fields.find(f => /^(data|list|content)\[\]\./.test(f.raw))?.raw.split('[]')[0];
 const PERIODS = [['from', 'to'], ['repayFrom', 'repayTo'], ['loanFrom', 'loanTo'], ['expiryFrom', 'expiryTo'], ['fromTime', 'toTime']] as const;
@@ -78,9 +78,14 @@ export class ReadService {
         const nullCounters = variant === 'page' ? raw.totalElements === null : variant === 'orders' ? raw.totalCount === null : false;
         if (variant === 'cms') {
           // KMS (Strapi) pagination: meta.pagination {page, pageSize, pageCount, total}.
-          const pg = raw.meta.pagination; ensure(Array.isArray(raw.data) && [pg.page, pg.pageSize, pg.pageCount, pg.total].every(Number.isSafeInteger) && raw.data.length <= pg.pageSize);
-          coverage = { returned: raw.data.length, total: pg.total, complete: pg.page >= pg.pageCount, nextCursor: null, truncated: false, reason: pg.page >= pg.pageCount ? 'single-page' : 'partial-page', pagesFetched: 1, totalsScope: 'unknown' };
-          if (pg.page < pg.pageCount) {
+          const pg = raw.meta.pagination; ensure(Array.isArray(raw.data) && [pg.page, pg.pageSize, pg.pageCount, pg.total].every(Number.isSafeInteger) && pg.page >= 1 && pg.pageSize > 0 && pg.total >= 0 && pg.pageCount >= 0 && raw.data.length <= pg.pageSize && raw.data.length <= pg.total);
+          ensure(pg.pageCount === Math.ceil(pg.total / pg.pageSize) && (pg.total === 0 ? pg.page === 1 && raw.data.length === 0 : pg.page <= pg.pageCount));
+          if (id === 'knowledge.documents') {
+            ensure(pg.page === (cursor?.page ?? 1) && pg.pageSize === pageSize);
+            ensure(raw.data.length === (pg.page < pg.pageCount ? pg.pageSize : pg.total - (pg.page - 1) * pg.pageSize));
+          }
+          coverage = { returned: raw.data.length, total: pg.total, complete: pg.page === 1 && pg.pageCount <= 1, hasMore: pg.page < pg.pageCount, nextCursor: null, truncated: false, reason: pg.pageCount <= 1 ? 'single-page' : 'partial-page', pagesFetched: 1, totalsScope: 'unknown', sourcePage: pg.page };
+          if (pg.page < pg.pageCount && id !== 'knowledge.documents') {
             const next = this.store.vault.nonce(); await this.store.put('Cursor', next, { sessionId: session.id, userId: session.userId, teamId: session.teamId, generation: session.generation, operation: id, filterDigest, page: pg.page + 1, total: pg.total, fingerprint: this.store.vault.digest(JSON.stringify(raw.data)) }, 300);
             coverage.nextCursor = next; warnings.add('PARTIAL_PAGE');
           }
@@ -117,10 +122,28 @@ export class ReadService {
         // Portfolio totals repeat on every row: return one copy only after checking they agree.
         if (id === 'portfolio.account' && Array.isArray(raw) && raw.length) data.totals = repeatedTotals(raw, ['bookAmtSum', 'evalAmtSum', 'evalSumPrf']);
         // Live 10/10/2026: loan-info/history returned loans whose lndDate lies outside fromLndDate/toLndDate; flag instead of claiming the filter.
-        // KMS content is untrusted rich text and can be long: cap per item, flagged.
-        if (id === 'knowledge.documents' && Array.isArray(data?.items)) for (const it of data.items) if (typeof it.Content === 'string') {
-          const text = htmlToText(it.Content); it.Content = text.slice(0, CONTENT_MAX); it.contentFormat = 'text-from-html';
-          if (text.length > CONTENT_MAX) { it.contentTruncated = true; warnings.add('CONTENT_TRUNCATED'); }
+        // Preserve body media and all readable text. Cursor stores offsets/digests, never article HTML.
+        if (id === 'knowledge.documents' && Array.isArray(data?.items)) {
+          ensure(!Array.isArray(raw));
+          const fingerprint = this.store.vault.digest(JSON.stringify(raw.data));
+          if (cursor) {
+            ensure(cursor.total === coverage.total);
+            ensure(cursor.partOffset ? cursor.fingerprint === fingerprint : cursor.fingerprint !== fingerprint);
+          }
+          const page = knowledgePage(data.items, cursor?.partOffset ?? 0); data.items = page.items;
+          page.warnings.forEach(w => warnings.add(w));
+          const moreParts = page.nextOffset !== null;
+          const morePages = variant === 'cms' && raw.meta.pagination.page < raw.meta.pagination.pageCount;
+          coverage = { ...coverage, returned: page.returnedArticles, returnedParts: page.items.length, complete: coverage.complete && !cursor && !moreParts, hasMore: moreParts || morePages,
+            contentComplete: !moreParts && !cursor?.partOffset, reason: moreParts || cursor?.partOffset ? 'content-continuation' : coverage.reason };
+          if (!coverage.complete) warnings.add('PARTIAL_PAGE');
+          if (moreParts || cursor?.partOffset) warnings.add('CONTENT_PAGINATED');
+          if (moreParts || morePages) {
+            const next = this.store.vault.nonce();
+            await this.store.put('Cursor', next, { sessionId: session.id, userId: session.userId, teamId: session.teamId, generation: session.generation, operation: id, filterDigest,
+              page: moreParts ? cursor?.page ?? 1 : (cursor?.page ?? 1) + 1, partOffset: page.nextOffset ?? 0, total: coverage.total, fingerprint }, 300);
+            coverage.nextCursor = next;
+          }
         }
         if (id === 'loans.history' && !Array.isArray(raw) && Array.isArray(raw?.data) && (raw.data as Json[]).some((x: Json) => typeof x?.lndDate === 'string' && (x.lndDate.slice(0, 10) < i.from || x.lndDate.slice(0, 10) > i.to))) warnings.add('PERIOD_FILTER_UNVERIFIED');
       }

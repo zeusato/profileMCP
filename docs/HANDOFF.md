@@ -1,8 +1,10 @@
-# Checkpoint Profile MCP — 12/10/2026
+# Checkpoint Profile MCP — 15/10/2026
 
 Luôn xưng em, gọi người dùng là Đại ca. Không cần lịch sử chat để tiếp tục từ tài liệu này. Diễn biến chi tiết từng bước (DCR, Origin/CSP, contract đăng nhập SHA, probe live, các vòng sửa) nằm trong [VALIDATION](VALIDATION.md); tài liệu này chỉ giữ trạng thái hiện tại và việc còn lại.
 
 ## Trạng thái hiện tại
+
+- **KMS local 15/10, chưa deploy:** thay regex HTML→text (làm mất src/href) bằng parse5 8.0.1, pin package/lockfile. `src/knowledge.ts` giữ chữ, ảnh thân bài (src/srcset/lazy), links và thứ tự; Photo.url vẫn là ảnh bìa. Không cắt 4000 ký tự; bài dài chia contentPart và đọc qua nextCursor (offset/digest, không lưu HTML), kiểm lại quyền/fingerprint nguồn. Giới hạn output 128 KiB giữ nguyên. Null/missing giữ nguyên; URL nguy hiểm/nội dung nhúng chưa đọc có warning, không OCR hay fetch URL. 77/77 synthetic tests passed, gồm KMS-01..05 và KMS-SDK; typecheck/build/ESM/docs ghi ở VALIDATION. Chưa push/deploy hoặc kiểm raw bài Reactive thật. Không đổi input schema, route, scope, DB/env; sau deploy cần làm mới mô tả tool ở client và kiểm bài thực.
 
 - **Allowlist 12/10:** Đại ca chọn tự thao tác Supabase. Đã thêm `--sql-only` cho `scripts/add-member.ts`, sinh `.runtime/member.sql` từ keys hiện hành cho ID Đại ca yêu cầu; chỉ kiểm cấu trúc/HMAC/team/role local, **chưa ghi DB hoặc thêm thành viên production**. CLI hiện không liệt kê Digital16 và runtime check-store báo CONNECT_TIMEOUT; đã hủy login CLI khi Đại ca chuyển sang thao tác thủ công. Hướng dẫn tự thêm nằm tại [OPERATIONS](OPERATIONS.md). Không lưu ID thực hoặc SQL vào Git.
 

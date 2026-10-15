@@ -65,7 +65,7 @@ Input strict; output chỉ mapping field allowlist, có thể chấp nhận unkn
 - Số điện thoại, giấy tờ, SIDC/PCOD, mã phòng là chuỗi chữ số, giữ nguyên (số 0 đầu).
 - order/list-confirm: pageSize 5 bị từ chối, 30 hợp lệ; giá/khối lượng chuỗi vi-VN ("1.000"), đơn vị đồng — khác order/histories (nghìn đồng).
 - order/balance chỉ tính sức mua cho mã/giá (price chuỗi VND); không tạo lệnh. order/sum-transaction là tổng trong ngày, ngoài giờ trả null toàn bộ → SOURCE_NULL.
-- KMS forward/cms (Strapi): {data, meta.pagination}; Content là dữ liệu không tin cậy, giữ chữ và tham chiếu ảnh/link trong thân bài; bản local 15/10 bỏ mốc cắt 4000 ký tự, dùng cursor để đọc đủ các phần (xem ENDPOINTS); mã phòng ban kiểm với danh sách live trước khi gọi.
+- KMS forward/cms (Strapi): {data, meta.pagination}; Content là dữ liệu không tin cậy, giữ chữ và tham chiếu ảnh/link trong thân bài; bản đã deploy 15/10 bỏ mốc cắt 4000 ký tự, dùng cursor để đọc đủ các phần (xem ENDPOINTS); mã phòng ban kiểm với danh sách live trước khi gọi.
 
 ## Từ điển mã trạng thái và phân loại (11/10/2026)
 

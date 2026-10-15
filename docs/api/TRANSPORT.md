@@ -6,7 +6,7 @@ Mọi tool trả cùng dữ liệu ở `structuredContent` và `content: [{ type
 
 Chỉ serialize DTO sau kiểm quyền, lọc PII và session fence; giữ null, chuỗi decimal, refs, meta/warnings/coverage/pagination. Không serialize raw upstream hoặc token. Lỗi cũng có JSON ở cả hai phần, giữ `isError: true`, chỉ chứa mã lỗi an toàn và requestId. Không thay đổi scopes, schema input hay phiên OAuth.
 
-KMS local 15/10/2026: cả text JSON và structuredContent có cùng Content, contentImages, contentLinks và contentPart. Giữ đường dẫn ảnh trong JSON không yêu cầu tải ảnh hay gửi MCP image block. Nội dung dài được phân phần qua nextCursor, không mất đuôi; cursor chỉ lưu offset/digest, kiểm lại quyền và fingerprint nguồn mỗi lần. Chi tiết hợp đồng tại [ENDPOINTS](ENDPOINTS.md#knowledge.documents).
+KMS đã deploy 15/10/2026: cả text JSON và structuredContent có cùng Content, contentImages, contentLinks và contentPart. Giữ đường dẫn ảnh trong JSON không yêu cầu tải ảnh hay gửi MCP image block. Nội dung dài được phân phần qua nextCursor, không mất đuôi; cursor chỉ lưu offset/digest, kiểm lại quyền và fingerprint nguồn mỗi lần. Chi tiết hợp đồng tại [ENDPOINTS](ENDPOINTS.md#knowledge.documents).
 
 ## Allowlist
 

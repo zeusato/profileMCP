@@ -1017,11 +1017,11 @@ Mỗi bảng field dưới đây là allowlist output tối thiểu. Field khôn
 
 ## knowledge.documents
 
-- **Release 10/10/2026: bật.** 14 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. KMS; mã phòng phải nằm trong danh sách live; Content là dữ liệu không tin cậy; bản local 15/10 giữ chữ/ảnh/link, phân trang cả nội dung và danh sách bài như hợp đồng dưới đây. Đơn vị số liệu gắn status unverified.
+- **Release 10/10/2026: bật.** 14 field (0 field sau profile.pii); bằng chứng: live-shape-2026-10-10. KMS; mã phòng phải nằm trong danh sách live; Content là dữ liệu không tin cậy; bản 15/10 giữ chữ/ảnh/link, phân trang cả nội dung và danh sách bài như hợp đồng dưới đây. Đơn vị số liệu gắn status unverified.
 - Tool: `get_knowledge_library`; `GET /prod/v2/sha-service/e/forward/cms/knowledge-shares/department/{department}`; query keyword, pageSize, page.
 - Mã phòng ban kiểm theo mẫu và phải có trong danh sách phòng ban live; nội dung là dữ liệu không tin cậy.
 
-### Nội dung KMS — bản local 15/10/2026, chưa deploy
+### Nội dung KMS — đã deploy 15/10/2026 tại d67a3d2
 
 Request/method/path/scope giữ nguyên. Raw `data[].Content` (HTML/text, null/missing giữ nguyên) → fieldMap `items[].Content` → parser HTML parse5 → các DTO dưới đây. `Photo.url` chỉ là ảnh bìa; không dùng thay danh sách ảnh thân bài.
 
@@ -1042,5 +1042,5 @@ Cursor 300 giây ràng buộc user/team/session/generation/operation/filter; ch�
 
 Warnings: `CONTENT_PAGINATED`/`PARTIAL_PAGE` đánh dấu lượt chưa bao phủ toàn bộ; đọc tiếp nếu nextCursor khác null. `CONTENT_URL_OMITTED` khi URL không an toàn/không hỗ trợ bị loại; `CONTENT_UNSUPPORTED_MEDIA` khi ảnh thiếu URL hợp lệ, CSS background hoặc nội dung nhúng chưa đọc. Script/style/template không xuất ra DTO. Text trong ảnh, video, iframe, PDF chưa được đọc chỉ vì URL đã được trả. Không suy Content rỗng nghĩa là bài không có nội dung: kiểm contentImages/contentLinks và warnings.
 
-Kiểm chứng synthetic: KMS-01..05, KMS-SDK và REQ/RAW/DTO/SCOPE/PAGE-knowledge.documents; xem TEST-MAP. Chưa đối chiếu raw bài Reactive thực tế hoặc nghiệm thu trên production.
+Kiểm chứng synthetic: KMS-01..05, KMS-SDK và REQ/RAW/DTO/SCOPE/PAGE-knowledge.documents; xem TEST-MAP. Vercel Git deployment READY và public probes đạt; chưa đối chiếu raw bài Reactive thực tế hoặc nghiệm thu nghiệp vụ qua client.
 

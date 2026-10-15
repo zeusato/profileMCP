@@ -9,7 +9,7 @@ MCP dùng SHA Gateway tại api.shs.com.vn, chỉ tra cứu trong quyền từng
 
 ## Kiểm tra local
 
-Bản sửa KMS local 15/10/2026: giữ chữ, ảnh và liên kết thân bài; bỏ mốc cắt 4.000 ký tự, nội dung dài đọc tiếp bằng cursor. 77 synthetic tests passed; chưa deploy/nghiệm thu live. Hợp đồng chi tiết tại [ENDPOINTS](docs/api/ENDPOINTS.md#knowledge.documents).
+Bản sửa KMS 15/10/2026: giữ chữ, ảnh và liên kết thân bài; bỏ mốc cắt 4.000 ký tự, nội dung dài đọc tiếp bằng cursor. 77 synthetic tests passed; đã deploy qua Git tại d67a3d2, Vercel READY và public probes đạt. Chưa nghiệm thu bài KMS thực tế qua client. Hợp đồng chi tiết tại [ENDPOINTS](docs/api/ENDPOINTS.md#knowledge.documents).
 
 Bản sửa local 12/10/2026: đăng nhập thất bại quay về form mới trong cùng OAuth interaction; OTP có nút đăng nhập lại, lỗi phiên cũ có nút phục hồi và thông báo phân biệt quyền/CSRF/quota. 72 synthetic tests passed; **chưa deploy hoặc nghiệm thu retry live**. Chi tiết [HANDOFF](docs/HANDOFF.md).
 

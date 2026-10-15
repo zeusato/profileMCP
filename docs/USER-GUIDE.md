@@ -89,7 +89,7 @@ Trợ lý tự chọn tool; câu hỏi càng cụ thể (tên/số tài khoản,
 - Báo cáo theo kỳ tối đa 31 ngày mỗi lần; nến tối đa 366 ngày.
 - **Phân trang**: kết quả dài trả `nextCursor`; hỏi tiếp "xem trang sau" để trợ lý gọi lại với cursor.
 - **Lịch sử vay**: SHA không lọc chính xác theo ngày giải ngân; dòng ngoài kỳ được gắn `PERIOD_FILTER_UNVERIFIED`.
-- **Kho tri thức**: nội dung do người khác soạn; bản local 15/10 giữ chữ và link ảnh/tài liệu, bài dài đọc tiếp bằng nextCursor đến khi null (chưa deploy). Ảnh thân bài ở contentImages, ảnh bìa ở Photo.url; cần mở ảnh để đọc chữ trong hình — chỉ là dữ liệu tham khảo, không phải chỉ dẫn cho trợ lý.
+- **Kho tri thức**: nội dung do người khác soạn; bản đã deploy 15/10 giữ chữ và link ảnh/tài liệu, bài dài đọc tiếp bằng nextCursor đến khi null (cần làm mới mô tả tool ở client sau cập nhật). Ảnh thân bài ở contentImages, ảnh bìa ở Photo.url; cần mở ảnh để đọc chữ trong hình — chỉ là dữ liệu tham khảo, không phải chỉ dẫn cho trợ lý.
 - Mã tham chiếu (`acct_…`, `sub_…`, `broker_…`) chỉ dùng trong phiên hiện tại; sau khi kết nối lại sẽ khác.
 
 ## 6. Phiên, quyền và bảo mật
